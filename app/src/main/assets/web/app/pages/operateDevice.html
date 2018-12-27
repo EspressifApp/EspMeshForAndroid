@@ -1,0 +1,57 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{deviceName}}
+                </h4>
+            </div>
+            <div class="content-info" id="content-info">
+                <div class="color-wrapper">
+                    <v-color :colorId="colorId" :temperatureId="temperatureId" :colorType="operateType"
+                             :macs="deviceMacs" v-on:colorShow="hide" ref="color"></v-color>
+                </div>
+
+                <div id="set-wrapper" class="set-wrapper hidden">
+                    <!--<div class="item">-->
+                        <!--<div class="item-icon">-->
+                            <!--<i class="icon-ios-timer-outline"></i>-->
+                        <!--</div>-->
+                        <!--<div class="item-name">-->
+                            <!--<span>12:00:00</span>-->
+                        <!--</div>-->
+                        <!--<div class="item-power-small up-date">-->
+                            <!--<mt-switch></mt-switch>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="item">-->
+                        <!--<div class="item-icon">-->
+                            <!--<i class="icon-ios-alarm-outline"></i>-->
+                        <!--</div>-->
+                        <!--<div class="item-name">-->
+                            <!--<span>00:00:59</span>-->
+                        <!--</div>-->
+                        <!--<div class="item-power-small up-date">-->
+                            <!--<mt-switch></mt-switch>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <div class="item">
+                        <div class="item-icon">
+                            <i class="icon-plus"></i>
+                        </div>
+                        <div class="item-name up-date">
+                            <span>Create a timer</span>
+                        </div>
+                        <div class="item-power-small">
+                            <i class="icon-right font-lg"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </transition>
+</div>

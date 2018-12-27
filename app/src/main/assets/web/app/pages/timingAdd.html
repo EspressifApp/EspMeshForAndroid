@@ -1,0 +1,56 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    <span v-show="name != ''" @click="hideThis" class="left-two"><i class="icon-cross"></i></span>
+                    {{name != "" ? name : "新增定时"}}
+                </h4>
+                <span @click="save" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
+            </div>
+            <div class="content-info attr">
+                <div class="timing-item" v-for="(item, index) in addList">
+                    <input @click="openTimingType(index)" placeholder="type" readonly type="text"
+                           v-model="item.state" class="form-control text-center">:
+                    <input @click="openStartTime(index)" placeholder="start time" readonly
+                           type="text" v-model="item.start" class="form-control text-center">-
+                    <input @click="openEndTime(index)" placeholder="end time" readonly
+                           type="text" v-model="item.end" class="form-control text-center">
+                    <span class="timing-less" @click="delAdd(index)"><i class="icon-less"></i></span>
+                </div>
+                <div class="add-wrapper">
+                    <div @click="addPlus">
+                        <i class="icon-plus"></i>
+                    </div>
+                </div>
+            </div>
+            <transition name="ups">
+                <div v-show="showType" class="operate-wrapper">
+                    <div @click="hideType" class="mask"></div>
+                    <div class="operate-info info-content mint-datetime">
+                        <div class="picker-toolbar">
+                            <span @click="hideType" class="mint-datetime-action mint-datetime-cancel">取消</span>
+                            <span @click="typeConfirm" class="mint-datetime-action mint-datetime-confirm">确定</span>
+                        </div>
+                        <mt-picker ref="picker" :slots="slots">
+                        </mt-picker>
+                    </div>
+                </div>
+            </transition>
+            </mt-picker>
+            <mt-datetime-picker
+                    ref="startTime"
+                    type="time"
+                    endHour="22"
+                    @confirm="startConfirm">
+            </mt-datetime-picker>
+            <mt-datetime-picker
+                    ref="endTime"
+                    type="time"
+                    :startHour="getStartHour()"
+                    @confirm="endConfirm">
+            </mt-datetime-picker>
+        </div>
+    </transition>
+</div>

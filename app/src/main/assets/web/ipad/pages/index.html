@@ -1,0 +1,121 @@
+<div>
+    <div class="topobody">
+        <div id="draggable-wrapper"></div>
+        <div class="topoheader">
+            <div class="col-md-2 col-sm-2 col-xs-3 no-padding">
+                <div class="companylogo hidden-sm hidden-xs"><a href="javascript:;">ESPRESSIF-MESH</a></div>
+                <div class="companylogo hidden-lg hidden-md"><a href="javascript:;">MESH</a></div>
+            </div>
+            <div class="col-md-10 col-sm-10 col-xs-9 no-padding">
+                <div class="funcbtn">
+                    <div class="morebtn">
+                        <a @click="showTable"><span class="icon-groups"></span>Group</a>
+                        <a @click="addDevice"><span class="icon-plus"></span>Add</a>
+                        <!--<a @click="addPair"><span class="icon-radar"></span>Pair</a>-->
+                        <!--<a id="statisticsBtn"><span class="fa fa-line-chart"></span>Statistics</a>-->
+                        <a @click="resetBtn" id="resetBtn"><span class="icon-reset"></span>Reset</a>
+                        <a @click="refreshBtn" id="refreshBtn"><span class="icon-loop"></span>Refresh</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="topocon">
+            <div id="topoleft" class="topoleft col-md-2 col-sm-2 col-xs-3 no-padding">
+                <div class="lefticon" id="lefticon">
+                    <div class="panel">
+                        <a class="active" data-toggle="collapse"  data-parent="#lefticon"
+                           href="#collapse-switch">
+                            <i class="icon-groups"></i>
+                            <span>SWITCT</span>
+                            <i class="icon-right-dir caret-i"></i>
+                        </a>
+                        <ul id="collapse-switch" class="nav panel-collapse collapse">
+                            <li v-if="getSwitch(item)" v-for="item in list">
+                                <div :data-status="getSwitchStatus(item.characteristics)" :data-tid="item.tid"
+                                     :data-value="item.mac" class="iconitems itemindex" :icontype="item.mac"
+                                     :class="{'availability': getDisabled(item.mac)}">
+                                    <i class="icon-power"></i>
+                                    <span title="">{{item.name}}</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="panel">
+                        <a data-toggle="collapse" data-parent="#lefticon"
+                           href="#collapse-sensor">
+                            <i class="icon-groups"></i>
+                            <span>SENSOR</span>
+                            <i class="icon-right-dir caret-i"></i>
+                        </a>
+                        <ul id="collapse-sensor" class="nav panel-collapse collapse">
+                            <li v-if="getSensor(item)" v-for="item in list">
+                                <div :data-status="getSensorStatus(item.characteristics)"  :data-tid="item.tid"
+                                     :data-value="item.mac" class="iconitems itemindex"  :icontype="item.mac"
+                                     :class="{'availability': getDisabled(item.mac)}">
+                                    <i class="icon-sensor"></i>
+                                    <span title="">{{item.name}}</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="panel">
+                        <a class="light" data-toggle="collapse" data-parent="#lefticon"
+                           href="#collapse-light">
+                            <i class="icon-groups"></i>
+                            <span>LIGHT</span>
+                            <i class="icon-down-dir caret-i"></i>
+                        </a>
+                        <ul id="collapse-light" class="nav panel-collapse collapse in">
+                            <li v-if="getLight(item)" v-for="item in list">
+                                <div :data-status="getLightLum(item.characteristics)" :data-tid="item.tid"
+                                     :data-value="item.mac" class="iconitems itemindex" :icontype="item.mac"
+                                     :class="{'availability': getDisabled(item.mac)}">
+                                    <i class="icon-light" :style="{'color': getColor(item.characteristics)}"></i>
+                                    <span title="">{{item.name}}</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="panel">
+                        <a class="light" data-toggle="collapse" data-parent="#lefticon"
+                           href="#collapse-other">
+                            <i class="icon-groups"></i>
+                            <span>OTHER</span>
+                            <i class="icon-right-dir caret-i"></i>
+                        </a>
+                        <ul id="collapse-other" class="nav panel-collapse collapse">
+                            <li v-if="getOther(item)" v-for="item in list">
+                                <div :data-status="getLightLum(item.characteristics)" :data-tid="item.tid"
+                                     :data-value="item.mac" class="iconitems itemindex" :icontype="item.mac"
+                                     :class="{'availability': getDisabled(item.mac)}">
+                                    <i class="icon-light" :style="{'color': getColor(item.characteristics)}"></i>
+                                    <span title="">{{item.name}}</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div id="toporight-index" class="toporight col-md-10 col-sm-10 col-xs-9 no-padding">
+                <div id="canvas-wrapper">
+                    <div class="topocontent" id="topocontent">
+
+                    </div>
+                </div>
+            </div>
+            <div id="delete-device" class="delete-device">
+                <i class="icon-bin"></i>
+            </div>
+        </div>
+    </div>
+
+
+    <v-info v-on:infoShow="onBackIndex" :colorId="colorId" :temperatureId="temperatureId" ref="info"></v-info>
+    <v-eventInfo v-on:eventShow="onBackIndex" ref="event"></v-eventInfo>
+    <v-table v-on:tableShow="onBackIndex" ref="table"></v-table>
+    <v-resetDevice v-on:resetShow="onBackIndex" ref="device"></v-resetDevice>
+    <v-scanDevice v-on:scanDeviceShow="onBackIndex" ref="scanDevice"></v-scanDevice>
+    <v-pair v-on:pairShow="onBackIndex" ref="pair"></v-pair>
+    <v-remind ref="remind"></v-remind>
+</div>

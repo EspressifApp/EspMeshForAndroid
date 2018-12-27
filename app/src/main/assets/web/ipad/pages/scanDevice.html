@@ -1,0 +1,18 @@
+
+<div class="init-width">
+    <transition name="ups">
+        <div v-show="addFlag" class="con-device-wrapper">
+            <div @click="hide" class="mask zIndex-300"></div>
+            <div class="con-device-content">
+                <h4>{{$t('scanToDesc')}}<span class="scan-num">{{count}}</span>{{$t('countDeviceDesc')}}
+                    <i class="icon-cross" @click="hide"></i></h4>
+                <div class="con-device">
+                    <img class="fa-pulse" src="images/light.jpg"/>
+                </div>
+                <div class="position-absolute btn-register-wrapper">
+                    <button type="submit" class="btn register-btn" @click="addConDevice">{{$t('joinBtn')}}</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

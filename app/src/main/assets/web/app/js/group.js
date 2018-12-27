@@ -1,0 +1,387 @@
+define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./resetDevice", "../js/addGroup",
+"../js/groupInfo", "../js/groupColor", "../js/otaInfo", "../js/joinMesh", "./command"],
+    function(v, MINT, Util, group, footer, resetDevice, addGroup, groupInfo, groupColor, otaInfo, joinMesh, command) {
+
+    var Group = v.extend({
+        template: group,
+
+        data: function(){
+            return {
+                flag: false,
+                group: "group",
+                addGroupId: "group-addGroup",
+                infoShow: false,
+                editGroupId: "edit-group-id",
+                colorId: "group-color",
+                temperatureId: "group-temperature",
+                otaGroupId: "ota-group-id",
+                lightId: "light-group-id",
+                joinMeshGroup: "join-mesh-group",
+                joinSliderGroup: "join-slider-group",
+                selectMeshAllId: "joinMesh-select-id",
+                deviceList: this.$store.state.deviceList,
+                groupList: this.$store.state.groupList,
+                groupObj: "",
+                otaMacs: [],
+                commandMacs: [],
+                currentStatus: true,
+                searchName: "",
+                groupName: ""
+            }
+        },
+        watch: {
+           // 如果路由有变化，会再次执行该方法d
+           '$route': function (to, form) {
+               if (to.path == "/group") {
+                   this.loadGroups();
+               }
+           }
+        },
+        mounted: function() {
+            this.loadGroups();
+        },
+        computed: {
+            list: function () {
+                var self = this;
+                self.deviceList = self.$store.state.deviceList;
+                self.groupList = self.$store.state.groupList;
+                if (Util._isEmpty(self.searchName)) {
+                    return self.groupList;
+                } else {
+                    var searchList = [];
+                    $.each(self.groupList, function(i, item) {
+                        if (item.name.indexOf(self.searchName) != -1) {
+                            searchList.push(item);
+                        }
+                    })
+                    return searchList;
+                }
+            }
+        },
+
+        methods:{
+            addDevice: function (event) {
+                this.flag = false;
+                this.$refs.device.show();
+            },
+            loadGroups: function() {
+                this.onBackGroup();
+                var res = espmesh.loadGroups();
+                if (!Util._isEmpty(res)) {
+                    this.groupList = JSON.parse(res);
+                    this.$store.commit("setGroupList", this.groupList);
+                }
+            },
+            getAllStatus: function () {
+                var self = this,statusFlag = false;
+                $.each(self.deviceList, function(i, item) {
+                    $.each(item.characteristics, function(j, itemSub) {
+                        if (itemSub.cid == STATUS_CID) {
+                            if (itemSub.value == STATUS_ON) {
+                                statusFlag = true;
+                                return false;
+                            }
+
+                        }
+                    });
+                    if (statusFlag) {
+                        return false;
+                    }
+                });
+                return statusFlag;
+            },
+            getStatusByGroup: function (macs) {
+                var self = this, statusFlag = false;
+                if (macs.length > 0) {
+                    $.each(self.deviceList, function(i, item) {
+                        if (macs.indexOf(item.mac) > -1) {
+                            $.each(item.characteristics, function(j, itemSub) {
+                                if (itemSub.cid == STATUS_CID) {
+                                    if (itemSub.value == STATUS_ON) {
+                                        statusFlag = true;
+                                        return false;
+                                    }
+
+                                }
+                            });
+                            if (statusFlag) {
+                                return false;
+                            }
+                        }
+                    });
+                }
+                return statusFlag;
+            },
+            isShow: function(macs) {
+                var self = this,
+                    flag = false;
+                if (macs.length > 0) {
+                    $.each(self.deviceList, function(i, item) {
+                        if (macs.indexOf(item.mac) > -1) {
+                            if (item.tid >= MIN_LIGHT && item.tid <= MAX_LIGHT) {
+                                flag = true;
+                            }
+                        }
+                    });
+                }
+                return flag;
+
+            },
+
+            isShowGroup: function(macs, flag) {
+                var self = this, countFlag = false;
+                if (macs.length > 0) {
+                    $.each(self.deviceList, function(i, item) {
+                        if (macs.indexOf(item.mac) > -1) {
+                            countFlag = true;
+                            return false;
+                        }
+                    });
+                }
+                if (!flag) {
+                    countFlag = true;
+                }
+                return countFlag;
+            },
+            getDevicesByGroup: function (macs) {
+                var self = this, count = 0;
+                if (macs.length > 0) {
+                    $.each(self.deviceList, function(i, item) {
+                        if (macs.indexOf(item.mac) > -1) {
+                            count++;
+                        }
+                    });
+                }
+                return count;
+
+            },
+            addGroup: function () {
+                var self = this;
+                self.flag = false;
+                MINT.MessageBox.prompt(self.$t('addGroupDesc'), self.$t('addGroupTitle'),
+                    {inputValue: "", inputPlaceholder: self.$t('addGroupInput'),
+                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj) {
+                    self.$refs.add.show();
+                    self.groupName = obj.value;
+                });
+
+            },
+            showUl: function () {
+                this.flag = !this.flag;
+                if (this.flag) {
+                    window.onBackPressed = this.hideUl;
+                } else {
+                    this.onBackGroup();
+                }
+            },
+            hideUl: function () {
+                this.flag = false;
+                this.onBackGroup();
+            },
+            showInfo: function () {
+                this.hideOperate();
+                this.$refs.info.show();
+            },
+            showOta: function () {
+                this.infoShow = false;
+                this.otaMacs = [];
+                this.otaMacs = this.groupObj.device_macs;
+                this.$refs.ota.show();
+            },
+            showCommand: function() {
+                var self = this;
+                self.infoShow = false;
+                self.commandMacs = [];
+                self.commandMacs = this.groupObj.device_macs;
+                setTimeout(function() {
+                    self.$refs.command.show();
+                })
+            },
+            editName: function () {
+                var self = this;
+                self.hideOperate();
+                MINT.MessageBox.prompt(self.$t('editNameInput'), self.$t('editGroupTitle'),
+                    {inputValue: self.groupObj.name, inputPlaceholder: self.$t('addGroupInput'),
+                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj)  {
+                    self.groupObj.name = obj.value;
+                    espmesh.saveGroup(JSON.stringify(self.groupObj));
+                    self.changeStore();
+                    self.groupList.push(self.groupObj);
+                    self.$store.commit("setGroupList", self.groupList);
+                });
+
+            },
+            dissolutionGroup: function (e) {
+                var self = this,
+                    doc = $(e.currentTarget);
+                if (self.groupObj.is_user) {
+                    MINT.Toast({
+                        message: self.$t('prohibitDelDesc'),
+                        position: 'middle',
+                    });
+                } else {
+                    MINT.MessageBox.confirm(self.$t('delGroupDesc'), self.$t('delGroupTitle'),{
+                        confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
+                        self.hideOperate();
+                        espmesh.deleteGroup(self.groupObj.id);
+                        $("#" + self.groupObj.id).remove();
+                        self.changeStore();
+                        var list = self.$store.state.mixList;
+                        $.each(list, function(i, item) {
+                            if (item.type == RECENT_TYPE_GROUP) {
+                                if (item.obj.id == self.groupObj.id) {
+                                    list.splice(i, 1);
+                                    return false;
+                                }
+                            }
+                        })
+                        self.$store.commit("setGroupList", self.groupList);
+                    });
+                }
+            },
+            delDevices: function (e) {
+                var doc = $(e.currentTarget),
+                    self = this;
+                MINT.MessageBox.confirm(self.$t('deleteGroupDeviceDesc'), self.$t('reconfigure'),{
+                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
+                    self.hideOperate();
+                    MINT.Indicator.open();
+                    setTimeout(function() {
+                        var macs = self.groupObj.device_macs;
+                        console.log(JSON.stringify(macs));
+                        var devices = [];
+                        $.each(self.deviceList, function(i, item) {
+                            if (macs.indexOf(item.mac) < 0) {
+                                devices.push(item);
+                            }
+                        })
+                        self.deviceList = devices;
+                        var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
+                                        DEVICE_DELAY + '": ' + DELAY_TIME + '}';
+                        console.log(data);
+                        espmesh.requestDevicesMulticastAsync(data);
+                        espmesh.removeDevicesForMacs(JSON.stringify(macs));
+                        MINT.Indicator.close();
+                        self.$store.commit("setList", self.deviceList);
+                    }, 1000);
+
+                });
+            },
+            isJoinMesh: function(groupObj) {
+                var flag = false;
+                if (groupObj.id == parseInt(groupObj.name, 16)) {
+                    flag = true;
+                }
+                return flag;
+            },
+            joinMesh: function() {
+                this.infoShow = false;
+                this.$refs.mesh.show();
+            },
+            changeStore: function () {
+                var self = this;
+                $.each(self.groupList, function(i, item) {
+                    if (item.id == self.groupObj.id) {
+                        self.groupList.splice(i, 1);
+                        return false;
+                    }
+                });
+
+            },
+            showOperate: function (group) {
+                var self = this, status = 0;
+                self.groupObj = ""
+                $.each(self.groupList, function(i, item) {
+                    if (item.id == group.obj.id) {
+                        self.groupObj = item;
+                        return false;
+                    }
+                });
+                self.flag = false;
+                setTimeout(function() {
+                    self.infoShow = true;
+                    window.onBackPressed = self.hideOperate;
+                }, 200)
+            },
+            hideOperate: function () {
+                this.onBackGroup();
+                this.infoShow = false;
+            },
+            showColor: function (item) {
+                var self = this;
+                self.flag = false;
+                self.groupObj = "";
+                self.groupObj = item;
+                setTimeout(function () {
+                    self.$refs.groupcolor.show();
+                }, 300);
+            },
+            close: function (macs, status, id) {
+                var self = this, meshs = [];
+                self.currentStatus = (status == STATUS_ON ? true : false);
+                meshs.push({cid: STATUS_CID, value: parseInt(status)});
+                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
+                           '"characteristics":' + JSON.stringify(meshs) + '}';
+                espmesh.addQueueTask("requestDevicesMulticastAsync",data);
+                self.changeDevice(macs, status);
+            },
+            operateClose: function(macs, status, id) {
+                var self = this;
+                self.close(macs, status, id);
+                setTimeout(function() {
+                    window.onBackPressed = self.hideOperate;
+                })
+            },
+            changeDevice: function (macs, status) {
+                var self = this;
+                $.each(self.deviceList, function(i, item){
+                    if (macs.indexOf(item.mac) > -1) {
+                        var characteristics = [];
+                        $.each(item.characteristics, function(i, item) {
+                            if (item.cid == STATUS_CID) {
+                                item.value = parseInt(status);
+                            }
+                            characteristics.push(item);
+                        });
+                        item.characteristics = characteristics;
+                        self.deviceList.splice(i, 1, item);
+                    }
+                });
+                self.$store.commit("setList", self.deviceList);
+
+            },
+            onBackGroup: function() {
+                var startTime = 0;
+                var self = this;
+                self.$store.commit("setShowScanBle", false);
+                window.onBackPressed = function () {
+                    MINT.Toast({
+                        message: self.$t('exitProgramDesc'),
+                        position: 'bottom',
+                        duration: 2000
+                    });
+                    if (startTime == 0) {
+                        startTime = new Date().getTime();
+                    } else {
+                        if (new Date().getTime() - startTime < 2000) {
+                            espmesh.finish();
+                        } else {
+                            startTime = new Date().getTime();
+                        }
+                    }
+                }
+            }
+        },
+        components: {
+            "v-footer": footer,
+            "v-resetDevice": resetDevice,
+            "v-addGroup": addGroup,
+            "v-groupInfo": groupInfo,
+            "v-otaInfo": otaInfo,
+            "v-groupColor": groupColor,
+            "v-joinMesh": joinMesh,
+            "v-command": command
+        }
+    });
+    return Group;
+});

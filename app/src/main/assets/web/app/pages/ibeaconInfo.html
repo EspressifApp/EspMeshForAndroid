@@ -1,0 +1,38 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>Ibeacon</h4>
+            <span @click="setIbeacon" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
+            <div class="ibeacon-content">
+                <!--<div class="info-desc">基本</div>-->
+                <div class="info-content">
+                    <div class="info-item">
+                        <span class="info-disc-span">UUID</span>
+                        <input v-model="ibeaconInfo.uuid" class="form-control">
+                    </div>
+                    <div class="info-item">
+                        <span class="info-disc-span">Major</span>
+                        <input v-model="ibeaconInfo.major" class="form-control">
+                    </div>
+                    <div class="info-item">
+                        <span class="info-disc-span">Minor</span>
+                        <input v-model="ibeaconInfo.minor" class="form-control">
+                    </div>
+                    <div class="info-item">
+                        <span class="info-disc-span">发送功率</span>
+                        <input v-model="ibeaconInfo.power" class="form-control">
+                    </div>
+                    <div class="info-item">
+                        <span class="info-disc-span">发送间隔</span>
+                        <input v-model="ibeaconInfo.frequency" class="form-control">
+                    </div>
+                    <div class="info-item">
+                        <span class="info-disc-span">设备名称</span>
+                        <input v-model="ibeaconInfo.name" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

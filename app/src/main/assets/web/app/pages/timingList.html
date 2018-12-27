@@ -1,0 +1,34 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    定时
+                </h4>
+                <i @click.stop="timingDeviceFun" class="icon-plus right-top"></i>
+            </div>
+            <div class="content-info attr">
+                <div @click.self="itemInfo(item)" v-for="item in timingList" class="item">
+                    <div @click.stop="itemInfo(item)" class="item-icon-circle">
+                        <i class="icon-time"></i>
+                        <span>{{item.macs.length}}</span>
+                    </div>
+                    <div @click.stop="itemInfo(item)" class="item-name">
+                        <span>{{item.name}}</span>
+                    </div>
+                    <div class="item-power">
+                        <span @click="editInfo(item)" class="power-icon"><i class="icon-edit"></i></span>
+                        <span @click="removeTiming(item)" class="power-icon"><i class="icon-less"></i></span>
+                    </div>
+                </div>
+                <div v-if="timingList.length == 0" class="add-wrapper">
+                    <div @click="timingDeviceFun()">
+                        <i class="icon-plus"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <v-timingDevice v-on:timingDeviceShow="hideThis" v-if="flag" :timingInfo="timingInfo" ref="timingDevice"></v-timingDevice>
+</div>

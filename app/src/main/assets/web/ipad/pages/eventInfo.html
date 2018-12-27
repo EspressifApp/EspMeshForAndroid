@@ -1,0 +1,32 @@
+<transition name="moves">
+    <div v-show="flag" class="operate-way">
+        <div @click="hide" class="mask"></div>
+        <div id="event-wrapper" class="event-info modal-wrapper active">
+            <div class="col-xs-12 no-padding">
+                <p class="event-title">Event information<span  @click="hide" class="icon-cross cancel-times"></span></p>
+            </div>
+            <div class="col-xs-12 no-padding" id="event-all">
+                <div v-for="item in eventList" class='col-sm-4 col-xs-6 margin-bottom-30'>
+                    <div class='col-xs-12 event-item' @click="showItemEvent(item.name)">
+                        <div class="item-title"><i :class="getIcon()"></i></div>
+                        <div class="desc">
+                            If device state at <strong>{{getDesc(item)}}</strong>,
+                            then the lamp rises to set the color
+                        </div>
+                    </div>
+                    <div class='col-xs-12 event-status'>
+                        <span>{{getName(item.name)}}</span>
+                        <span @click="deleteEvent(item.name)" class='icon-cancel-circled delete-event'></span>
+                    </div>
+                </div>
+                <!--<div @click="showItemEvent('')" class='col-sm-4 col-xs-6'>-->
+                    <!--<div class='col-xs-12 event-plus'>-->
+                        <!--<p><span class='icon-plus'></span></p>-->
+                    <!--</div>-->
+                <!--</div>-->
+            </div>
+        </div>
+        <v-addEvent v-on:addEventShow="hideParent" v-on:changEventList="setEventList"
+                    :name="eventName" ref="addEvent"></v-addEvent>
+    </div>
+</transition>

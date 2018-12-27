@@ -1,0 +1,33 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    <span v-show="name != ''" @click="hideParent" class="left-two"><i class="icon-cross"></i></span>
+                    {{name != "" ? name : "新增定时"}}
+                </h4>
+                <span v-show="name != ''" @click="saveDate" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
+            </div>
+            <div class="content-info attr calendar-wrapper">
+                <v-calendar ref="calendar" :multi="calendar.multi" :lunar="calendar.lunar"
+                            :value="calendar.value" @select="calendar.select"></v-calendar>
+                <div class="calendar-btn">
+                    <button @click="selectWorkDay" class="btn" :class="{'active': workDay}">
+                        <i :class="workDay ? 'icon-check' : 'icon-uncheck'"></i>工作日
+                    </button>
+                    <button @click="selectWeekEnd" class="btn" :class="{'active': weekEnd}">
+                        <i :class="weekEnd ? 'icon-check' : 'icon-uncheck'"></i>周末
+                    </button>
+                    <button @click="selectHoliday" class="btn" :class="{'active': holiday}">
+                        <i :class="holiday ? 'icon-check' : 'icon-uncheck'"></i>节假日
+                    </button>
+                </div>
+                <div class="position-relative btn-register-wrapper">
+                    <button type="submit" class="btn register-btn" @click="timingAddFun">{{$t('next')}}</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <v-timingAdd v-on:timingAddShow="hideThis" :timingInfo="timingInfo" :dateList="dateList" :timingMacs="timingMacs" ref="timingAdd"></v-timingAdd>
+</div>

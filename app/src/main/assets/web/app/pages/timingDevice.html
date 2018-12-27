@@ -1,0 +1,41 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+
+                    {{name != "" ? name : "新增定时"}}
+                </h4>
+                <span v-show="name != ''" @click="saveDevice" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
+            </div>
+            <div class="selected-radio">
+                <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
+                <div><span @click="selectAllDevice($event)" class="span-radio"
+                           :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
+            </div>
+            <div class="content-info join-device no-padding-bottom flex-wrapper" :id="timingSelectId">
+                <div v-for="item in list" class="item">
+                    <div class="item-icon-circle">
+                        <i :class="getIcon(item.tid)"></i>
+                    </div>
+                    <div class="item-name padding-left-10">
+                        <span>{{getPosition(item.position)}}</span>
+                        <span :class="{'desc': showDesc(item.position)}">{{item.name}}
+                                <span v-show="showDesc(item.position)">({{item.version}})</span></span>
+                        <span class="desc" v-show="!showDesc(item.position)">{{item.version}}</span>
+                    </div>
+                    <div class="item-power-small">
+                        <span :data-value="item.mac" @click="selectDevice($event)"
+                              class="span-radio"><span></span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="position-absolute btn-register-wrapper">
+                <button :class="{'bg-gray': selected <= 0}" type="submit" class="btn register-btn" @click="timingFun">{{$t('next')}}</button>
+            </div>
+        </div>
+    </transition>
+    <v-timing v-on:timingShow="hideThis" :timingInfo="timingInfo" :timingMacs="timingMacs" v-if="timingMacs" ref="timing"></v-timing>
+</div>

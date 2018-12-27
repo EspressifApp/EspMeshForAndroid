@@ -1,0 +1,126 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="showFlag" class="add-group add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{group.name}}</h4>
+                <i @click="showOperate" class="icon-more right-top"></i>
+            </div>
+            <div class="content-info flex-wrapper" :id="lightId">
+                <div id="light-group-wrapper" class="light-wrapper">
+                    <div class="selected-radio">
+                        <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
+                        <div><span id="color-selected-id" @click="selectAllDevice($event)" class="span-radio"
+                                   :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
+                    </div>
+                    <div v-for="item in colorList" class="item">
+                        <div class="item-icon-circle">
+                            <i :class="getIcon(item.tid)" :style="{'color': getGroupColor(item.characteristics, item.tid)}"></i>
+                        </div>
+                        <div class="item-name">
+                            <span :data-value="item.mac">{{getPosition(item.position)}}</span>
+                            <span :data-value="item.mac" :class="{'desc': showDesc(item.position)}">{{item.name}}
+                                <span v-show="showDesc(item.position)">({{item.version}})</span></span>
+                            <span :data-value="item.mac" class="desc" v-show="!showDesc(item.position)">{{item.version}}</span>
+                        </div>
+                        <div class="item-power-small">
+                            <span :data-value="item.mac" @click="selectDevice(item.mac, $event)"
+                                  class="span-radio" :class="{'active': isSelected(item.mac)}"><span></span></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="color-group-wrapper" class="color-wrapper">
+                    <v-color :colorId="colorId" :temperatureId="temperatureId"
+                             :macs="groupMacs" v-on:colorShow="hide" :colorType="operateType" ref="color"></v-color>
+                </div>
+                <div id="scene-group-wrapper" class="scene-wrapper hidden">
+                    <ul class="scene-info">
+                        <li v-for="item in sceneList" @click="setScene(item.h, item.s, item.b)">
+                            <i :class="item.icon" :style="{background: getColor(item.h, item.s, item.b)}"></i>
+                            <span>{{item.name}}</span>
+                        </li>
+                    </ul>
+                </div>
+                <div id="attr-group-wrapper" class="attr-wrapper">
+                    <div v-for="(item, index) in attrList" class="card-wrapper">
+                        <div class="card-name"><span>{{item.name}}</span><span class="icon-blue">{{item.value}}</span></div>
+                        <div class="card-content">
+                            <div :id="item.cid" :data-cid="item.cid"
+                                 v-show="initAttrSlider(item.cid, item.value, item.perms, item.min,
+                                item.max, item.step)" class="div-slider"></div>
+                            <div class="card-num">
+                                <span class="start">{{item.min}}</span>
+                                <span class="end">{{item.max}}</span>
+                            </div>
+                        </div>
+                        <div v-show="isShowInput(item.perms)" class="card-bottom">
+                            <input @change="changValue($event, item.cid)" :data-cid="item.cid" class="form-control input-value" :value="item.value">
+                            <span class="card-icon">
+                            <i @click="resetValue(item.value, item.cid, $event)" class="icon-reset"></i>
+                            <i @click="sendValue($event)" class="icon-send"></i>
+                        </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="footer-info">
+                <ul>
+                    <li id="light-wrapper-li" @click="operate('light-group-wrapper', $event)" class="active">
+                        <i class="icon-light"></i>
+                        <span>{{$t('nav.device')}}</span>
+                    </li>
+                    <li v-show="!showSet" @click="operate('color-group-wrapper', $event)" class="active">
+                        <i class="icon-contrast"></i>
+                        <span>{{$t('color')}}</span>
+                    </li>
+                    <li v-show="!showSet" @click="operate('scene-group-wrapper', $event)">
+                        <i class="icon-disc"></i>
+                        <span>{{$t('scene')}}</span>
+                    </li>
+                    <li v-show="showSet" @click="operate('attr-group-wrapper', $event)">
+                        <i class="icon-gear"></i>
+                        <span>{{$t('set')}}</span>
+                    </li>
+                    <!--<li @click="operate('set-wrapper', $event)">-->
+                    <!--<i class="icon-time"></i>-->
+                    <!--<span>定时</span>-->
+                    <!--</li>-->
+                </ul>
+            </footer>
+        </div>
+    </transition>
+    <transition name="ups">
+        <div v-show="infoShow" class="operate-wrapper">
+            <div @click="hideOperate" class="mask"></div>
+            <div class="operate-info">
+                <ul>
+                    <li class="name">
+                        <span class="title"><i class="icon-groups"></i>{{group.name}}</span>
+                        <div v-show="isShow(group.device_macs)" class="desc">
+                            <div class="switch-wrapper">
+                                <span  :class="{'active': !getStatusByGroup(group.device_macs)}"
+                                       @click="close(0)">OFF</span>
+                                <span  :class="{'active': getStatusByGroup(group.device_macs)}"
+                                       @click="close(1)">ON</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li @click="editName"><span>{{$t('editName')}}</span></li>
+                    <li @click="dissolutionGroup"><span class="icon-orange">{{$t('delGroupTitle')}}</span></li>
+                    <li @click="delDevices"><span class="icon-orange">{{$t('reconfigure')}}</span></li>
+                    <li @click="groupInfo"><span>{{$t('editGroup')}}</span></li>
+                    <li @click="showOta"><span>{{$t('otaUpdate')}}</span></li>
+                    <li @click="showCommand"><span>{{$t('command')}}</span></li>
+                    <li @click="hideOperate" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
+                </ul>
+            </div>
+        </div>
+    </transition>
+    <v-groupInfo v-on:groupInfoShow="onBackGroupColor" :editDeviceId="editColorId" :group="group" v-if="group" ref="info"></v-groupInfo>
+    <v-otaInfo v-on:otaShow="onBackGroupColor" :otaId="otaGroupColorId" :macs="otaMacs" v-if="group" ref="ota"></v-otaInfo>
+    <v-joinMesh v-on:meshShow="onBackGroupColor" :joinMeshSlider="joinSliderColor" :joinMeshId="joinMeshColor"
+                :group="group" v-if="group" ref="mesh"></v-joinMesh>
+    <v-command v-on:commandShow="onBackGroupColor" :commandMacs="commandColorMacs" ref="command"></v-command>
+</div>

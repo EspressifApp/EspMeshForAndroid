@@ -1,0 +1,15 @@
+<transition name="moves">
+    <div v-show="tableFlag" class="operate-way">
+        <div @click="hide" class="mask"></div>
+        <div id="table-color" class="event-info modal-wrapper active">
+            <div class="col-xs-12 margin-bottom-10 no-padding">
+                <p class="event-title">Set color <span @click="hide" class="fa fa-times cancel-times"></span></p>
+            </div>
+            <div class="col-xs-12 margin-bottom-10 text-center">
+                <v-colorPicker :colorId="tableAllcolorId" :temperatureId="tableAlltemperatureId" :colorType="operateType"
+                               :macs="tableMacs" ref="tableColor"></v-colorPicker>
+            </div>
+
+        </div>
+    </div>
+</transition>

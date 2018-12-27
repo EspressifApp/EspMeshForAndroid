@@ -1,0 +1,39 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="importFlag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{$t('importDevice')}}
+                </h4>
+                <span @click="save" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
+            </div>
+            <div class="selected-radio">
+                <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
+                <div><span @click="selectAllDevice($event)" class="span-radio"
+                           :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
+            </div>
+            <div class="input-info">
+                <i class="icon-search"></i>
+                <input v-model="searchName" type="search" class="form-control" :placeholder="$t('searchMAC')">
+            </div>
+            <div class="content-info flex-wrapper" :id="importId">
+                <div v-for="item in importList" class="item">
+                    <div :data-mac="item.mac" class="item-icon-circle">
+                        <i :data-mac="item.mac" class="icon-light icon-blue"></i>
+                    </div>
+                    <div :data-mac="item.mac" class="item-name">
+                        <span :data-mac="item.mac">{{item.floor}}-{{item.area}}-{{item.code}}</span>
+                        <span :data-mac="item.mac" class="desc">MAC: {{item.mac}}</span>
+                    </div>
+                    <div class="item-power-small">
+                        <span :data-position="item.floor + '-' + item.area + '-' + item.code"
+                              :data-value="item.mac" @click="selectDevice($event)"
+                              class="span-radio active"><span></span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

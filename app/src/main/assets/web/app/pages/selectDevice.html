@@ -1,0 +1,32 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{$t('selectDevice')}}
+                </h4>
+            </div>
+            <div class="input-info">
+                <i class="icon-search"></i>
+                <input @focus="focus($event)" @blur="blur($event)" v-model="searchName" type="search" class="form-control" :placeholder="$t('search')">
+            </div>
+            <div class="content-info">
+                <div v-for="item in list" @click="showAuto(item)"class="item">
+                    <div class="item-icon-circle">
+                        <i :class="getIcon(item.tid)"
+                           :style="{'color': getColor(item.characteristics, item.tid)}"></i>
+                    </div>
+                    <div class="item-name">
+                        <span >{{item.name}}</span>
+                    </div>
+                    <div class="item-power-small">
+                        <i class="icon-right font-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <v-automation v-on:autoShow="onBackSelectDevice" :deviceInfo="deviceInfo" :autoId="autoId"
+                  v-if="deviceInfo" ref="auto"></v-automation>
+</div>

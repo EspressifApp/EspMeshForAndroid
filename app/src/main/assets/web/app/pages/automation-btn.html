@@ -1,0 +1,85 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="showFlag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide">
+                        <i class="icon-left back"></i>
+                    </span>
+                    {{deviceInfo.name}}
+                </h4>
+                <span @click="save" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
+            </div>
+            <div class="content-info attr">
+                <div class="button-wrapper">
+                    <div class="btn-top btn-long" :class="{'active': eventUp.length != 0}"
+                         :data-left="btnValues.longupleft" :data-right="btnValues.longupright">
+                        <div @click="selectBtn(btnValues.upleft)" class="btn-content">
+                            <span class="num" v-show="deviceA.length > 0">{{deviceA.length}}</span>
+                            <div :data-value="btnValues.upleft" :class="{'active': eventA.length != 0}"
+                                 class="btn-round">A</div>
+                        </div>
+                        <div @click="selectBtn(btnValues.upright)" class="btn-content">
+                            <span class="num" v-show="deviceB.length > 0">{{deviceB.length}}</span>
+                            <div :data-value="btnValues.upright" :class="{'active': eventB.length != 0}"
+                                 class="btn-round">B</div>
+                        </div>
+                    </div>
+                    <div class="btn-bottom btn-long" :class="{'active': eventDown.length != 0}"
+                         :data-left="btnValues.longdownleft" :data-right="btnValues.longdownright">
+                        <div @click="selectBtn(btnValues.downleft)" class="btn-content">
+                            <span class="num" v-show="deviceC.length > 0">{{deviceC.length}}</span>
+                            <div :data-value="btnValues.downleft" :class="{'active': eventC.length != 0}"
+                                 class="btn-round">C</div>
+                        </div>
+                        <div @click="selectBtn(btnValues.downright)" class="btn-content">
+                            <span class="num" v-show="deviceD.length > 0">{{deviceD.length}}</span>
+                            <div :data-value="btnValues.downright" :class="{'active': eventD.length != 0}"
+                                 class="btn-round">D</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-wrapper">
+                    <h4 v-show="!isMuch">{{$t('btnTab')}}</h4>
+                    <h4 v-show="isMuch">{{$t('btnHold')}}</h4>
+                    <div class="dog">
+                        <div class="dog-info shortPress" v-show="hideSwitch(item.id)" :data-value="item.id" v-for="item in shortPress">
+                            <div @click="delExist(subItem, item.id)" class="dog-btn" v-for="subItem in pressList[item.id]">{{subItem}}</div>
+                            <span>{{item.name}}</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-show="!isMuch" class="control-wrapper">
+                    <h4>{{$t('btnHold')}}</h4>
+                    <div class="dog">
+                        <div class="dog-info longPress" :data-value="item.id" v-for="item in longPress">
+                            <div @click="delExist(subItem, item.id)" class="dog-btn" v-for="subItem in pressList[item.id]">{{subItem}}</div>
+                            <span>{{item.name}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <transition name="ups">
+        <div v-show="showSelect" class="ota-upgrade">
+            <div class="mask"></div>
+            <div class="upgrade-info btn-select">
+                <h3>{{$t('selectDevice')}}({{selected}}/{{count.length}})</h3>
+                <div class="command-select" id="btn-select-device">
+                    <div class="event-item" v-for="item in count">
+                        <div class="event-item-name">{{item.name}}</div>
+                        <div class="event-item-power">
+                            <span :data-value="item.mac" @click="selectDevice($event)"
+                                  class="span-radio"><span></span></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-flex">
+                    <button @click="hideThis" class="btn register-btn retry">{{$t('cancelBtn')}}</button>
+                    <button @click="saveDevice" class="btn register-btn">{{$t('confirmBtn')}}</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

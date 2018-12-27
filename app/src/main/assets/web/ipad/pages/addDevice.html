@@ -1,0 +1,50 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way bgcolor add-device-wrapper">
+            <h4 class="app-title no-bg"><span @click="hide"><i class="icon-left back"></i></span>{{$t('confirmWIFI')}}</h4>
+            <div class="register-wraaper add-device">
+                <div class="content">
+                    <div class="position-relative">
+                        <span class="add-wifi-desc">{{$t('currentWIFI')}}:</span>
+                        <input disabled :value="currentWifi" type="text" class="form-control add-wifi" >
+                    </div>
+                    <div class="position-relative">
+                        <span class="add-wifi-desc">Mesh ID:</span>
+                        <input readonly type="text"
+                               class="form-control add-wifi"  >
+                        <div class="form-input">
+                            <input maxlength="2" data-value="1" v-model="meshIdOne" class="input-control">
+                            <input maxlength="2" data-value="2" v-model="meshIdTwo" class="input-control">
+                            <input maxlength="2" data-value="3" v-model="meshIdThr" class="input-control">
+                            <input maxlength="2" data-value="4" v-model="meshIdFour" class="input-control">
+                            <input maxlength="2" data-value="5" v-model="meshIdFive" class="input-control">
+                            <input maxlength="2" data-value="6" v-model="meshIdSex" class="input-control">
+                        </div>
+                        <div @click="selectMesh" class="cell-down">
+                            <i class="icon-right"></i>
+                        </div>
+                    </div>
+                    <div class="position-relative">
+                        <i @click="showPassword" class="i-eye" :class="icon"></i>
+                        <input :placeholder="$t('inputPwd')" v-model="password" :type="type" class="form-control" >
+                    </div>
+                </div>
+                <div class="position-relative btn-register-wrapper">
+                    <button type="submit" class="btn register-btn" @click="nextStep">{{$t('next')}}</button>
+                </div>
+            </div>
+            <transition name="ups">
+                <div v-show="showMesh" class="operate-wrapper">
+                    <div @click="hideMesh" class="mask"></div>
+                    <div class="operate-info info-content">
+                        <mt-picker :slots="slots1" @change="onMeshChange"></mt-picker>
+                    </div>
+                </div>
+            </transition>
+        </div>
+    </transition>
+    <v-conDevice ref="con" v-on:conShow="onBackAddDevice" :meshId="meshId" :password="password" :wifiName="wifiName"></v-conDevice>
+</div>
+
+

@@ -1,0 +1,76 @@
+
+<div class="init-width">
+    <div @click="hideUl" class="content-wrapper">
+        <div class="title-info">
+            <h4 class="app-title">{{$t('nav.group')}}</h4>
+            <i @click.stop="showUl($event)" class="icon-plus right-top"></i>
+            <ul v-show="flag" class="add-ul">
+                <li @click.stop="addDevice($event)"><i class="icon-light"></i><span>{{$t('addDevice')}}</span></li>
+                <li @click.stop="addGroup($event)"><i class="icon-groups"></i><span>{{$t('addGroup')}}</span></li>
+            </ul>
+        </div>
+        <div class="input-info">
+            <i class="icon-search"></i>
+            <input v-model="searchName" type="search" class="form-control" :placeholder="$t('searchGroup')">
+        </div>
+        <div class="content-info" id="content-info">
+            <div v-show="isShowGroup(item.device_macs, item.is_user)" :key="item.id" v-for="item in list" @click.self="showColor(item)"
+                 v-longtap="{fn: showOperate, obj: item}" class="item">
+                <div @click.stop="showColor(item)" class="item-icon-circle">
+                    <i class="icon-groups"></i>
+                    <span>{{getDevicesByGroup(item.device_macs)}}</span>
+                </div>
+                <div @click.stop="showColor(item)" class="item-name">
+                    <span>{{item.name}}</span>
+                </div>
+                <div v-show="isShow(item.device_macs)" class="item-power">
+                    <div class="switch-wrapper">
+                        <span :class="{'active': !getStatusByGroup(item.device_macs)}"
+                              @click="close(item.device_macs, 0, item.id)">OFF</span>
+                        <span :class="{'active': getStatusByGroup(item.device_macs)}"
+                              @click="close(item.device_macs, 1, item.id)">ON</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <v-footer :current="group"></v-footer>
+    </div>
+    <transition name="ups">
+        <div v-show="infoShow" class="operate-wrapper">
+            <div @click="hideOperate" class="mask"></div>
+            <div class="operate-info">
+                <ul v-if="groupObj">
+                    <li class="name">
+                        <span class="title"><i class="icon-groups"></i>{{groupObj.name}}</span>
+                        <div class="desc">
+                            <div v-show="isShow(groupObj.device_macs)" class="switch-wrapper">
+                                <span :class="{'active': !getStatusByGroup(groupObj.device_macs)}"
+                                      @click="operateClose(groupObj.device_macs, 0, groupObj.id)">OFF</span>
+                                <span :class="{'active': getStatusByGroup(groupObj.device_macs)}"
+                                      @click="operateClose(groupObj.device_macs, 1, groupObj.id)">ON</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li @click="editName"><span>{{$t('editName')}}</span></li>
+                    <li @click="dissolutionGroup"><span class="icon-orange">{{$t('delGroupTitle')}}</span></li>
+                    <li @click="delDevices"><span class="icon-orange">{{$t('reconfigure')}}</span></li>
+                    <li @click="showInfo"><span>{{$t('editGroup')}}</span></li>
+                    <li @click="joinMesh"><span>{{$t('joinBtn')}}</span></li>
+                    <li @click="showOta"><span>{{$t('otaUpdate')}}</span></li>
+                    <li @click="showCommand"><span>{{$t('command')}}</span></li>
+                    <li @click="hideOperate" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
+                </ul>
+            </div>
+        </div>
+    </transition>
+    <v-resetDevice v-on:resetShow="onBackGroup" ref="device"></v-resetDevice>
+    <v-addGroup v-on:addGroupShow="onBackGroup" :deviceList="deviceList" :name="groupName" :addGroupId="addGroupId" ref="add"></v-addGroup>
+    <v-groupInfo v-on:groupInfoShow="onBackGroup" :editDeviceId="editGroupId" :group="groupObj" v-if="groupObj" ref="info"></v-groupInfo>
+    <v-groupColor v-on:groupColorShow="onBackGroup" :lightId="lightId" :colorId="colorId" :temperatureId="temperatureId"
+                  :group="groupObj" v-if="groupObj" ref="groupcolor"></v-groupColor>
+    <v-otaInfo v-on:otaShow="onBackGroup" :otaId="otaGroupId" :macs="otaMacs" v-if="groupObj" ref="ota"></v-otaInfo>
+    <v-joinMesh v-on:meshShow="onBackGroup" :joinMeshSlider="joinSliderGroup" :selectMeshAllId="selectMeshAllId"
+                :joinMeshId="joinMeshGroup" :group="groupObj" v-if="groupObj" ref="mesh"></v-joinMesh>
+    <v-command v-on:commandShow="onBackGroup" :commandMacs="commandMacs" ref="command"></v-command>
+</div>

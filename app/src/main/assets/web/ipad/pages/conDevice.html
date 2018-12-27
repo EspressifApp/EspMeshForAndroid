@@ -1,0 +1,45 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way" :class="{'failure-bg': !success}">
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{title}}</h4>
+            <div v-show="success" class="register-wraaper reset-bg">
+                <div class="content">
+                    <div class="schedule">
+                        <p><span>{{value}}</span><small>%</small></p>
+                        <p>{{desc}}</p>
+                    </div>
+                </div>
+
+            </div>
+            <div v-show="success">
+                <h3 class="text-center"></h3>
+                <ul class="network-desc" id="con-status-desc">
+                    <li v-for="item in textList">{{item}}</li>
+                </ul>
+            </div>
+            <div v-show="!success" class="register-wraaper reset-bg">
+                <div class="content">
+                    <div class="schedule failure">
+                        <p><i class="icon-android-alert"></i></p>
+                        <p class="failure-desc">{{desc}}</p>
+                    </div>
+                </div>
+            </div>
+            <div v-show="!success">
+                <h3 class="text-center">{{$t('confailTitleDesc')}}</h3>
+                <ul class="network-desc">
+                    <li>{{$t('problemDesc1')}}</li>
+                    <li>{{$t('problemDesc2')}}</li>
+                    <li>{{$t('problemDesc3')}}</li>
+                    <li>{{$t('problemDesc4')}}</li>
+                </ul>
+                <div class="btn-register-wrapper failure-btn">
+                    <button type="submit" class="btn register-btn" @click="conWifi">{{$t('retryBtn')}}</button>
+                </div>
+            </div>
+
+
+        </div>
+    </transition>
+</div>

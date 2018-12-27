@@ -1,0 +1,68 @@
+V1.0
+
+1)
+APP与Device建立长连接
+
+确定发送每个包的长度
+app_pkg_len = 1440
+
+2)
+使用标准的Device通信协议
+APP依次发送OTA信息并请求缺包情况:
+{"request":"ota_status", "ota_bin_verson": "v0.7.1" ,"ota_bin_len":135678, "package_length":app_pkg_len}
+
+# "ota_bin_verson" 表示升级bin文件的版本号
+# "ota_bin_len" 表示升级bin文件的大小
+# "package_length" 表示APP每次发的包的长度, 若不满指定长度则使用空数据补满[empty]
+
+Device如果已经收完数据则回复：
+{"status_code":0}
+Device若缺包回复：
+{"status_code":1,"package_length":pkg_len, "package_sequence":[0, -1]}
+
+# "package_length" 表示package_sequence对应的每个包的长度
+# "package_sequence" 表示需要发送的包的序号， -1表示从上一个序号一直发到bin文件结束
+
+APP整理缺包的设备和序号
+若没有缺包情况 进入5)
+
+若有缺包情况
+app_pkg_len = pkg_len
+进入3)
+
+
+3)
+APP发起OTA请求(使用正常的HTTP请求，不是用上面长连接发送)
+POST /mesh_ota HTTP1.1
+Content-Length: 0
+Mesh-Ota-Adress: ffffaabbccdd
+Mesh-Ota-Length: app_pkg_len
+Mesh-Node-Num: 100
+Mesh-Node-Mac: aabbccddeeff,112233445566,18fe34a1090c
+
+# Mesh-Ota-Adress 表示端口号字符串 + 16进制ip地址，前4位是端口号，后面是ip地址
+
+
+4)
+APP根据app_pkg_len发送BIN数据
+[2 bytes sequence][2 bytes bin length][bin data][empty]
+
+APP发送结束包
+[0xff 0xff][empty]
+
+Device收到结束包后回复
+0xc8 [2 bytes delay]
+
+APP等待收到的delay的时间
+进入2)
+
+
+5)
+使用标准的Device通信协议
+APP发送重启命令
+{"request":"ota_reboot"}
+
+Device回复
+{"status_code":0}
+
+结束 

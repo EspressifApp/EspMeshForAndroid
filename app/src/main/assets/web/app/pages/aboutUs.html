@@ -1,0 +1,48 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{$t('aboutUs')}}</h4>
+            <div class="about-device">
+                <div class="about-img">
+                    <div class="icon-content">
+                    </div>
+                    <div class="icon-name">
+                        Mesh
+                    </div>
+                </div>
+                <div class="content-info user">
+                    <div class="item">
+                        <div class="item-name item-bettwen up-date">
+                            <span>{{$t('softwareVersion')}}</span>
+                            <span>{{versionName}}</span>
+                        </div>
+                        <div class="item-power-small">
+
+                        </div>
+                    </div>
+                    <!--<div class="item">-->
+                        <!--<div class="item-name item-bettwen up-date">-->
+                            <!--<span>Customer service</span>-->
+                            <!--<span>Customer service</span>-->
+                        <!--</div>-->
+                        <!--<div class="item-power-small">-->
+                            <!--<i class="icon-right font-lg"></i>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <div @click="accessUs" class="item">
+                        <div class="item-name item-bettwen up-date">
+                            <span>{{$t('officialWebsite')}}</span>
+                            <span>https://www.espressif.com</span>
+                        </div>
+                        <div class="item-power-small">
+                            <i class="icon-right font-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>
+
+

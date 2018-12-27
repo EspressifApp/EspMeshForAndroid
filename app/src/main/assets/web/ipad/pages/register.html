@@ -1,0 +1,27 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="regShow" class="add-info operate-way">
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>注册</h4>
+            <div class="register-wraaper">
+                <div class="content">
+                    <div class="position-relative">
+                        <input placeholder="邮箱" v-model="email" type="email" class="form-control" >
+                    </div>
+                    <div class="position-relative">
+                        <input placeholder="用户名称" v-model="username" type="text" class="form-control" >
+                    </div>
+                    <div class="position-relative">
+                        <input placeholder="输入密码" v-model="password" type="password" class="form-control" >
+                    </div>
+                    <div class="position-relative">
+                        <input placeholder="确认密码" v-model="repassword" type="password" class="form-control" >
+                    </div>
+                </div>
+                <div class="position-relative btn-register-wrapper">
+                    <button type="submit" class="btn register-btn" @click="register">注册</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>
+

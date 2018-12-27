@@ -1,0 +1,115 @@
+
+<div class="init-width">
+    <div @click="hideUl" class="content-wrapper">
+        <div class="title-info">
+            <h4 class="app-title">{{$t('nav.recent')}}</h4>
+            <i @click.stop="showUl($event)" class="icon-plus right-top"></i>
+            <ul v-show="flag" class="add-ul">
+                <li @click.stop="addDevice($event)"><i class="icon-light"></i><span>{{$t('addDevice')}}</span></li>
+                <li @click.stop="addGroup($event)"><i class="icon-groups"></i><span>{{$t('addGroup')}}</span></li>
+            </ul>
+        </div>
+        <div class="content-info no-search">
+            <div v-for="item in list">
+                <div v-if="typeBoolean(item.type)" :id="item.obj.mac" v-touch:long="showDeviceOperate"
+                     @click.self="operateItem(item.obj)" :data-value="item.obj.mac" class="item">
+                    <div @click.stop="operateItem(item.obj)" :data-value="item.obj.mac" class="item-icon-circle">
+                        <i :data-value="item.obj.mac" :class="getIcon(item.obj.tid)"
+                           :style="{'color': getColor(item.obj.characteristics,item.obj.tid)}"></i>
+                    </div>
+                    <div @click.stop="operateItem(item.obj)" :data-value="item.obj.mac" class="item-name">
+                        <span :data-value="item.obj.mac">{{item.obj.name}}</span>
+                    </div>
+                    <div class="item-power">
+                        <div v-show="isLigth(item.obj.tid)" class="switch-wrapper">
+                            <span :class="{'active': !getStatus(item.obj.characteristics)}" @click="closeDevice(item.obj.mac, 0)">OFF</span>
+                            <span :class="{'active': getStatus(item.obj.characteristics)}" @click="closeDevice(item.obj.mac, 1)">ON</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-else v-show="getDevicesByGroup(item.obj) > 0" @click.self="showColor(item.obj)" :data-value="item.obj.id"
+                     v-touch:long="showGroupOperate" class="item">
+                    <div @click.stop="showColor(item.obj)"  :data-value="item.obj.id" class="item-icon-circle">
+                        <i  :data-value="item.obj.id" class="icon-groups"></i>
+                        <span :data-value="item.obj.id">{{getDevicesByGroup(item.obj)}}</span>
+                    </div>
+                    <div :data-value="item.obj.id" @click.stop="showColor(item.obj)" class="item-name">
+                        <span :data-value="item.obj.id">{{item.obj.name}}</span>
+                    </div>
+                    <div v-show="isShow(item.obj.id)" class="item-power">
+                        <div class="switch-wrapper">
+                            <span :class="{'active': !getStatusByGroup(item.obj.device_macs)}" @click="close(item.obj.device_macs, 0, item.obj.id)">OFF</span>
+                            <span :class="{'active': getStatusByGroup(item.obj.device_macs)}" @click="close(item.obj.device_macs, 1, item.obj.id)">ON</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <v-footer :current="recent"></v-footer>
+    </div>
+    <transition name="ups">
+        <div v-show="showDevice" class="operate-wrapper">
+            <div @click="hideDeviceOperate" class="mask"></div>
+            <div class="operate-info">
+                <ul v-if="deviceInfo">
+                    <li class="name">
+                        <span class="title"><i :style="{'color': getColor(deviceInfo.characteristics, deviceInfo.tid)}"
+                                               :class="getIcon(deviceInfo.tid)"></i>{{deviceInfo.name}}</span>
+                        <div class="desc">
+                            <div v-show="isLigth(deviceInfo.tid)" class="switch-wrapper">
+                                <span :class="{'active': !getStatus(deviceInfo.characteristics)}"
+                                      @click="closeDevice(deviceInfo.mac, 0)">OFF</span>
+                                <span :class="{'active': getStatus(deviceInfo.characteristics)}"
+                                      @click="closeDevice(deviceInfo.mac, 1)">ON</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li @click="editDeviceName"><span>{{$t('editName')}}</span></li>
+                    <li @click="delDevice"><span class="icon-orange">{{$t('reconfigure')}}</span></li>
+                    <li @click="showAbout"><span>{{$t('aboutDevice')}}</span></li>
+                    <li @click="showOta"><span>{{$t('otaUpdate')}}</span></li>
+                    <li @click="showAuto"><span>{{$t('association')}}</span></li>
+                    <li @click="hideDeviceOperate" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
+                </ul>
+            </div>
+        </div>
+    </transition>
+    <transition name="ups">
+        <div v-show="showGroup" class="operate-wrapper">
+            <div @click="hideGroupOperate" class="mask"></div>
+            <div class="operate-info">
+                <ul>
+                    <li class="name">
+                        <span class="title"><i class="icon-groups"></i>{{groupObj.name}}</span>
+                        <div class="desc">
+                            <div v-show="isLigth(groupObj.id)" class="switch-wrapper">
+                                <span  :class="{'active': !getStatusByGroup(groupObj.device_macs)}"
+                                       @click="closeGroup(groupObj.device_macs, 0)">OFF</span>
+                                <span  :class="{'active': getStatusByGroup(groupObj.device_macs)}"
+                                        @click="closeGroup(groupObj.device_macs, 1)">ON</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li @click="editGroupName"><span>{{$t('editName')}}</span></li>
+                    <li @click="dissolutionGroup"><span class="icon-orange">{{$t('delGroupTitle')}}</span></li>
+                    <li @click="delDevices"><span class="icon-orange">{{$t('reconfigure')}}</span></li>
+                    <li @click="showInfo"><span>{{$t('editGroup')}}</span></li>
+                    <li @click="hideGroupOperate" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
+                </ul>
+            </div>
+        </div>
+    </transition>
+    <v-resetDevice v-on:resetShow="onBackRecent" ref="device"></v-resetDevice>
+    <v-operateDevice v-on:operateShow="onBackRecent" :colorId="colorDeviceId" :temperatureId="temperatureDeviceId" :device="deviceInfo"
+                      ref="operate"></v-operateDevice>
+    <v-addGroup v-on:addGroupShow="onBackRecent" :deviceList="deviceList" v-if="deviceList" :name="groupName" :addGroupId="addGroupId" ref="add"></v-addGroup>
+    <v-groupInfo v-on:groupInfoShow="onBackRecent" :editDeviceId="editRecentId" :group="groupObj" v-if="groupObj" ref="info"></v-groupInfo>
+    <v-groupColor v-on:groupColorShow="onBackRecent" :lightId="lightRecentId"  :colorId="colorGroupId" :temperatureId="temperatureGroupId"
+                  :group="groupObj"  v-if="groupObj" ref="groupcolor"></v-groupColor>
+    <v-aboutDevice v-on:aboutShow="onBackRecent" :deviceInfo="deviceInfo" v-if="deviceInfo" ref="aboutDevice"></v-aboutDevice>
+    <v-otaInfo v-on:otaShow="onBackRecent" :otaId="otaRecentId" :macs="otaMacs" v-if="deviceInfo" ref="ota"></v-otaInfo>
+    <v-automation v-on:autoShow="onBackRecent" :deviceInfo="deviceInfo" :autoId="autoId"
+                  v-if="deviceInfo" ref="auto"></v-automation>
+    <v-attr v-on:attrShow="onBackRecent" ref="attr"></v-attr>
+</div>

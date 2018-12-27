@@ -1,0 +1,24 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>附近设备</h4>
+                <span @click="clearDevice" class="icon-clear right-top"></span>
+            </div>
+            <div class="scancontent-info">
+                <div v-for="item in list" class='item-info'>
+                    <div class='item-icon'>
+                        <i class='icon-android-alert'></i>
+                    </div>
+                    <div class='info-wrapper'>
+                        <div class='item-time'>[{{format("yyyy-MM-dd hh:mm:ss", item.time)}}]</div>
+                        <div class='item-org'>{{item.org}}</div>
+                        <div></div>
+                        <div class='item-mac'>MAC:&nbsp;{{item.mac}},&nbsp;Type:&nbsp;{{getType(item.type)}},&nbsp;Rssi:&nbsp;{{item.rssi}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

@@ -1,0 +1,47 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{title}}
+                </h4>
+                <i @click="showOperate" class="icon-more right-top"></i>
+            </div>
+            <div class="selected-radio">
+                <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
+                <div><span @click="selectAllDevice($event)" class="span-radio"
+                           :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
+            </div>
+            <div class="content-info" :id="typeSelectId">
+                <div v-for="item in list" class="item">
+                    <div  class="item-icon-circle">
+                        <i :class="getIcon(item.tid)"
+                           :style="{'color': getColor(item.characteristics, item.tid)}"></i>
+                    </div>
+                    <div class="item-name up-date padding-left-10">
+                        <span>{{item.name}}</span>
+                    </div>
+                    <div class="item-power-small">
+                        <span :data-value="item.mac" @click="selectDevice($event)"
+                              class="span-radio"><span></span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <transition name="ups">
+        <div v-show="infoShow" class="operate-wrapper">
+            <div @click="hideOperate" class="mask"></div>
+            <div class="operate-info">
+                <ul>
+                    <li @click="delDevices"><span class="icon-orange">{{$t('reconfigure')}}</span></li>
+                    <li @click="otaTypeShow"><span>{{$t('otaUpdate')}}</span></li>
+                    <li @click="hideOperate" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
+                </ul>
+            </div>
+        </div>
+    </transition>
+    <v-otaInfo v-on:otaShow="hideParent" :otaId="otaTypeId" :macs="otaMacs" v-if="otaMacs" ref="ota"></v-otaInfo>
+</div>

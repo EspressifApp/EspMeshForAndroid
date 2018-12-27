@@ -1,0 +1,40 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="showFlag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide">
+                        <i class="icon-left back"></i>
+                    </span>
+                    {{$t('selectDevice')}}
+                </h4>
+                <span @click="save" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
+            </div>
+            <div class="selected-radio">
+                <div>{{$t('selectDevice')}}({{selected}}/{{count}})</div>
+                <div><span @click="selectAllDevice($event)" class="span-radio"
+                           :class="{'active': (selected == count && selected != 0)}"><span></span></span></div>
+            </div>
+            <div class="content-info flex-wrapper" :id="autoIdBtn">
+                <div v-if="showCondition(item.mac, item.tid)" v-for="item in deviceList" class="item">
+                    <div class="item-icon-circle">
+                        <i class="icon-light"></i>
+                    </div>
+                    <div class="item-name">
+                        <span :data-value="item.mac">{{getPosition(item.position)}}</span>
+                        <span :data-value="item.mac" :class="{'desc': showDesc(item.position)}">{{item.name}}
+                            <span v-show="showDesc(item.position)">({{item.version}})</span></span>
+                        <span :data-value="item.mac" class="desc" v-show="!showDesc(item.position)">{{item.version}}</span>
+                    </div>
+                    <div class="item-power-small">
+                    <span :data-value="item.mac" @click="selectDevice($event)"
+                          class="span-radio"><span></span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <v-automationBtn v-on:autoBtnShow="hideThis" :deviceEvents="deviceEvents" :deviceInfo="deviceInfo" :isMuch="isMuch"
+                     :selectMacs="selectMacs" ref="autoBtn"></v-automationBtn>
+</div>

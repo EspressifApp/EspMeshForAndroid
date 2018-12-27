@@ -1,0 +1,73 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{$t('pair')}}
+                </h4>
+                <i @click.stop="pairMore($event)" class="icon-more right-top"></i>
+                <ul v-show="flagUl" class="add-ul">
+                    <li @click.stop="addPair($event)"><i class="icon-plus"></i><span>{{$t('addPair')}}</span></li>
+                    <li @click.stop="editDevice($event)"><i class="icon-edit"></i><span>{{$t('edit')}}</span></li>
+                </ul>
+            </div>
+            <div v-show="deleteShow" class="selected-radio">
+                <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
+                <div><span @click="selectAllDevice($event)" class="span-radio"
+                           :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
+            </div>
+            <div @click="moreFlag" class="content-info flex-wrapper" :class="{'attr': !deleteShow}" id="pair-wrapper">
+                <div v-show="!showAdd">
+                    <div v-for="item in pairList" :data-mac="item.mac" :key="item.mac" v-longtap="{fn: showPairOperate, mac: item.mac}" class="item">
+                        <div :data-mac="item.mac" class="item-icon-circle">
+                            <i :data-mac="item.mac" class="icon-light icon-blue"></i>
+                        </div>
+                        <div :data-mac="item.mac" class="item-name">
+                            <span :data-mac="item.mac">{{item.floor}}-{{item.area}}-{{item.code}}</span>
+                            <span :data-mac="item.mac" class="desc">MAC: {{item.mac}}</span>
+                        </div>
+                        <div class="item-power-small">
+                        <span v-show="deleteShow" :data-value="item.mac" @click="selectDevice($event)"
+                              class="span-radio"><span></span></span>
+                        </div>
+                    </div>
+                </div>
+                <div v-show="showAdd" class="add-wrapper">
+                    <h3>{{$t('addPair')}}</h3>
+                    <p>{{$t('pairListDesc')}}</p>
+                    <div @click="addPair($event)">
+                        <i class="icon-plus"></i>
+                    </div>
+                </div>
+            </div>
+            <footer v-show="deleteShow" class="footer-info">
+                <ul>
+                    <li @click="deleteDevice($event)">
+                        <i class="icon-bin"></i>
+                        <span>{{$t('deleteBtn')}}</span>
+                    </li>
+                    <li @click="calcelDevice($event)">
+                        <i class="icon-cancel"></i>
+                        <span>{{$t('cancelBtn')}}</span>
+                    </li>
+                </ul>
+            </footer>
+            <transition name="ups">
+                <div v-show="pairShow" class="operate-wrapper">
+                    <div @click="hideInfo" class="mask"></div>
+                    <div class="operate-info">
+                        <ul v-if="pairInfo">
+                            <li @click="editPair"><span>{{$t('editBtn')}}</span></li>
+                            <li @click="delPair"><span class="icon-orange">{{$t('deleteBtn')}}</span></li>
+                            <li @click="hideInfo" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
+                        </ul>
+                    </div>
+
+                </div>
+            </transition>
+            <v-setPair v-on:setPairShow="onBackPair" :pairInfo="pairInfo" ref="setPair"></v-setPair>
+        </div>
+    </transition>
+
+</div>

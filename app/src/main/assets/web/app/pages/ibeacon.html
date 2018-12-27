@@ -1,0 +1,48 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>Ibeacon</h4>
+            <div class="ibeacon-content">
+                <div class="ibeacon-header">
+                    <div class="ibeacon-distance">
+                        <span class="distance-title">距离(m)</span>
+                        <div class="ibeacon-distance-content">
+                            <span>{{meter}}</span>
+                        </div>
+                    </div>
+                    <div class="ibeacon-device">
+                        <div class="ibeacon-device-icon">
+                            <i class="icon-light" :style="{'color': getColor()}"></i>
+                        </div>
+                        <span>{{ibeaconInfo.name}}</span>
+                        <span>{{deviceInfo.mac}}</span>
+                    </div>
+                    <div class="ibeacon-electricity">
+                        <span class="electricity-title">Rssi</span>
+                        <div class="ibeacon-electricity-content">
+                            <span>{{rssi}}</span>
+                        </div>
+                    </div>
+                </div>
+                <!--<div class="ibeacon-line">-->
+                <!--<div >Rssi</div>-->
+                <!--<div class="show-line"></div>-->
+                <!--</div>-->
+                <div class="ibeacon-middle">
+                    <p><span>Major:&emsp;</span>{{ibeaconInfo.major}}</p>
+                    <p><span>Minor:&emsp;</span>{{ibeaconInfo.minor}}</p>
+                    <p><span>UUID:&emsp;</span>{{ibeaconInfo.uuid}}</p>
+                    <p><span>发送间隔:&emsp;</span>{{ibeaconInfo.frequency}}</p>
+                    <p><span>发送功率:&emsp;</span>{{ibeaconInfo.power}}</p>
+                </div>
+                <div class="ibeacon-footer">
+                    <p @click="showInfo"><span>参数配置</span><span><i class="icon-right font-lg"></i></span></p>
+                    <!--<p><span>防篡改模式设置</span><span><i class="icon-right font-lg"></i></span></p>-->
+                    <p><span>距离校准</span><span><i class="icon-right font-lg"></i></span></p>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <v-ibeaconInfo v-on:ibeanInfoShow="onBackIbean" :ibeaconInfo="ibeaconInfo" :deviceInfo="deviceInfo" v-if="ibeaconInfo" ref="ibeaconInfo"></v-ibeaconInfo>
+</div>

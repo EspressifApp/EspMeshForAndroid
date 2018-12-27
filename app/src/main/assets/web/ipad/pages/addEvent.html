@@ -1,0 +1,85 @@
+<transition name="moves">
+    <div v-show="flag" class="operate-way">
+        <div @click="hide" class="mask"></div>
+        <div id="add-body" class="modal-wrapper active add-event">
+            <div class="item-content">
+                <div class="item">
+                    <div class="title">
+                        <textarea v-model="text" rows="1" maxlength="140"></textarea>
+                    </div>
+                    <p class="count"><span>{{text.length}}</span>/140</p>
+                    <div class="desc"><p>{{desc}}</p></div>
+                </div>
+                <div class="item">
+                    <div class="title"><i :class="getIcon()"></i></div>
+                    <h5 class="name">{{deviceInfo.name}}</h5>
+                    <div class="desc">
+                        <p>Current device properties and types</p>
+                    </div>
+                    <div class="set parent-status">
+                        <p>
+                            <span class="attribute">Attribute:</span>
+                            <span v-for="item in cidList" @click="attribute(item.cid)" class='decoration decoration-attribute'
+                                :class="{'active': eventCid === item.cid}">{{item.name}}</span>
+                        </p>
+                        <p>
+                            <span class="attribute">Type:</span>
+                            <span v-for="item in eventType" @click="attriType(item)" class="decoration decoration-type"
+                                :class="{'active': type == item}">{{item}}</span>
+                        </p>
+                        <div v-show="showStatus" class="device-status change-status">
+                            <span class="attribute parent-status">Status:</span><div class="on-off" :class="eventClass"><span></span></div>
+                        </div>
+                        <div v-show="showSlider" class="device-status change-status">
+                            <span class='attribute'>Status:</span>
+                            <span @click="initSlider" v-html="htmlSlider" class='border-bottom init-slider'>{{htmlSlider}}</span>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="item">
+                    <div>
+                        <div v-for="item in subDeviceList" class="title sub-title">
+                            <i class="icon-light"></i>
+                            <h5 class="name">{{item.name}}</h5>
+                        </div>
+                    </div>
+                    <div v-show="subShowStatus" class="set change-status">
+                        <span class="attribute change-status">Status:</span><div class="on-off" :class="subDeviceClass"><span></span></div>
+                    </div>
+                    <div v-show="subShowColor" class="set change-status">
+                        <span class="attribute">Color:</span><span @click="eventColorPicke" :style="{'background': bgColor}" class="color-spicker"></span>
+                    </div>
+                </div>
+                <div class="btn-content">
+                    <button @click="hide" class="add-event-btn">Cancel</button>
+                    <button @click="setEvent" class="add-event-btn">Save</button>
+                </div>
+            </div>
+        </div>
+        <div v-show="changeColor" class="operate-way">
+            <div @click="hideColor" class="mask"></div>
+            <div class="event-modal event-picker active">
+                <p>Choose Color <span @click="hideColor" class="icon-cross cancel-choose"></span></p>
+                <div id="event-color-picker">
+
+                </div>
+            </div>
+        </div>
+        <div v-show="changeSlider" class="operate-way">
+            <div @click="hideSlider" class="mask"></div>
+            <div class="event-modal event-slider active">
+                <p>Choose Numer <span @click="hideSlider" class="icon-cross cancel-choose"></span></p>
+                <div class="event-slider-content">
+                    <div class="margin-bottom-10">Photosensitive range: <input type="text" v-model="sliderMin" class="form-control choose-num">
+                        &nbsp;&nbsp;&nbsp;-- &nbsp;&nbsp;&nbsp;<input type="text" v-model="sliderMax" class="form-control choose-num"></div>
+                    <div id="event-slider">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</transition>

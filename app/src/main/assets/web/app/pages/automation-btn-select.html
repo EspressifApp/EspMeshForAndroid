@@ -1,0 +1,38 @@
+<div class="init-width">
+    <div class="title-info">
+        <h4 class="app-title">
+            <span @click="hide">
+                <i class="icon-left back"></i>
+            </span>
+            {{deviceInfo.name}}
+        </h4>
+    </div>
+    <div class="content-info attr">
+
+    </div>
+    <transition name="ups">
+        <div v-show="eventFlag" class="ota-upgrade">
+            <div @click="hide" class="mask"></div>
+            <div class="upgrade-info command">
+                <h3>{{$t('eventType')}}</h3>
+                <div class="command-select">
+                    <div @click="checkRadio('1')" class="event-item">
+                        <div class="event-item-name">{{$t('singleGroup')}}</div>
+                        <div class="event-item-power">
+                            <span class="span-radio" :class="{'active': eventType == '1'}"><span></span></span>
+                        </div>
+                    </div>
+                    <div @click="checkRadio('2')" class="event-item">
+                        <div class="event-item-name">{{$t('multipleGroup')}}</div>
+                        <div class="event-item-power">
+                            <span class="span-radio" :class="{'active': eventType == '2'}"><span></span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <v-automationBtn v-on:autoBtnShow="hideThis" :deviceEvents="deviceEvents" :deviceInfo="deviceInfo" :isMuch="isMuch" ref="autoBtn"></v-automationBtn>
+    <v-automationBtnDevices v-on:autoDevicesShow="hideThis"  :deviceEvents="deviceEvents" :deviceInfo="deviceInfo" :isMuch="isMuch"
+                             :autoId="autoId" ref="autoBtnDevices"></v-automationBtnDevices>
+</div>

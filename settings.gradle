@@ -1,0 +1,1 @@
+include ':app', ':apptools', ':appdb', ':appmesh', ':zxing', ':meshblufi'

@@ -1,0 +1,9 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <v-automationAll :deviceInfo="deviceInfo" :autoId="autoId" v-if="deviceEvent" ref="autoAll"></v-automationAll>
+            <v-automationBtnSelect :deviceInfo="deviceInfo" :autoId="autoId" v-if="btnEvent" ref="autoBtnSelect"></v-automationBtnSelect>
+        </div>
+    </transition>
+</div>

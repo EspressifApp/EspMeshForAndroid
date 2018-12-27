@@ -1,0 +1,62 @@
+<transition name="moves">
+    <div v-show="tableFlag" class="add-info operate-way">
+        <div class="topobody">
+            <div class="topoheader">
+                <div class="col-xs-12 no-padding">
+                    <div class="funcbtn">
+                        <div @click="hideTable" class="returnBtn">
+                            <i class="icon-left"></i>
+                        </div>
+                        <div class="morebtn">
+                            <a @click="selectAllBtn" v-show="selectAllShow" class="navigation-device hidden"><span class="icon-check"></span><span>Select all</span></a>
+                            <a @click="unselectAllBtn" v-show="!selectAllShow" class="navigation-device hidden"><span class="icon-uncheck"></span><span>Unselect all</span></a>
+                            <a @click="deleteTable" class="navigation-device hidden"><span class="icon-bin"></span><span>Delete</span></a>
+                            <a @click="colorPlateBtn" class="navigation-device hidden"><span class="icon-contrast"></span><span>Color plate</span></a>
+                            <a @click="editTableBtn" id="editTableBtn"><span class="icon-edit edit"></span><span class="name">Edit</span></a>
+                            <a @click="tableBtn"><span class="icon-table"></span><span class="name">Table</span></a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="topocon">
+                <div id='draggableDiv' class="ui-widget-content">
+
+                </div>
+                <div id="topo-content-table" class="topoleft col-md-2 col-sm-2 col-xs-3 no-padding">
+                    <div class="lefticon" id="lefticon-table">
+                        <div class="panel">
+                            <a class="active" data-toggle="collapse" data-parent="#lefticon-table"
+                               href="#collapse-light-table">
+                                <i class="icon-light"></i>
+                                <span>LIGHT</span>
+                                <i class="icon-down-dir caret-i"></i>
+                            </a>
+                            <ul id="collapse-light-table" class="nav panel-collapse collapse in">
+                                <li v-for="item in lightList">
+                                    <div :data-tid="item.tid"
+                                         :data-value="item.mac" class="iconitems itemtable" :icontype="item.mac">
+                                        <i class="icon-light" :style="{'color': getColor(item.characteristics)}"></i>
+                                        <span title="">{{item.name}}</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div id="toporight-content-table" class="toporight table-right col-md-10 col-sm-10 col-xs-9 no-padding">
+                    <div class="col-xs-12 no-padding">
+                        <div id="table-wrapper" class="table-responsive">
+                            <table id="table-drop" class="table table-bordered unactive">
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <v-info v-on:infoShow="hideParent" :colorId="tablecolorId" :temperatureId="tabletemperatureId"  ref="infoTable"></v-info>
+        <v-setTable v-on:setTableShow="hideParent" ref="setTable"></v-setTable>
+        <v-tableColor v-on:tableColorShow="hideParent" ref="tableColor"></v-tableColor>
+    </div>
+</transition>

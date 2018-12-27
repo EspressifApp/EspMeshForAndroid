@@ -1,0 +1,43 @@
+<transition name="moves">
+    <div v-show="flag" class="operate-way">
+        <div @click="hideInfo" class="mask"></div>
+        <div class="event-content event-info active" >
+            <div class="col-xs-12 no-padding">
+                <div class="col-xs-12 no-padding">
+                    <p class="event-title">Modify the properties<span @click="hideInfo" class="fa fa-times cancel-times"></span></p>
+                </div>
+                <div class="col-xs-12 margin-bottom-10">
+                    <label class="col-sm-3 no-padding event-label">Analog device</label>
+                    <div class="col-sm-9">
+                        <i class="icon-light font-35" :style="{'color': getColor()}"></i>
+                    </div>
+                </div>
+                <div class="col-xs-12 margin-bottom-10">
+                    <label class="col-sm-3 no-padding event-label">Device MAC</label>
+                    <div class="col-sm-9">
+                        <input v-model="deviceInfo.mac" class="form-control" readonly placeholder="">
+                    </div>
+                </div>
+                <div class="col-xs-12 margin-bottom-10">
+                    <label class="col-sm-3 no-padding event-label">Device name</label>
+                    <div class="col-sm-9">
+                        <input v-model="deviceInfo.name" class="form-control" maxlength="31" placeholder="">
+                        <button @click="editName" class="edit-name">Modify</button>
+                    </div>
+                </div>
+                <div class="col-xs-12 margin-bottom-10 hidden">
+                    <label class="col-sm-3 no-padding event-label" for="device-attribute">Device properties</label>
+                    <div class="col-sm-9 slider-content">
+                        <div id="device-attribute"></div>
+                        <input type="text" id="device-attribute-value" class="device-attribute">
+                    </div>
+                </div>
+                <div class="col-xs-12 margin-bottom-10 text-center">
+                    <v-color :colorId="colorId" :temperatureId="temperatureId" :colorType="operateType"
+                             :macs="deviceMacs" ref="deviceColor"></v-color>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</transition>

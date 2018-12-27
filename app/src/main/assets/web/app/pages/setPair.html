@@ -1,0 +1,84 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{$t('location')}}
+                </h4>
+            </div>
+            <div class="register-wraaper">
+                <a class="mint-cell mint-field">
+                    <div class="mint-cell-wrapper">
+                        <div class="mint-cell-title">
+                            <span class="mint-cell-text">{{$t('floor')}}</span>
+                        </div>
+                        <div class="mint-cell-value">
+                            <input type="text" v-model="floor" class="mint-field-core">
+                            <div @click="selectFloor" class="cell-down">
+                                <i class="icon-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <a class="mint-cell mint-field">
+                    <div class="mint-cell-wrapper">
+                        <div class="mint-cell-title">
+                            <span class="mint-cell-text">{{$t('area')}}</span>
+                        </div>
+                        <div class="mint-cell-value">
+                            <input type="text" v-model="area" class="mint-field-core">
+                            <div @click="selectArea" class="cell-down">
+                                <i class="icon-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <a class="mint-cell mint-field">
+                    <div class="mint-cell-wrapper">
+                        <div class="mint-cell-title">
+                            <span class="mint-cell-text">{{$t('code')}}</span>
+                        </div>
+                        <div class="mint-cell-value">
+                            <input type="text" v-model="serialNum" class="mint-field-core">
+                        </div>
+                    </div>
+                </a>
+                <a class="mint-cell mint-field">
+                    <div class="mint-cell-wrapper">
+                        <div class="mint-cell-title">
+                            <span class="mint-cell-text">MAC</span>
+                        </div>
+                        <div class="mint-cell-value">
+                            <input type="text" :placeholder="$t('macDesc')" v-model="mac" class="mint-field-core">
+                            <span @click="setScanner" class="scanner"><i class="icon-scanner"></i></span>
+                        </div>
+                    </div>
+                </a>
+                <div v-show="!showEdit" class="position-relative btn-register-wrapper">
+                    <button type="submit" class="btn register-btn margin-top-15" @click="savePair">{{$t('nextStep')}}</button>
+                </div>
+                <div v-show="showEdit" class="position-relative btn-register-wrapper">
+                    <button type="submit" class="btn register-btn margin-top-15" @click="editPair">{{$t('editBtn')}}</button>
+                </div>
+            </div>
+            <transition name="ups">
+                <div v-show="showFloor" class="operate-wrapper">
+                    <div @click="hideFloor" class="mask"></div>
+                    <div class="operate-info info-content">
+                        <mt-picker :slots="slots1" @change="onFloorChange"></mt-picker>
+                    </div>
+                </div>
+            </transition>
+            <transition name="ups">
+                <div v-show="showArea" class="operate-wrapper">
+                    <div @click="hideArea" class="mask"></div>
+                    <div class="operate-info info-content">
+                        <mt-picker :slots="slots2" @change="onAreaChange"></mt-picker>
+                    </div>
+                </div>
+            </transition>
+        </div>
+    </transition>
+
+</div>

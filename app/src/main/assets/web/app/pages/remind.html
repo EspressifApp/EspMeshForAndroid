@@ -1,0 +1,8 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" @click="addClick" class="speaker-wrapper">
+            <p><i class="icon-speaker"></i><span>{{$t('remindDesc')}}</span><i @click="hide" class='icon-cross'></i></p>
+        </div>
+    </transition>
+</div>

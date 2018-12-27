@@ -1,0 +1,27 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="regShow" class="add-info operate-way">
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{$t('register')}}</h4>
+            <div class="register-wraaper">
+                <div class="content">
+                    <div class="position-relative">
+                        <input :placeholder="$t('email')" v-model="email" type="email" class="form-control" >
+                    </div>
+                    <div class="position-relative">
+                        <input :placeholder="$t('userName')" v-model="username" type="text" class="form-control" >
+                    </div>
+                    <div class="position-relative">
+                        <input :placeholder="$t('inputPwd')" v-model="password" type="password" class="form-control" >
+                    </div>
+                    <div class="position-relative">
+                        <input :placeholder="$t('confirmPwd')" v-model="repassword" type="password" class="form-control" >
+                    </div>
+                </div>
+                <div class="position-relative btn-register-wrapper">
+                    <button type="submit" class="btn register-btn" @click="register">{{$t('register')}}</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>
+

@@ -1,0 +1,10 @@
+<div>
+    <div @click="pickerChange" :class="{'active': pickerShow}" class="picker-change">
+        <i class="icon-loop back"></i>
+    </div>
+    <div v-show="pickerShow" :id="colorId" class="color-picker">
+
+    </div>
+    <div v-show="!pickerShow" :id="temperatureId" class="temperature-picker">
+    </div>
+</div>
