@@ -122,6 +122,11 @@ define(function(){
         "eventType": "事件类型",
         "singleGroup": "控制一组设备",
         "multipleGroup": "控制多组设备",
+        "adjustment": "调整",
+        "fineTuning": "微调",
+        "hue": "色调",
+        "temp": "色温",
+        "brightness": "亮度",
 
         "editNameDesc": "修改设备名称",
         "editNameInput": "请输入新的名称",
@@ -221,6 +226,8 @@ define(function(){
         "processDownload": "下载",
         "processTransport": "传输",
         "processCutover": "切换",
+        "selectDeviceDesc": "请选择设备",
+        "selectEventDesc": "请选择事件",
 
         "emptyEventTitle": "清除关联",
         "connetDeviceTitle": "连接设备",

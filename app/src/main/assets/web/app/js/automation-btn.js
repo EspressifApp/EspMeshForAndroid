@@ -43,17 +43,18 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     eventDown: [],
                     existEvent: false,
                     shortPress: [{"id": "1", "name": this.$t('onOff')},
+                        {"id": "8", "name": this.$t('brightness')},
+                        {"id": "9", "name": this.$t('temp')},
+                        {"id": "10", "name": this.$t('hue')},
                         {"id": "2", "name": this.$t('brightMode'), h: "60", s: "0", b: "100"},
                         //{"id": "3", "name": this.$t('blinkMode'), h: "222", s: "57", b: "91"},
                         //{"id": "4", "name": this.$t('glitterMode'), h: "176", s: "55", b: "77"},
                         {"id": "5", "name": this.$t('readMode'), h: "39", s: "14", b: "90"},
                         {"id": "6", "name": this.$t('cozyMode'), h: "60", s: "10", b: "100"},
-                        {"id": "7", "name": this.$t('bedtime'), h: "33", s: "100", b: "66"},
-                        {"id": "8", "name": this.$t('delayedOn')},
-                        {"id": "9", "name": this.$t('delayedOff')}],
+                        {"id": "7", "name": this.$t('bedtime'), h: "33", s: "100", b: "66"}],
                     longPress: [
-                            {"id": "10", "name": this.$t('btnLightness')},{"id": "11", "name": this.$t('btnTemperature')},
-                        {"id": "12", "name":  this.$t('btnColor')}],
+                            {"id": "11", "name": this.$t('brightness')},{"id": "12", "name": this.$t('temp')},
+                        {"id": "13", "name": this.$t('hue')}],
                 }
             },
             computed: {
@@ -79,7 +80,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     window.onBackPressed = this.hide;
                     self.deviceList = self.$store.state.deviceList;
                     self.pressList = {"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": [],
-                                            "10": [], "11": [], "12": []};
+                                            "10": [], "11": [], "12": [], "13": []};
                     self.eventA = [];
                     self.eventB = [];
                     self.eventC = [];
@@ -108,6 +109,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     var self = this;
                     if (!Util._isEmpty(self.deviceEvents)) {
                         $.each(self.deviceEvents, function(i, item) {
+                            console.log(JSON.stringify(item));
                             self.initEvent(item);
                             if (self.isMuch) {
                                 self.initDeviceMac(item);
@@ -117,25 +119,51 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                 },
                 initEvent: function(item) {
                     var type = parseInt(item.event_type);
+
                     if(type == 1) {
                         if(!this.isMuch) {
-                            this.setButtonEvent(item.name, item.trigger_cid, true, 0, 0, 0, MODE_CID,
-                                type, false, 0, 0, 0);
+                            this.setButtonEvent(item.name, item.trigger_cid, true, 0, 0, 0, STATUS_CID,
+                                type, 0, 2);
                         }
-                    } else if (type == 10 || type == 11 || type == 12) {
-                        var trigger_cid = item.trigger_cid, leftCid = 4, rightCid = 5;
-                        if (trigger_cid == this.btnValues.longupleft || trigger_cid == this.btnValues.longupright) {
-                            leftCid = this.btnValues.longupleft;
-                            rightCid = this.btnValues.longupright;
+                        this.initBtnEvent(item.trigger_cid, type, false);
+                    } else if (type == 11 || type == 12 || type == 13) {
+                        var trigger_cid = item.trigger_cid, leftCid = STATUS_CID, rightCid = HUE_CID,
+                            leftValue = BUTTON_EVENT_5, rightValue = BUTTON_EVENT_4, leftName = "", rightName = "";
+                        if (trigger_cid == this.btnValues.upleft || trigger_cid == this.btnValues.upright) {
+                            leftCid = this.btnValues.upleft;
+                            rightCid = this.btnValues.upright;
                         } else {
-                            leftCid = this.btnValues.longdownleft;
-                            rightCid = this.btnValues.longdownright;
+                            leftCid = this.btnValues.downleft;
+                            rightCid = this.btnValues.downright;
                         }
-                        this.setLongEvent(leftCid, rightCid, item.execute_content.cid, type);
-                    } else if (type == 8 || type == 9) {
-                        this.setButtonEvent(item.name, item.trigger_cid, false, 0, 0, 0, item.execute_cid,
-                            type, true, item.execute_content.cid, item.execute_content.operation,
-                             item.execute_content.duration);
+                        if (type == 11) {
+                            leftValue = BUTTON_EVENT_8;
+                            rightValue = BUTTON_EVENT_9;
+                            leftName = "BRI_IN";
+                            rightName = "BRI_DE";
+                        } else if (type == 12) {
+                            leftValue = BUTTON_EVENT_6;
+                            rightValue = BUTTON_EVENT_7;
+                            leftName = "WARM_IN";
+                            rightName = "WARM_DE";
+                        } else if (type == 13) {
+                            leftValue = BUTTON_EVENT_4;
+                            rightValue = BUTTON_EVENT_5;
+                            leftName = "HUE_IN";
+                            rightName = "HUE_DE";
+                        }
+                        this.setLongEvent(leftName, rightName, leftCid, rightCid, type, leftValue, rightValue);
+                    } else if (type == 8 || type == 9 || type == 10) {
+                        var defaultValue = 0;
+                        if(type == "8") {
+                            defaultValue = 4;
+                        } else if (type == "9") {
+                            defaultValue = 3;
+                        } else if(type == "10") {
+                            defaultValue = 5;
+                        }
+                        this.setButtonEvent(item.name, item.trigger_cid, false, h, s, b, item.execute_cid,
+                                type, 0, defaultValue);
                     } else {
                         var h = 0, s = 0, b = 0;
                         $.each(item.execute_content.characteristics, function(i, obj) {
@@ -152,9 +180,11 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                             }
                         });
                         this.setButtonEvent(item.name, item.trigger_cid, false, h, s, b, item.execute_cid,
-                            type, false, 0, 0, 0);
+                            type, 0);
+                        console.log(type);
+                        this.initBtnEvent(item.trigger_cid, type, false);
                     }
-                    this.initBtnEvent(item.trigger_cid, type);
+
 
                 },
                 initDeviceMac: function(item) {
@@ -170,41 +200,44 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                         self.deviceD = item.execute_mac;
                     }
                 },
-                initBtnEvent: function(cid, type) {
+                initBtnEvent: function(cid, type, flag) {
+                    console.log(type);
                     var self = this;
                     var name = "";
-                    if (self.isMuch) {
-                        cid = self.converBaseCid(cid);
-                    }
                     switch (cid) {
                         case self.btnValues.upleft:
-                            name = "A";
+                            if (flag) {
+                                name = "AB";
+                            } else {
+                                name = "A";
+                            }
                             break;
                         case self.btnValues.upright:
-                            name = "B";
+                            if (flag) {
+                                name = "AB";
+                            } else {
+                                name = "B";
+                            }
                             break;
                         case self.btnValues.downleft:
-                            name = "C";
+                            if (flag) {
+                                name = "CD";
+                            } else {
+                                name = "C";
+                            }
                             break;
                         case self.btnValues.downright:
-                            name = "D";
-                            break;
-                        case self.btnValues.longupleft:
-                            name = "AB";
-                            break;
-                        case self.btnValues.longupright:
-                            name = "AB";
-                            break;
-                        case self.btnValues.longdownleft:
-                            name = "CD";
-                            break;
-                        case self.btnValues.longdownright:
-                            name = "CD";
+                            if (flag) {
+                                name = "CD";
+                            } else {
+                                name = "D";
+                            }
                             break;
                         default: break;
 
                     }
                     self.isExistPress(name);
+                    console.log(type);
                     if (self.pressList[type].indexOf(name) == -1) {
                         self.pressList[type].push(name);
                     }
@@ -280,7 +313,6 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                         $("#btn-select-device span.span-radio[data-value='"+item+"']").addClass("active");
                     })
                 },
-
                 saveDevice: function() {
                     var self = this, docs = $("#btn-select-device span.span-radio.active"),
                         macs = [];
@@ -319,32 +351,28 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                             var dragui = ui.draggable,
                                 id = dragui.attr('data-value');
                                 eventCid = $(this).attr("data-value");
-                            var flag = false, name = "", h = 0, s = 0, b= 0, subCid = 0, delayFlag = false,
-                                delayValue = 0, operation = 0;
+                            var flag = false, name = "", h = 0, s = 0, b= 0, subCid = 0,
+                                defaultValue = 0;
                             $.each(self.shortPress, function(i, item) {
                                 if (item.id == id) {
                                     if (id == "1") {
                                         flag = true;
                                         name = "SWITCH_" + eventCid;
-                                        subCid = MODE_CID;
-                                    } else if (id == "8") {
-                                        if (self.isMuch) {
-                                            eventCid = self.converCid(eventCid);
-                                        }
-                                        name = "DELAY_" + eventCid;
-                                        delayFlag = true;
-                                        operation = 1;
+                                        subCid = STATUS_CID;
+                                        defaultValue = 2;
+                                    } else if(id == "8") {
+                                        name = "BRI_" + eventCid;
+                                        subCid = STATUS_CID;
+                                        defaultValue = 4;
                                     } else if (id == "9") {
-                                        if (self.isMuch) {
-                                            eventCid = self.converCid(eventCid);
-                                        }
-                                        name = "DELAY_" + eventCid;
-                                        delayFlag = true;
-                                        operation = 0;
+                                        name = "WARM_" + eventCid;
+                                        subCid = STATUS_CID;
+                                        defaultValue = 3;
+                                    } else if(id == "10") {
+                                        name = "HUE_" + eventCid;
+                                        subCid = STATUS_CID;
+                                        defaultValue = 5;
                                     } else {
-                                        if (self.isMuch) {
-                                            eventCid = self.converCid(eventCid);
-                                        }
                                         name = "MODEL_" + eventCid;
                                         h = item.h;
                                         s = item.s;
@@ -352,19 +380,8 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                                     }
                                 }
                             })
-                            if (delayFlag) {
-                                MINT.MessageBox.prompt(self.$t('delayTimeDesc'), self.$t('addDelayTitle'),
-                                    {inputValue: "10", inputType: "number", inputPlaceholder: self.$t('addGroupInput'),
-                                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj) {
-                                    self.setButtonEvent(name, eventCid, flag, parseInt(h), parseInt(s), parseInt(b),
-                                                subCid, parseInt(id), delayFlag, VALUE_CID, operation, parseInt(obj.value));
-                                });
-
-                            } else {
-                                self.setButtonEvent(name, eventCid, flag, parseInt(h), parseInt(s), parseInt(b),
-                                        subCid, parseInt(id), delayFlag, VALUE_CID, operation, 0);
-                            }
-
+                            self.setButtonEvent(name, eventCid, flag, parseInt(h), parseInt(s), parseInt(b),
+                                    subCid, parseInt(id), VALUE_CID, defaultValue);
                         }
                     })
                     $('div.content-info').find('div.btn-long').droppable({
@@ -375,16 +392,27 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                             var dragui = ui.draggable,
                                 id = dragui.attr('data-value'),
                                 leftCid = $(this).attr("data-left"),
-                                rightCid = $(this).attr("data-right");
+                                rightCid = $(this).attr("data-right"),
+                                leftName = "",
+                                rightName = "";
                             var name = "", subCid = 0
-                            if (id == "10") {
-                                subCid = VALUE_CID;
-                            } else if (id == "11") {
-                                subCid = SATURATION_CID;
+                            if (id == "11") {
+                                leftValue = BUTTON_EVENT_8;
+                                rightValue = BUTTON_EVENT_9;
+                                leftName = "BRI_IN";
+                                rightName = "BRI_DE";
                             } else if (id == "12") {
-                                subCid = HUE_CID;
+                                leftValue = BUTTON_EVENT_6;
+                                rightValue = BUTTON_EVENT_7;
+                                leftName = "WARM_IN";
+                                rightName = "WARM_DE";
+                            } else if (id == "13") {
+                                leftValue = BUTTON_EVENT_4;
+                                rightValue = BUTTON_EVENT_5;
+                                leftName = "HUE_IN";
+                                rightName = "HUE_DE";
                             }
-                            self.setLongEvent(leftCid, rightCid, subCid, parseInt(id));
+                            self.setLongEvent(leftName, rightName, leftCid, rightCid, parseInt(id), leftValue, rightValue);
                         }
                     })
                 },
@@ -397,51 +425,24 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     }
                     return flag;
                 },
-                converCid: function(cid) {
-                    var newCid = cid;
-                    if (cid == this.btnValues.upleft) {
-                        newCid = this.btnValues.longupleft;
-                    } else if (cid == this.btnValues.upright) {
-                        newCid = this.btnValues.longupright;
-                    } else if (cid == this.btnValues.downleft) {
-                        newCid = this.btnValues.longdownleft;
-                    } else if (cid == this.btnValues.downright) {
-                        newCid = this.btnValues.longdownright;
-                    }
-                    return newCid;
-                },
-                converBaseCid: function(cid) {
-                    var newCid = cid;
-                    if (cid == this.btnValues.longupleft) {
-                        newCid = this.btnValues.upleft;
-                    } else if (cid == this.btnValues.longupright) {
-                        newCid = this.btnValues.upright;
-                    } else if (cid == this.btnValues.longdownleft) {
-                        newCid = this.btnValues.downleft;
-                    } else if (cid == this.btnValues.longdownright) {
-                        newCid = this.btnValues.downright;
-                    }
-                    return newCid;
-                },
-                setLongEvent: function(leftCid, rightCid, subCid, id) {
+                setLongEvent: function(leftName, rightName,leftCid, rightCid, id, leftValue, rightValue) {
                     var self = this, event = "";
                     leftCid = parseInt(leftCid);
                     rightCid = parseInt(rightCid);
-                    event = {leftCid: leftCid, rightCid: rightCid, subCid: subCid, eventType: id};
-                    if (leftCid == self.btnValues.longupleft && rightCid == self.btnValues.longupright) {
+                    event = {leftName: leftName, rightName: rightName, leftCid: leftCid, rightCid: rightCid,
+                        eventType: id, leftValue: leftValue, rightValue: rightValue};
+                    if (leftCid == self.btnValues.upleft && rightCid == self.btnValues.upright) {
                         self.eventUp.splice(0, 1, event)
-                    } else if (leftCid == self.btnValues.longdownleft && rightCid == self.btnValues.longdownright) {
+                    } else if (leftCid == self.btnValues.downleft && rightCid == self.btnValues.downright) {
                         self.eventDown.splice(0, 1, event)
                     }
-                    self.initBtnEvent(leftCid, id);
-
+                    self.initBtnEvent(leftCid, id, true);
                 },
-                setButtonEvent: function(name, eventCid, flag, h, s, b, subCid, id, delayFlag, execCid,
-                    operation, delayValue) {
+                setButtonEvent: function(name, eventCid, flag, h, s, b, subCid, id, execCid, defaultValue) {
                     var self = this, event = "";
                     eventCid = parseInt(eventCid);
                     event = {name: name, eventCid: eventCid, flag: flag, h: h, s: s, b: b, subCid: subCid, eventType: id,
-                       delayFlag: delayFlag, execCid: execCid, operation: operation, delayVal: delayValue};
+                        execCid: execCid, defaultValue: defaultValue};
                     switch (eventCid) {
                         case self.btnValues.upleft:
                             self.eventA.splice(0, 1, event);
@@ -455,22 +456,9 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                         case self.btnValues.downright:
                             self.eventD.splice(0, 1, event);
                             break;
-                        case self.btnValues.longupleft:
-                            self.eventA.splice(0, 1, event)
-                            break;
-                        case self.btnValues.longupright:
-                            self.eventB.splice(0, 1, event);
-                            break;
-                        case self.btnValues.longdownleft:
-                            self.eventC.splice(0, 1, event);
-                            break;
-                        case self.btnValues.longdownright:
-                            self.eventD.splice(0, 1, event);
-                            break;
                         default: break;
-
                     }
-                    this.initBtnEvent(eventCid, id);
+                    this.initBtnEvent(eventCid, id, false);
                 },
                 selectDevice: function (e) {
                     var doc = $(e.currentTarget);
@@ -504,7 +492,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                         if (self.eventA.length == 0 && self.eventB.length == 0 && self.eventC.length == 0 &&
                             self.eventD.length == 0 && self.eventUp.length == 0 && self.eventDown.length == 0) {
                             MINT.Toast({
-                                message: "请选择事件",
+                                message: self.$t('selectEventDesc'),
                                 position: 'bottom',
                             });
                             return false;
@@ -513,13 +501,12 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                         if (self.deviceA.length == 0 && self.deviceB.length == 0 && self.deviceC.length == 0 &&
                             self.deviceD.length == 0) {
                             MINT.Toast({
-                                message: "请选择设备",
+                                message: self.$t('selectDeviceDesc'),
                                 position: 'bottom',
                             });
                             return false;
                         }
                     }
-
                     if (self.isMuch) {
                         macs = self.deviceA.concat(self.deviceB, self.deviceC, self.deviceD)
                     } else {
@@ -534,7 +521,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                          }, 500);
                     } else {
                         MINT.Toast({
-                            message: "请选择设备",
+                            message: self.$t('selectDeviceDesc'),
                             position: 'bottom',
                         });
                     }
@@ -547,60 +534,71 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                             var item = self.eventA[0];
                             events.push(Util.setModelEvent(item.name, self.deviceA, item.eventCid,
                                     item.subCid, item.h, item.s, item.b, item.flag, item.eventType, MULTIPLE_GROUP,
-                                    item.delayFlag, item.execCid, item.operation, item.delayVal))
+                                    item.execCid, true, item.defaultValue, MESH_LIGHT_SYSC_COLOR_2))
                         }
                         if (self.deviceA.length > 0) {
                             var cid = self.btnValues.upleft;
                             events.push(Util.setModelEvent("SWITCH_" + cid, self.deviceA, cid,
-                                    MODE_CID, 0, 0, 0, true, 1, MULTIPLE_GROUP, false, 0, 0))
+                                    STATUS_CID, 0, 0, 0, true, 1, MULTIPLE_GROUP, 0, false, 2,
+                                    MESH_LIGHT_SYSC_COLOR))
                         }
                         if (self.eventB.length > 0 && self.deviceB.length > 0) {
                             var item = self.eventB[0];
                             events.push(Util.setModelEvent(item.name, self.deviceB, item.eventCid,
                                 item.subCid, item.h, item.s, item.b, item.flag, item.eventType, MULTIPLE_GROUP,
-                                item.delayFlag, item.execCid, item.operation, item.delayVal))
+                                item.execCid, true, item.defaultValue, MESH_LIGHT_SYSC_COLOR_2))
                         }
                         if (self.deviceB.length > 0) {
                             var cid = self.btnValues.upright;
                             events.push(Util.setModelEvent("SWITCH_" + cid, self.deviceB, cid,
-                                MODE_CID, 0, 0, 0, true, 1, MULTIPLE_GROUP, false, 0, 0))
+                                STATUS_CID, 0, 0, 0, true, 1, MULTIPLE_GROUP, 0, false, 2,
+                                MESH_LIGHT_SYSC_COLOR))
                         }
                         if (self.eventC.length > 0 && self.deviceC.length > 0) {
                             var item = self.eventC[0];
                             events.push(Util.setModelEvent(item.name, self.deviceC, item.eventCid,
                                     item.subCid, item.h, item.s, item.b, item.flag, item.eventType, MULTIPLE_GROUP,
-                                    item.delayFlag, item.execCid, item.operation, item.delayVal))
+                                    item.execCid, true, item.defaultValue, MESH_LIGHT_SYSC_COLOR_2))
                         }
                         if (self.deviceC.length > 0) {
                             var cid = self.btnValues.downleft;
                             events.push(Util.setModelEvent("SWITCH_" + cid, self.deviceC, cid,
-                                    MODE_CID, 0, 0, 0, true, 1, MULTIPLE_GROUP, false, 0, 0))
+                                    STATUS_CID, 0, 0, 0, true, 1, MULTIPLE_GROUP, 0, false, 2,
+                                    MESH_LIGHT_SYSC_COLOR))
                         }
                         if (self.eventD.length > 0 && self.deviceD.length > 0) {
                             var item = self.eventD[0];
                             events.push(Util.setModelEvent(item.name, self.deviceD, item.eventCid,
                                 item.subCid, item.h, item.s, item.b, item.flag, item.eventType, MULTIPLE_GROUP,
-                                item.delayFlag, item.execCid, item.operation, item.delayVal))
+                                item.execCid, true, item.defaultValue, MESH_LIGHT_SYSC_COLOR_2))
                         }
                         if (self.deviceD.length > 0) {
                             var cid = self.btnValues.downright;
                             events.push(Util.setModelEvent("SWITCH_" + cid, self.deviceD, cid,
-                                MODE_CID, 0, 0, 0, true, 1, MULTIPLE_GROUP, false, 0, 0))
+                                STATUS_CID, 0, 0, 0, true, 1, MULTIPLE_GROUP, 0, false, 2,
+                                MESH_LIGHT_SYSC_COLOR))
                         }
+                        console.log(JSON.stringify(events));
                     } else {
                         var eventList = self.eventA.concat(self.eventB, self.eventC, self.eventD);
                         $.each(eventList, function(i, item) {
                             events.push(Util.setModelEvent(item.name, self.selectMacs, item.eventCid,
                                     item.subCid, item.h, item.s, item.b, item.flag, item.eventType, SINGLE_GROUP,
-                                    item.delayFlag, item.execCid, item.operation, item.delayVal))
+                                    item.execCid, false, item.defaultValue, MESH_LIGHT_SYSC_COLOR))
                         })
+                        console.log(JSON.stringify(events));
                         var longEvents = self.eventUp.concat(self.eventDown);
                         $.each(longEvents, function(i, item) {
-                            events.push(Util._assemblyLongEvent("REGULAR_" + item.leftCid, item.leftCid, self.selectMacs,
-                                    item.subCid, item.eventType, SINGLE_GROUP, 0))
-                            events.push(Util._assemblyLongEvent("REGULAR_" + item.rightCid, item.rightCid, self.selectMacs,
-                                    item.subCid, item.eventType, SINGLE_GROUP, 1))
-                        })
+                            events.push(Util._assemblyLongEvent(item.leftName + item.leftCid, item.leftCid, self.selectMacs,
+                                    MESH_LIGHT_SYSC_COLOR_2, item.eventType, SINGLE_GROUP, true, item.leftValue));
+                            events.push(Util._assemblyLongEvent("STOP_" + item.leftCid, item.leftCid, self.selectMacs,
+                                    MESH_LIGHT_SYSC_COLOR_3, item.eventType, SINGLE_GROUP, true, 0));
+                            events.push(Util._assemblyLongEvent(item.rightName + item.rightCid, item.rightCid, self.selectMacs,
+                                    MESH_LIGHT_SYSC_COLOR_2, item.eventType, SINGLE_GROUP, true, item.rightValue));
+                            events.push(Util._assemblyLongEvent("STOP_" + item.rightCid, item.rightCid, self.selectMacs,
+                                    MESH_LIGHT_SYSC_COLOR_3, item.eventType, SINGLE_GROUP, true, 0));
+                        });
+                        console.log(JSON.stringify(events));
                     }
                     self.delEvent();
                     Util._addRequestEvent(parentMac, events);
@@ -619,11 +617,8 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                                         '"events":' + JSON.stringify(eventNames) + '}';
                         espmesh.requestDeviceAsync(data);
                     }
-
                 }
             },
-
-
             components: {
             }
 

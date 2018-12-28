@@ -13,7 +13,7 @@
             <div class="content-info attr">
                 <div class="button-wrapper">
                     <div class="btn-top btn-long" :class="{'active': eventUp.length != 0}"
-                         :data-left="btnValues.longupleft" :data-right="btnValues.longupright">
+                         :data-left="btnValues.upleft" :data-right="btnValues.upright">
                         <div @click="selectBtn(btnValues.upleft)" class="btn-content">
                             <span class="num" v-show="deviceA.length > 0">{{deviceA.length}}</span>
                             <div :data-value="btnValues.upleft" :class="{'active': eventA.length != 0}"
@@ -26,7 +26,7 @@
                         </div>
                     </div>
                     <div class="btn-bottom btn-long" :class="{'active': eventDown.length != 0}"
-                         :data-left="btnValues.longdownleft" :data-right="btnValues.longdownright">
+                         :data-left="btnValues.downleft" :data-right="btnValues.downright">
                         <div @click="selectBtn(btnValues.downleft)" class="btn-content">
                             <span class="num" v-show="deviceC.length > 0">{{deviceC.length}}</span>
                             <div :data-value="btnValues.downleft" :class="{'active': eventC.length != 0}"
@@ -40,8 +40,8 @@
                     </div>
                 </div>
                 <div class="control-wrapper">
-                    <h4 v-show="!isMuch">{{$t('btnTab')}}</h4>
-                    <h4 v-show="isMuch">{{$t('btnHold')}}</h4>
+                    <h4 v-show="!isMuch">{{$t('btnTab')}}({{$t('adjustment')}})</h4>
+                    <h4 v-show="isMuch">{{$t('btnHold')}}({{$t('adjustment')}})</h4>
                     <div class="dog">
                         <div class="dog-info shortPress" v-show="hideSwitch(item.id)" :data-value="item.id" v-for="item in shortPress">
                             <div @click="delExist(subItem, item.id)" class="dog-btn" v-for="subItem in pressList[item.id]">{{subItem}}</div>
@@ -50,7 +50,7 @@
                     </div>
                 </div>
                 <div v-show="!isMuch" class="control-wrapper">
-                    <h4>{{$t('btnHold')}}</h4>
+                    <h4>{{$t('btnHold')}}({{$t('fineTuning')}})</h4>
                     <div class="dog">
                         <div class="dog-info longPress" :data-value="item.id" v-for="item in longPress">
                             <div @click="delExist(subItem, item.id)" class="dog-btn" v-for="subItem in pressList[item.id]">{{subItem}}</div>

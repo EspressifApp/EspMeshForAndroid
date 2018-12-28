@@ -307,19 +307,21 @@ define(function(){
             events.push(eventBrightess);
             self._addRequestEvent(parentMac, events);
         },
-        setModelEvent: function(name, childMacs, cid, subCid, h, s, b, flag, type, eventClass, delayFlag, execCid, operation, delayVal) {
+        setModelEvent: function(name, childMacs, cid, subCid, h, s, b, flag, type, eventClass, execCid, isLong,
+            defaultValue, compare) {
             var self = this;
             var eventModel = "";
             if (flag) {
-                eventModel = self._assemblyButtonEvent(name, cid, childMacs, subCid, type, eventClass);
-            } else if (delayFlag) {
-                eventModel = self._assemblyDelayEvent(name, cid, childMacs, type, eventClass, execCid,
-                    operation, delayVal);
+                eventModel = self._assemblyButtonEvent(name, cid, childMacs, subCid, type, eventClass,
+                    isLong, defaultValue, compare);
             } else {
                 if(type == 2) {
-                    eventModel = self._assemblyModelWarmEvent(name, cid, childMacs, h, s, b, type, eventClass);
+                    eventModel = self._assemblyModelWarmEvent(name, cid, childMacs, h, s, b, type, eventClass, isLong);
+                } else if (type == 8 || type == 9 || type == 10) {
+                    eventModel = self._assemblyButtonEvent(name, cid, childMacs, subCid, type, eventClass,
+                        isLong, defaultValue, compare);
                 } else {
-                    eventModel = self._assemblyModelEvent(name, cid, childMacs, h, s, b, type, eventClass);
+                    eventModel = self._assemblyModelEvent(name, cid, childMacs, h, s, b, type, eventClass, isLong);
                 }
             }
             return eventModel;
@@ -348,17 +350,18 @@ define(function(){
                 this.selected += 1;
             }
         },
-        _assemblyLongEvent: function (name, cid, mac, subCid, type, eventClass, operation) {
+        _assemblyLongEvent: function (name, cid, mac, compare, type, eventClass, isLong, defaultValue) {
             var event = {
                 "name": name,
                 "trigger_cid": cid,
                 "trigger_content": {"request": CONTROL},
                 "event_type": type,
                 "event_class": eventClass,
-                "trigger_compare": MESH_LIGHT_SYSC,
+                "isLong": isLong,
+                "trigger_compare": compare,
                 "execute_mac": mac,
-                "execute_content":{"request": SET_REGULAR_CONTROL,
-                    "cid": subCid, "operation": operation
+                "execute_content":{"request": SET_STATUS,"characteristics":[
+                    {"cid": MODE_CID,"value": defaultValue}]
                 }
             };
             return event;
@@ -378,10 +381,10 @@ define(function(){
             };
             return event;
         },
-        _assemblyModelWarmEvent: function (name, cid, mac, h, s, b, type, eventClass) {
+        _assemblyModelWarmEvent: function (name, cid, mac, h, s, b, type, eventClass, isLong) {
             var compare = "";
-            if (eventClass == SINGLE_GROUP) {
-                compare = MESH_LIGHT_SYSC;
+            if (isLong) {
+                compare = MESH_LIGHT_SYSC_COLOR_2;
             } else {
                 compare = MESH_LIGHT_SYSC_COLOR
             }
@@ -400,12 +403,12 @@ define(function(){
             };
             return event;
         },
-        _assemblyModelEvent: function (name, cid, mac, h, s, b, type, eventClass) {
+        _assemblyModelEvent: function (name, cid, mac, h, s, b, type, eventClass, isLong) {
             var compare = "";
-            if (eventClass == SINGLE_GROUP) {
-                compare = MESH_LIGHT_SYSC;
+            if (isLong) {
+                compare = MESH_LIGHT_SYSC_COLOR_2;
             } else {
-                compare = MESH_LIGHT_SYSC_COLOR
+                compare = MESH_LIGHT_SYSC_COLOR;
             }
             var event = {
                 "name": name,
@@ -423,33 +426,20 @@ define(function(){
             };
             return event;
         },
-        _assemblyDelayEvent: function (name, cid, mac, type, eventClass, execCid, operation, delayVal) {
+        _assemblyButtonEvent: function (name, cid, mac, subCid, type, eventClass, isLong,
+            defaultValue, compare) {
             var event = {
                 "name": name,
                 "trigger_cid": cid,
                 "trigger_content": {"request": CONTROL},
                 "event_type": type,
                 "event_class": eventClass,
-                "trigger_compare": MESH_LIGHT_SYSC,
+                "isLong": isLong,
+                "trigger_compare": compare,
                 "execute_mac": mac,
-                "execute_content":{"request": SET_SLOW_SWITCH,
-                    "cid": execCid, "operation": operation,
-                    "duration": delayVal
-                }
-            };
-            return event;
-        },
-        _assemblyButtonEvent: function (name, cid, mac, subCid, type, eventClass) {
-            var event = {
-                "name": name,
-                "trigger_cid": cid,
-                "trigger_content": {"request": CONTROL},
-                "event_type": type,
-                "event_class": eventClass,
-                "trigger_compare": MESH_LIGHT_SYSC,
-                "execute_mac": mac,
+                "execute_cid": subCid,
                 "execute_content":{"request": SET_STATUS,"characteristics":[
-                    {"cid": subCid,"value": STATUS_ON}
+                    {"cid": subCid,"value": defaultValue}
                 ]}
             }
             return event;

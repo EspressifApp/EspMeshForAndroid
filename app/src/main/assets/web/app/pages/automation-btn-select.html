@@ -8,30 +8,26 @@
         </h4>
     </div>
     <div class="content-info attr">
-
-    </div>
-    <transition name="ups">
-        <div v-show="eventFlag" class="ota-upgrade">
-            <div @click="hide" class="mask"></div>
-            <div class="upgrade-info command">
-                <h3>{{$t('eventType')}}</h3>
-                <div class="command-select">
-                    <div @click="checkRadio('1')" class="event-item">
-                        <div class="event-item-name">{{$t('singleGroup')}}</div>
-                        <div class="event-item-power">
-                            <span class="span-radio" :class="{'active': eventType == '1'}"><span></span></span>
-                        </div>
-                    </div>
-                    <div @click="checkRadio('2')" class="event-item">
-                        <div class="event-item-name">{{$t('multipleGroup')}}</div>
-                        <div class="event-item-power">
-                            <span class="span-radio" :class="{'active': eventType == '2'}"><span></span></span>
-                        </div>
-                    </div>
-                </div>
+        <div @click="checkRadio('1')" class="item">
+            <div class="item-name up-date padding-left-10">
+                <span>{{$t('singleGroup')}}</span>
+            </div>
+            <div class="item-power-small">
+                <span class="span-radio" :class="{'active': newEventType == '1'}"><span></span></span>
             </div>
         </div>
-    </transition>
+        <div @click="checkRadio('2')" class="item">
+            <div class="item-name up-date padding-left-10">
+                <span>{{$t('multipleGroup')}}</span>
+            </div>
+            <div class="item-power-small">
+                <span class="span-radio" :class="{'active': newEventType == '2'}"><span></span></span>
+            </div>
+        </div>
+        <div class="position-absolute btn-register-wrapper">
+            <button @click="next" :class="{'bg-gray': newEventType <= 0}" class="btn register-btn">{{$t('next')}}</button>
+        </div>
+    </div>
     <v-automationBtn v-on:autoBtnShow="hideThis" :deviceEvents="deviceEvents" :deviceInfo="deviceInfo" :isMuch="isMuch" ref="autoBtn"></v-automationBtn>
     <v-automationBtnDevices v-on:autoDevicesShow="hideThis"  :deviceEvents="deviceEvents" :deviceInfo="deviceInfo" :isMuch="isMuch"
                              :autoId="autoId" ref="autoBtnDevices"></v-automationBtnDevices>

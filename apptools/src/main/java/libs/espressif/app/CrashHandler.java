@@ -15,11 +15,8 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        if (mOnCaughtExceptionListener != null) {
-            if (!mOnCaughtExceptionListener.onCaughtException(t, e)) {
-                mDefaultHandler.uncaughtException(t, e);
-            }
-        } else {
+        if (mOnCaughtExceptionListener == null
+                || !mOnCaughtExceptionListener.onCaughtException(t, e)) {
             mDefaultHandler.uncaughtException(t, e);
         }
     }

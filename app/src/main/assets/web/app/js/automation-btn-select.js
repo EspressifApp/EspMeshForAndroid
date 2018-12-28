@@ -17,6 +17,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-select.html", "../
                     autoIdBtn: "",
                     isMuch: false,
                     eventType: -1,
+                    newEventType: -1,
                     eventFlag: true,
                     existEvent: false,
                     deviceEvents: []
@@ -30,6 +31,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-select.html", "../
                     var self = this;
                     self.eventFlag = true;
                     self.eventType = -1;
+                    self.newEventType = -1;
                     self.existEvent = false;
                     self.deviceEvents = [];
                     self.autoIdBtn = self.autoId + "-btn";
@@ -39,7 +41,6 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-select.html", "../
                         MINT.Indicator.open();
                         setTimeout(function() {
                             self.getEvent();
-
                         }, 1000)
                     }, 200)
                 },
@@ -81,12 +82,16 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-select.html", "../
                     }, 200)
                 },
                 checkRadio: function(type) {
+                    this.newEventType = parseInt(type);
+                },
+                next: function() {
                     var self = this;
-                    type = parseInt(type);
-                    if (self.existEvent && type != self.eventType) {
-                        self.delDeviceEvent(type);
-                    } else  {
-                        self.jump(type);
+                    if (self.newEventType > 0) {
+                        if (self.existEvent && self.newEventType != self.eventType) {
+                            self.delDeviceEvent(self.newEventType);
+                        } else  {
+                            self.jump(self.newEventType);
+                        }
                     }
                 },
                 jump: function(type) {
@@ -129,6 +134,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-select.html", "../
                                    if (self.deviceEvents.length > 0) {
                                       self.existEvent = true;
                                       self.eventType = self.deviceEvents[0].event_class;
+                                      self.newEventType = self.eventType;
                                    }
                                 }
                             }

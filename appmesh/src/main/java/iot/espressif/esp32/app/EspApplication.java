@@ -15,7 +15,6 @@ import java.util.Random;
 import iot.espressif.esp32.db.dao.DaoMaster;
 import iot.espressif.esp32.db.dao.DaoSession;
 import iot.espressif.esp32.db.manager.EspDBManager;
-import libs.espressif.app.CrashHandler;
 import libs.espressif.utils.RandomUtil;
 
 public class EspApplication extends Application {
