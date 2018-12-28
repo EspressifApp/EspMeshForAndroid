@@ -12,6 +12,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
             },
             password: {
                 type: String
+            },
+            moreObj: {
+                type: Object
             }
         },
         data: function(){
@@ -21,6 +24,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                 title: this.$t('connetDeviceTitle'),
                 desc: this.$t('connetDeviceDesc'),
                 textList: [],
+                rssiList: [],
                 wifiInfo: {},
                 count: 0,
                 success: true
@@ -31,30 +35,34 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                 window.onBackPressed = this.hide;
                 window.onConfigureProgress = this.onConfigureProgress;
                 window.onScanBLE = this.onConScanBLE;
-                window.espmesh.stopBleScan();
+                espmesh.stopBleScan();
                 this.wifiInfo = this.$store.state.wifiInfo;
                 this.addFlag = true;
                 this.value = 0;
                 this.count = 0;
                 this.textList = [];
+                this.rssiList = [];
                 this.conWifi();
+                console.log(JSON.stringify(this.moreObj));
             },
             hide: function () {
                 this.addFlag = false;
-                window.espmesh.stopConfigureBlufi();
+                espmesh.stopBleScan();
+                espmesh.stopConfigureBlufi();
                 this.$emit("conShow");
             },
             conWifi: function () {
                 var self = this,
                     scanDeviceList = self.$store.state.scanDeviceList,
                     scanMacs = [], rssi = -1000, rssiMac = "", version = -1;
-                window.espmesh.startBleScan();
+                espmesh.startBleScan();
                 self.success = true;
                 self.title = self.$t('connetDeviceTitle');
                 self.desc = self.$t('connetDeviceDesc');
                 setTimeout(function () {
-                    window.espmesh.stopBleScan();
+                    espmesh.stopBleScan();
                     if (self.rssiList.length != 0) {
+                        console.log(JSON.stringify(scanDeviceList))
                         $.each(scanDeviceList, function(i, item) {
                             scanMacs.push(item.bssid);
                         });
@@ -63,16 +71,17 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                             if (itemRssi != 0 && itemRssi > rssi && scanMacs.indexOf(item.bssid) > -1) {
                                 rssi = itemRssi;
                                 rssiMac = item.mac;
-                                version = item.version;
+                                version = item.version
                             }
                         })
                         var data = {"ble_addr": rssiMac,"ssid": self.wifiName,"password": self.password,
-                           "white_list": scanMacs, "mesh_id": self.convert(self.meshId),"version": version};
+                            "white_list": scanMacs, "mesh_id": self.convert(self.meshId),"version": version};
+                        data = Object.assign(data, self.moreObj)
                         console.log(JSON.stringify(data));
                         console.log(JSON.stringify(scanMacs));
                         console.log(scanMacs.length);
-                        window.espmesh.saveMeshId(self.meshId);
-                        window.espmesh.startConfigureBlufi(JSON.stringify(data));
+                        espmesh.saveMeshId(self.meshId);
+                        espmesh.startConfigureBlufi(JSON.stringify(data));
                     } else {
                         self.setFail(self.$t('farDeviceDesc'));
                     }
@@ -114,8 +123,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                         self.textList.push(config.message);
                     }
                     self.desc = self.$t('connetSuccessDesc');
-                    window.espmesh.stopBleScan();
-                    window.espmesh.clearBleCache();
+                    espmesh.stopBleScan();
+                    espmesh.clearBleCache();
                     self.$store.commit("setScanDeviceList", []);
                     self.count = 0;
                     setTimeout(function() {
@@ -137,7 +146,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                              } else if (config.code == 2) {
                                  self.setFail(self.$t('pwdFailDesc'))
                              } else {
-                                 self.setFail(config.message)
+                                 self.setFail(config.message);
                              }
                         }
                     }
@@ -146,6 +155,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
             },
             setFail: function(msg) {
                 var self = this;
+                espmesh.stopBleScan();
                 self.success = false;
                 self.title = self.$t('connetFailDesc');
                 self.desc = msg;

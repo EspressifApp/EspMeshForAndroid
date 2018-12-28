@@ -27,7 +27,7 @@ define(["vue", "MINT", "txt!../../pages/scanDevice.html"],
             },
             hide: function () {
                 this.addFlag = false;
-                window.espmesh.stopBleScan();
+                espmesh.stopBleScan();
                 this.$emit("scanDeviceShow");
             },
             hideThis: function () {
@@ -35,7 +35,7 @@ define(["vue", "MINT", "txt!../../pages/scanDevice.html"],
             },
             hideParent: function () {
                 this.addFlag = false;
-                window.espmesh.stopBleScan();
+                espmesh.stopBleScan();
             },
             onBackReset: function () {
                 window.onBackPressed = this.hide;
@@ -46,7 +46,7 @@ define(["vue", "MINT", "txt!../../pages/scanDevice.html"],
             addConDevice: function() {
                 this.scanNum = 0;
                 clearTimeout(SCAN_DEVICE);
-                window.espmesh.scanTopo();
+                espmesh.scanTopo();
                 this.hideParent();
                 MINT.Indicator.open();
             },
@@ -89,7 +89,7 @@ define(["vue", "MINT", "txt!../../pages/scanDevice.html"],
                     } else {
                         if (self.scanNum < 2) {
                             self.scanNum++;
-                            window.espmesh.scanTopo();
+                            espmesh.scanTopo();
                         } else {
                             self.$store.commit("setList", []);
                             MINT.Indicator.close();

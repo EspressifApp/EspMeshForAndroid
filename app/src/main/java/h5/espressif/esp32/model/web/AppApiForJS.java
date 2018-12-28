@@ -48,12 +48,9 @@ public class AppApiForJS {
         return Build.VERSION.SDK_INT;
     }
 
-    /**
-     * @return like {"language":"zh", "country":"cn"}
-     */
     @JavascriptInterface
-    public String getLocale() {
-        return mImpl.getLocale();
+    public void getLocale() {
+        mImpl.getLocale();
     }
 
     /**

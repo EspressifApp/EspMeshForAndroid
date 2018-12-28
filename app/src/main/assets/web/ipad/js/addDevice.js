@@ -24,6 +24,30 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 meshArray: [],
                 password: "",
                 slots1:[{values: [], defaultIndex: 0}],
+                isMore: false,
+                moreObj: {},
+                meshType: "",
+                votePercentage: "",
+                voteMaxCount: "",
+                backoffRssi: "",
+                scanFailCount: "",
+                monitorCount: "",
+                rootHealing: "",
+                rootEnable: false,
+                fixEnable: false,
+                capacityNum: "",
+                maxLayer: "",
+                maxConnect: "",
+                assocExpire: "",
+                beaconInterval: "",
+                passiveScan: "",
+                monitorDuration: "",
+                cnxRssi: "",
+                selectRssi: "",
+                switchRssi: "",
+                xonQsize: "",
+                retransmitEnable: false,
+                dataDrop: false,
             }
         },
         computed: {
@@ -38,7 +62,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                         self.wifiName = self.$t('no');
                         self.password = "";
                     } else {
-                        var loadAps = window.espmesh.loadAPs(),  wifiFlag = true;
+                        var loadAps = espmesh.loadAPs(),  wifiFlag = true;
                         var loadSsid = "";
                         if (!Util._isEmpty(loadAps)) {
                             loadAps = JSON.parse(loadAps);
@@ -80,8 +104,49 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 }, 1000);
                 self.nextInput();
                 self.getMeshId();
-                window.espmesh.stopBleScan();
+                espmesh.stopBleScan();
                 self.addFlag = true;
+                self.moreObj = {};
+                self.meshType = "",
+                self.votePercentage = "";
+                self.voteMaxCount = "";
+                self.backoffRssi = "";
+                self.scanFailCount = "";
+                self.monitorCount = "";
+                self.rootHealing = "";
+                self.rootEnable = false;
+                self.fixEnable = false;
+                self.capacityNum = "";
+                self.maxLayer = "";
+                self.maxConnect = "";
+                self.assocExpire = "";
+                self.beaconInterval = "";
+                self.passiveScan = "";
+                self.monitorDuration = "";
+                self.cnxRssi = "";
+                selectRssi = "";
+                self.switchRssi = "";
+                self.xonQsiz = "";
+                self.retransmitEnable = false;
+                self.dataDrop = false;
+            },
+            selectMore: function() {
+                this.isMore = !this.isMore;
+            },
+            selectType: function(num) {
+                this.meshType = parseInt(num);
+            },
+            selectRoot: function() {
+                this.rootEnable = !this.rootEnable;
+            },
+            selectFix: function() {
+                this.fixEnable = !this.fixEnable;
+            },
+            selectRetransmit: function() {
+                this.retransmitEnable = !this.retransmitEnable;
+            },
+            selectDataDrop: function() {
+                this.dataDrop = !this.dataDrop;
             },
             showPassword: function () {
                 this.showPwd = !this.showPwd;
@@ -127,8 +192,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
             },
             getMeshId: function() {
                 var self = this,
-                    meshIds = window.espmesh.loadMeshIds(),
-                    id = window.espmesh.loadLastMeshId();
+                    meshIds = espmesh.loadMeshIds(),
+                    id = espmesh.loadLastMeshId();
                 self.meshArray = [];
                 if (!Util._isEmpty(meshIds)) {
                     self.meshArray = JSON.parse(meshIds);
@@ -188,8 +253,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
 
             nextStep: function () {
                 var self = this;
-                var bleCon = window.espmesh.isBluetoothEnable();
-//                var sdk = window.espmesh.getSDKInt();
+                var bleCon = espmesh.isBluetoothEnable();
+                var sdk = espmesh.getSDKInt();
 
                 if (!bleCon) {
                     MINT.Toast({
@@ -198,17 +263,16 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                     });
                     return false;
                 }
-//                if (sdk >= 23) {
-//                    var locationCon = window.espmesh.isLocationEnable();
-//                    if (!locationCon) {
-//                        MINT.Toast({
-//                            message: self.$t('locationConDesc'),
-//                            position: 'bottom',
-//                        });
-//                        return false;
-//                    }
-//                }
-
+                if (sdk >= 23) {
+                    var locationCon = espmesh.isLocationEnable();
+                    if (!locationCon) {
+                        MINT.Toast({
+                            message: self.$t('locationConDesc'),
+                            position: 'bottom',
+                        });
+                        return false;
+                    }
+                }
                 if (self.wifiName == self.$t('no')) {
                     MINT.Toast({
                         message: self.$t('wifiNoDesc'),
@@ -226,6 +290,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 }
                 self.meshId = self.meshIdOne + ":" + self.meshIdTwo + ":" + self.meshIdThr + ":" + self.meshIdFour +
                     ":" + self.meshIdFive + ":" + self.meshIdSex;
+                self.moreObj = {meshType: self.meshType, votePercentage: self.votePercentage, voteMaxCount: self.voteMaxCount,
+                    backoffRssi: self.backoffRssi, scanFailCount: self.scanFailCount, monitorCount: self.monitorCount,
+                    rootHealing: self.rootHealing, rootEnable: self.rootEnable, fixEnable: self.fixEnable,
+                    capacityNum: self.capacityNum, maxLayer: self.maxLayer, maxConnect: self.maxConnect,
+                    assocExpire: self.assocExpire, beaconInterval: self.beaconInterval, passiveScan: self.passiveScan,
+                    monitorDuration: self.monitorDuration, cnxRssi: self.cnxRssi, selectRssi: self.selectRssi,
+                    switchRssi: self.switchRssi, xonQsize: self.xonQsize, retransmitEnable:self.retransmitEnable,
+                    dataDrop: self.dataDrop};
                 if(self.showNext) {
                      MINT.MessageBox.confirm(self.$t('wifiConfirmDesc'), self.$t('configNet'),{
                             confirmButtonText: self.$t('carryOn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {

@@ -99,7 +99,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
             },
             getPair: function() {
                 var self = this,
-                    pairs = window.espmesh.loadHWDevices();
+                    pairs = espmesh.loadHWDevices();
                 if (!Util._isEmpty(pairs)) {
                     self.resetPairList = JSON.parse(pairs);
                 }
@@ -107,7 +107,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
             },
             getPairInfo: function(mac) {
                 var self = this, position = "";
-                    staMac = window.espmesh.getStaMacsForBleMacs(JSON.stringify([mac]));
+                    staMac = espmesh.getStaMacsForBleMacs(JSON.stringify([mac]));
                 staMac = JSON.parse(staMac);
                 if (staMac.length > 0) {
                     $.each(self.resetPairList, function(i, item) {
@@ -123,7 +123,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                 this.$store.commit("setShowScanBle", true);
                 this.$store.commit("setShowLoading", true);
                 this.$emit("resetShow");
-                window.espmesh.stopBleScan();
+                espmesh.stopBleScan();
                 this.addFlag = false;
             },
             hideParent: function () {
@@ -131,7 +131,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                 this.$parent.conReload();
             },
             getLoadMacs: function() {
-                var macs = window.espmesh.loadMacs();
+                var macs = espmesh.loadMacs();
                 this.scanMacs = JSON.parse(macs)
             },
             importDevice: function() {
@@ -163,10 +163,10 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                 var self = this,
                     index = self.scanMacs.indexOf(mac);
                 if (index > -1) {
-                    window.espmesh.deleteMac(mac);
+                    espmesh.deleteMac(mac);
                     self.scanMacs.splice(index, 1);
                 } else {
-                    window.espmesh.saveMac(mac);
+                    espmesh.saveMac(mac);
                     self.scanMacs.push(mac);
                 }
             },
@@ -180,7 +180,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
             onBackReset: function () {
                 var self = this;
                 clearTimeout(SCAN_DEVICE);
-                window.espmesh.stopBleScan();
+                espmesh.stopBleScan();
                 setTimeout(function() {
                     self.startBleScan();
                     window.onScanBLE = self.onConScanBLE;
@@ -190,7 +190,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
             addDevice: function () {
                 var self = this;
                 if (self.selected > 0) {
-                    window.espmesh.stopBleScan();
+                    espmesh.stopBleScan();
                     var docs = $("#" + self.resetId + " span.span-radio.active"),
                         macs = [], list = [];
                     for (var i = 0; i < docs.length; i++) {
@@ -251,9 +251,9 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
             },
             startBleScan: function() {
                 var self = this,
-                    flag = window.espmesh.isBluetoothEnable();
+                    flag = espmesh.isBluetoothEnable();
                 if (flag) {
-                    window.espmesh.startBleScan();
+                    espmesh.startBleScan();
                 } else {
                     MINT.Toast({
                         message: self.$t('bleConDesc'),
@@ -304,7 +304,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
             onBluetoothStateChanged: function(blue) {
                 blue = JSON.parse(blue);
                 if (blue.enable && this.addFlag && !this.$refs.device.addFlag) {
-                    window.espmesh.startBleScan();
+                    espmesh.startBleScan();
                 }
             }
 

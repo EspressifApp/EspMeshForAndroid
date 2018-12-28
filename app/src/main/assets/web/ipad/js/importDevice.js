@@ -30,7 +30,7 @@ define(["vue", "Util", "txt!../../pages/importDevice.html"], function(v, Util, i
                     $.each(self.scanDeviceList, function(i, item) {
                         macs.push(item.mac);
                     })
-                    var staMac = window.espmesh.getStaMacsForBleMacs(JSON.stringify(macs));
+                    var staMac = espmesh.getStaMacsForBleMacs(JSON.stringify(macs));
                     macs = JSON.parse(staMac);
                     $.each(self.pairList, function(i, item) {
                         if (macs.indexOf(item.mac) == -1 && deviceMacs.indexOf(item.mac) == -1) {
@@ -75,7 +75,7 @@ define(["vue", "Util", "txt!../../pages/importDevice.html"], function(v, Util, i
             },
             getDevices: function() {
                 var self = this,
-                    pairs = window.espmesh.loadHWDevices();
+                    pairs = espmesh.loadHWDevices();
                 if (!Util._isEmpty(pairs)) {
                     self.pairList = JSON.parse(pairs);
                 }
@@ -91,7 +91,7 @@ define(["vue", "Util", "txt!../../pages/importDevice.html"], function(v, Util, i
                 for (var i = 0; i < docs.length; i++) {
                     var mac = $(docs[i]).attr("data-value"),
                         position = $(docs[i]).attr("data-position"),
-                        bleMac = window.espmesh.getBleMacsForStaMacs(JSON.stringify([mac]));
+                        bleMac = espmesh.getBleMacsForStaMacs(JSON.stringify([mac]));
                     bleMac = JSON.parse(bleMac);
                     self.scanDeviceList.push({mac: bleMac[0], name: mac, rssi: 0, position: position});
                 };

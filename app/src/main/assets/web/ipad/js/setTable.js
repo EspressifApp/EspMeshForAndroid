@@ -41,8 +41,8 @@ define(["vue", "MINT", "txt!../../pages/setTable.html",],
                         scope: 'topo',
                         disabled: false
                     });
-                    window.espmesh.saveDeviceTable("{column: "+COL_NUM+", row: "+ROW_NUM+"}");
-                    window.espmesh.removeAllTableDevices();
+                    espmesh.saveDeviceTable("{column: "+COL_NUM+", row: "+ROW_NUM+"}");
+                    espmesh.removeAllTableDevices();
                     ISCROLL_TABLE.refresh();
                     self.hide();
                 });

@@ -26,7 +26,7 @@ define(["vue", "MINT", "txt!../../pages/password.html"], function(v, MINT, passw
                 }
                 MINT.Indicator.open();
                 setTimeout(function() {
-                    var res = window.espmesh.userResetPassword(self.email);
+                    var res = espmesh.userResetPassword(self.email);
                     console.log(res);
                     if (!self._isEmpty(res)){
                         res = JSON.parse(res);

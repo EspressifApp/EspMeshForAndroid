@@ -32,6 +32,7 @@ define(["vue", "MINT", "txt!../../pages/info.html", "../js/colorPicker"],
                 self.deviceInfo = self.$store.state.deviceInfo;
                 self.deviceList = self.$store.state.deviceList;
                 self.deviceMacs = [self.deviceInfo.mac];
+                window.onEditName = this.onEditName;
                 self.flag = true;
                 setTimeout(function () {
                     self.setLeftAndTop();
@@ -77,12 +78,12 @@ define(["vue", "MINT", "txt!../../pages/info.html", "../js/colorPicker"],
                                 '"name":' + JSON.stringify(name) + ', "callback": "onEditName", "tag": {"mac": "'+mac+
                                 '", "name": "'+name+'"}}';
                     setTimeout(function(){
-                        window.espmesh.requestDeviceAsync(data),
+                        espmesh.requestDeviceAsync(data);``
 
                     }, 500);
                 });
             },
-            onEditName: function() {
+            onEditName: function(res) {
                 var self = this;
                 res = JSON.parse(res);
                 var result = res.result;

@@ -23,7 +23,7 @@ define(["vue", "MINT", "txt!../../pages/eventInfo.html", "../js/addEvent"],
                 var self = this;
                 window.onBackPressed = self.hide;
                 self.deviceInfo = self.$store.state.deviceInfo;
-                var res = window.espmesh.loadDeviceEventsPositioin(self.deviceInfo.mac);
+                var res = espmesh.loadDeviceEventsPositioin(self.deviceInfo.mac);
                 self.deviceEvent = JSON.parse(res);
                 self.eventList = JSON.parse(self.deviceEvent.events);
                 window.onDeleteEvent = this.onDeleteEvent;
@@ -38,7 +38,7 @@ define(["vue", "MINT", "txt!../../pages/eventInfo.html", "../js/addEvent"],
             },
             setEventList: function() {
                 var self = this;
-                var res = window.espmesh.loadDeviceEventsPositioin(self.deviceInfo.mac);
+                var res = espmesh.loadDeviceEventsPositioin(self.deviceInfo.mac);
                 self.deviceEvent = JSON.parse(res);
                 self.eventList = JSON.parse(self.deviceEvent.events);
             },
@@ -116,7 +116,7 @@ define(["vue", "MINT", "txt!../../pages/eventInfo.html", "../js/addEvent"],
                             self.hide();
                             $("#" + tag.mac).removeClass("active");
                         }
-                        window.espmesh.saveDeviceEventsPosition(mac, JSON.stringify(self.eventList), self.deviceEvent.position);
+                        espmesh.saveDeviceEventsPosition(mac, JSON.stringify(self.eventList), self.deviceEvent.position);
                     }
                 }
                 MINT.Indicator.close();

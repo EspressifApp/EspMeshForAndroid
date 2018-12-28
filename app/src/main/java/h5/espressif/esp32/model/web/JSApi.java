@@ -83,4 +83,12 @@ public class JSApi {
     public static String onApkDownloadResult(String info) {
         return String.format(Locale.ENGLISH, "onApkDownloadResult(\'%s\')", info);
     }
+
+    /**
+     *
+     * @param info {"language":"zh", "country":"cn"}
+     */
+    public static String onLocaleGot(String info) {
+        return String.format(Locale.ENGLISH, "onLocaleGot(\'%s\')", info);
+    }
 }

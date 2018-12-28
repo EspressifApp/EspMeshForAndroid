@@ -53,7 +53,7 @@ define(["vue", "MINT", "txt!../../pages/addEvent.html"],
                 self.eventOperate();
                 self.deviceInfo = self.$store.state.deviceInfo;
                 self.deviceList = self.$store.state.deviceList;
-                var res = window.espmesh.loadDeviceEventsPositioin(self.deviceInfo.mac);
+                var res = espmesh.loadDeviceEventsPositioin(self.deviceInfo.mac);
                 self.deviceEvent = JSON.parse(res);
                 self.eventList = JSON.parse(self.deviceEvent.events);
                 self.desc = "";
@@ -410,11 +410,11 @@ define(["vue", "MINT", "txt!../../pages/addEvent.html"],
             },
             editSession: function (mac, position, events) {
                 var self = this,
-                    res = window.espmesh.loadDeviceEventsPositioin(mac),
+                    res = espmesh.loadDeviceEventsPositioin(mac),
                     deviceEvents = [], editEvents = [];
                 if (self._isEmpty(res)) {
                     deviceEvents = events;
-                    window.espmesh.saveDeviceEventsPosition(mac, JSON.stringify(events), JSON.stringify(position));
+                    espmesh.saveDeviceEventsPosition(mac, JSON.stringify(events), JSON.stringify(position));
                 } else {
                     res = JSON.parse(res);
                     var names = [];
@@ -429,7 +429,7 @@ define(["vue", "MINT", "txt!../../pages/addEvent.html"],
                                 deviceEvents.push(item);
                             }
                         });
-                        window.espmesh.saveDeviceEventsPosition(mac, JSON.stringify(deviceEvents), res.position);
+                        espmesh.saveDeviceEventsPosition(mac, JSON.stringify(deviceEvents), res.position);
                     }
                 }
                 self.$emit("changEventList");

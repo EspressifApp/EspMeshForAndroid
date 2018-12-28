@@ -1756,9 +1756,9 @@ class AppApiForJSImpl {
         }
     }
 
-    String getLocale() {
+    void getLocale() {
         JSONObject json = mActivity.getLocaleJSON();
-        return json.toString();
+        mActivity.evaluateJavascript(JSApi.onLocaleGot(json.toString()));
     }
 
     String loadHWDevices() {

@@ -188,11 +188,11 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
             },
             getTable: function () {
                 var self = this;
-                var res = window.espmesh.loadDeviceTable();
+                var res = espmesh.loadDeviceTable();
 
                 if (!self._isEmpty(res)) {
                     res = JSON.parse(res);
-                    var devices = window.espmesh.loadTableDevices();
+                    var devices = espmesh.loadTableDevices();
                     COL_NUM = res.column;
                     ROW_NUM = res.row;
                     self.init(COL_NUM, ROW_NUM, "table-drop");
@@ -245,7 +245,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
 
                 } else {
                     self.init(self.colNum, self.rowNum, "table-drop");
-                    window.espmesh.saveDeviceTable("{column: "+self.colNum+", row: "+self.rowNum+"}");
+                    espmesh.saveDeviceTable("{column: "+self.colNum+", row: "+self.rowNum+"}");
                 }
                 setTimeout(function() {
                     self.droppableTable();
@@ -262,7 +262,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                 var doc = $("div[data-id='" + mac +"']");
                 var name = doc.find(".name").text();
                 var color = doc.find(".icon").find("i").css("color");
-                window.espmesh.saveTableDevices(JSON.stringify([{mac: mac, name: name, color: color,
+                espmesh.saveTableDevices(JSON.stringify([{mac: mac, name: name, color: color,
                     column: parseInt(col), row: parseInt(row)}]));
             },
             colorPlateBtn: function() {
@@ -282,7 +282,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                 }
                 docs.parent().removeClass("active");
                 docs.remove();
-                window.espmesh.removeTableDevices(JSON.stringify(macs));
+                espmesh.removeTableDevices(JSON.stringify(macs));
             },
             disabledTableDevice: function (mac) {
                 var doc = $("#lefticon-table div.itemtable[icontype='" + mac + "']").parent().parent();
@@ -506,7 +506,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                     $("div[data-id='" + mac + "']").find("p").find("i").css("color", color);
                     var data = '{"' + MESH_MAC + '": "' + mac + '","'+NO_RESPONSE+'": true,"' +MESH_REQUEST + '": "' + SET_STATUS + '",' +
                             '"characteristics":' + JSON.stringify(meshs) + '}';
-                    window.espmesh.addQueueTask("requestDeviceAsync", data);
+                    espmesh.addQueueTask("requestDeviceAsync", data);
                 }
 
             },

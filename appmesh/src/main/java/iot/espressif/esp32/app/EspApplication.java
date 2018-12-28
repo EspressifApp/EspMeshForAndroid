@@ -67,8 +67,6 @@ public class EspApplication extends Application {
         SQLiteDatabase db = mDBHelper.getWritableDatabase();
         DaoSession daoSession = new DaoMaster(db).newSession();
         EspDBManager.init(daoSession);
-
-//        SpeechUtility.createUtility(this, "appid=59e567a0");
     }
 
     private void release() {

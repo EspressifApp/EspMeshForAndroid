@@ -58,7 +58,7 @@ define(["vue", "MINT", "txt!../../pages/register.html"], function(v, MINT, regis
                 }
                 MINT.Indicator.open();
                 setTimeout(function () {
-                    var res = window.espmesh.userRegister(self.email, self.username, self.password);
+                    var res = espmesh.userRegister(self.email, self.username, self.password);
                     MINT.Indicator.close();
 
                     if (!self._isEmpty(res)) {

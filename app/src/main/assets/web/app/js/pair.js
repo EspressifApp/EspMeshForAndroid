@@ -84,6 +84,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                             deviceMacs.push(item.mac);
                         }
                     })
+                    console.log(JSON.stringify(deviceMacs));
                     setTimeout(function() {
                         self.deletePair(deviceMacs.length > 0, deviceMacs, macs)
                     }, 1000);
@@ -187,7 +188,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                 if (flag) {
                     self.setDevicePosition(deviceMacs, macs);
                 } else {
-                    espmesh.deleteHWDevices(JSON.stringify(deviceMacs));
+                    espmesh.deleteHWDevices(JSON.stringify(macs));
                     self.getPair();
                     MINT.Toast({
                         message: self.$t('delSuccessDesc'),

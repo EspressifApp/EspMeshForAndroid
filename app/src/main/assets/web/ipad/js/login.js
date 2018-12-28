@@ -16,7 +16,7 @@ define(["vue", "MINT", "txt!../../pages/login.html", "../js/register", "../js/pa
             }
         },
         mounted: function() {
-            window.espmesh.hideCoverImage();
+            espmesh.hideCoverImage();
             $(document).ready(function () {
              　　$('div.wrapper').height($('body')[0].clientHeight);
             });
@@ -51,7 +51,7 @@ define(["vue", "MINT", "txt!../../pages/login.html", "../js/register", "../js/pa
                 };
                 MINT.Indicator.open();
                 setTimeout(function() {
-                    var res = window.espmesh.userLogin(self.username, self.password);
+                    var res = espmesh.userLogin(self.username, self.password);
                     if (!self._isEmpty(res)) {
                         setTimeout(function(){
                             MINT.Indicator.close();
@@ -89,7 +89,7 @@ define(["vue", "MINT", "txt!../../pages/login.html", "../js/register", "../js/pa
                 var self = this;
                 MINT.Indicator.open();
                 setTimeout(function() {
-                    var res = window.espmesh.userGuestLogin();
+                    var res = espmesh.userGuestLogin();
                     if (!self._isEmpty(res)) {
                         setTimeout(function(){
                             MINT.Indicator.close();
@@ -132,7 +132,7 @@ define(["vue", "MINT", "txt!../../pages/login.html", "../js/register", "../js/pa
                         startTime = new Date().getTime();
                     } else {
                         if (new Date().getTime() - startTime < 2000) {
-                            window.espmesh.finish();
+                            espmesh.finish();
                         } else {
                             startTime = new Date().getTime();
                         }
