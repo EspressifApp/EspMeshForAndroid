@@ -601,7 +601,7 @@ class EspOTAClientImpl extends EspOTAClient {
             EspHttpHeader lenHeader = new EspHttpHeader(HEADER_OTA_LENGTH, String.valueOf(appPkgLength));
             EspHttpHeader countHeader = new EspHttpHeader(HEADER_NODE_COUNT, String.valueOf(requestDevices.size()));
             EspHttpHeader macsHeader = new EspHttpHeader(HEADER_NODE_MAC, bssids.toString());
-            EspHttpHeader contentTypeHeader = new EspHttpHeader(EspHttpUtils.H_NAME_CONTENT_TYPE, "application/ota_bin");
+            EspHttpHeader contentTypeHeader = new EspHttpHeader(EspHttpUtils.CONTENT_TYPE, "application/ota_bin");
 
             EspHttpParams params = new EspHttpParams();
             params.setTryCount(3);

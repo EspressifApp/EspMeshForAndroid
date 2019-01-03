@@ -406,7 +406,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                     var num = parseInt(count / schedule.length);
                     if (self.upgradeValue >= 0 && self.upgradeValue <= num) {
                         if (num >= 99) {
-                            self.upgradeValue = 100;
+                            self.upgradeValue = 99;
                         } else {
                             self.upgradeValue = num;
                         }
@@ -435,6 +435,15 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                         if (self.macs.length == 1 && self.otaType != 1) {
                             self.setProgress(100);
                         }
+                        $.each(self.scheduleList, function(i, item) {
+                            if (self.successMacs.indexOf(item.mac) != -1) {
+                                item.progress = 100;
+                                self.scheduleList.splice(i, 1, item);
+                            } else {
+                                item.progress = 0;
+                                self.scheduleList.splice(i, 1, item);
+                            }
+                        });
                         if (self.successMacs.length >= self.otaDeviceList.length) {
                             self.upgradeFailure = false;
                             self.upgradeSuccess = true;

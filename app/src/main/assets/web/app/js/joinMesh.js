@@ -230,8 +230,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/joinMesh.html", "./importDevice"
                         conMacs.push($(docs[i]).attr("data-value"));
                     };
                     setTimeout(function(){
-                        var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + ADD_DEVICE + '","'+
-                                                'whitelist": '+JSON.stringify(conMacs)+'}';
+                        var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                            ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + ADD_DEVICE + '","'+
+                            'whitelist": '+JSON.stringify(conMacs)+'}';
                         espmesh.requestDevicesMulticastAsync(data);
                         self.$store.commit("setScanDeviceList", []);
                         MINT.Indicator.close();

@@ -99,8 +99,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                 setTimeout(function() {
                     self.hideThis();
                 })
-                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"' + MESH_REQUEST +
-                '": "' + GET_MESH + '","callback": "debugResult", "tag": "debugResult"}';
+                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                    ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST +
+                    '": "' + GET_MESH + '","callback": "debugResult", "tag": "debugResult"}';
                 espmesh.requestDevicesMulticastAsync(data);
 
             },
@@ -112,7 +113,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                 setTimeout(function() {
                     self.hideThis();
                 })
-                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macList) + ',"' + MESH_REQUEST + '": "' +
+                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macList) +
+                    ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' +
                     GET_MESH + '", "callback": "onGetMesh", "tag": {"macs": '+JSON.stringify(macs)+'}}';
                 espmesh.requestDevicesMulticastAsync(data);
 
@@ -324,8 +326,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                     $.each(pairs, function(i, item) {
                         if (item.mac == device.mac) {
                             device.position = item.floor + "-" + item.area + "-" + item.code;
-                            var data = '{"' + MESH_MAC + '": "' + device.mac + '","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
-                                        '"position":"' + device.position + '"}';
+                            var data = '{"' + MESH_MAC + '": "' + device.mac +
+                                '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
+                                '"position":"' + device.position + '"}';
                             espmesh.requestDeviceAsync(data);
                             return  false;
                         }

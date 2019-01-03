@@ -24,7 +24,9 @@ public class NetUtil {
 
 
     public static boolean isNetworkAvailable(Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) context.getApplicationContext()
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        assert cm != null;
         int[] types = new int[]{ConnectivityManager.TYPE_WIFI, ConnectivityManager.TYPE_MOBILE};
         for (int type : types) {
             NetworkInfo info = cm.getNetworkInfo(type);
@@ -63,6 +65,7 @@ public class NetUtil {
      */
     public static String getCurrentConnectSSID(Context context) {
         WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        assert wm != null;
         WifiInfo connection = wm.getConnectionInfo();
         boolean isWifiConnected = connection != null && connection.getNetworkId() != -1;
         if (isWifiConnected) {
@@ -87,6 +90,7 @@ public class NetUtil {
      */
     public static String getCurrentConnectBSSID(Context context) {
         WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        assert wm != null;
         WifiInfo connection = wm.getConnectionInfo();
         boolean isWifiConnected = connection != null && connection.getNetworkId() != -1;
         if (isWifiConnected) {
@@ -104,6 +108,7 @@ public class NetUtil {
      */
     public static String getCurrentConnectIP(Context context) {
         WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        assert wm != null;
         WifiInfo connection = wm.getConnectionInfo();
         boolean isWifiConnected = connection != null && connection.getNetworkId() != -1;
         if (isWifiConnected) {
@@ -129,10 +134,11 @@ public class NetUtil {
      * Get the connection information of the connected access point.
      *
      * @param context The Application Context.
-     * @return An information string array. Position 0 is ssid, position 1 is bssid, position 2 is ip address, null is disconnected
+     * @return An information string array with [ssid bssid ipAddress frequency], or null if disconnected
      */
     public static String[] getCurrentConnectionInfo(Context context) {
         WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        assert wm != null;
         WifiInfo connection = wm.getConnectionInfo();
         boolean isWifiConnected = connection != null && connection.getNetworkId() != -1;
         if (isWifiConnected) {
@@ -163,6 +169,7 @@ public class NetUtil {
      */
     public static boolean isWifiConnected(Context context) {
         WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        assert wm != null;
         WifiInfo connection = wm.getConnectionInfo();
         return connection != null && connection.getNetworkId() != -1;
     }
@@ -380,19 +387,17 @@ public class NetUtil {
                 config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
                 config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
                 if (password != null && password.length() > 0) {
-                    String pwdStr = password;
-                    int length = pwdStr.length();
+                    int length = password.length();
                     // WEP-40, WEP-104, and 256-bit WEP (WEP-232?)
-                    if ((length == 10 || length == 26 || length == 58) && pwdStr.matches("[0-9A-Fa-f]*")) {
-                        config.wepKeys[0] = pwdStr; // ##
+                    if ((length == 10 || length == 26 || length == 58) && password.matches("[0-9A-Fa-f]*")) {
+                        config.wepKeys[0] = password; // ##
                     } else {
-                        config.wepKeys[0] = '"' + pwdStr + '"'; // ##
+                        config.wepKeys[0] = '"' + password + '"'; // ##
                     }
                 }
                 break;
             case WIFI_SECURITY_WPA: // WPA
-                String pwdStr = password;
-                config.preSharedKey = "\"" + pwdStr + "\""; // ##
+                config.preSharedKey = "\"" + password + "\""; // ##
 
                 config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
                 // for WPA

@@ -185,7 +185,7 @@ define(function(){
                 return false;
             }
         },
-        switchTouchDefaultEvent: function(parentMac, childMacs) {
+        switchTouchDefaultEvent: function(parentMac, childMacs, deviceIp) {
             var self = this;
             var splitMac = parentMac.substr((parentMac.length - 3), 3);
             var events = [];
@@ -204,9 +204,9 @@ define(function(){
                 childMacs, SYSC_BLUE_HUE, SYSC_BLUE_SATURATION);
             events.push(eventBlue);
 
-            self._addRequestEvent(parentMac, events);
+            self._addRequestEvent(parentMac, events, deviceIp);
         },
-        sensorDefaultEvent: function (parentMac, childMacs) {
+        sensorDefaultEvent: function (parentMac, childMacs, deviceIp) {
             var self = this;
             var splitMac = parentMac.substr((parentMac.length - 3), 3);
             var events = [];
@@ -216,9 +216,9 @@ define(function(){
             var eventOFF = self._assemblyOtherEvent(OFF_EN + "_" + splitMac, SENSOR_CID,
                 childMacs, MESH_SENSOR_OFF_COMPARE, STATUS_OFF);
             events.push(eventOFF);
-            self._addRequestEvent(parentMac, events);
+            self._addRequestEvent(parentMac, events, deviceIp);
         },
-        sensor24DefaultEvent: function (parentMac, childMacs) {
+        sensor24DefaultEvent: function (parentMac, childMacs, deviceIp) {
             var self = this;
             var splitMac = parentMac.substr((parentMac.length - 3), 3);
             var events = [];
@@ -260,9 +260,9 @@ define(function(){
             var eventOFF = self._assemblyOtherEvent(TURN_OFF, SENSOR24_CID_2,
                 childMacs, MESH_LIGHT_OFF_COMPARE, STATUS_OFF);
             events.push(eventOFF);
-            self._addRequestEvent(parentMac, events);
+            self._addRequestEvent(parentMac, events, deviceIp);
         },
-        switchButtonDefaultEvent: function(cid, parentMac, childMacs) {
+        switchButtonDefaultEvent: function(cid, parentMac, childMacs, deviceIp) {
             var self = this;
             var events = [];
             var eventON = self._assemblyOtherEvent(ON_EN + "_" + cid, cid,
@@ -271,9 +271,9 @@ define(function(){
             var eventOFF = self._assemblyOtherEvent(OFF_EN + "_" + cid, cid,
                 childMacs, MESH_LIGHT_OFF_COMPARE, STATUS_OFF);
             events.push(eventOFF);
-            self._addRequestEvent(parentMac, events);
+            self._addRequestEvent(parentMac, events, deviceIp);
         },
-        switchDefaultEvent: function(parentMac, childMacs) {
+        switchDefaultEvent: function(parentMac, childMacs, deviceIp) {
             var self = this;
             var splitMac = parentMac.substr((parentMac.length - 3), 3);
             var events = [];
@@ -284,10 +284,10 @@ define(function(){
                 childMacs, MESH_LIGHT_OFF_COMPARE, STATUS_OFF);
             events.push(eventOFF);
 
-            self._addRequestEvent(parentMac, events);
+            self._addRequestEvent(parentMac, events, deviceIp);
 
         },
-        lightSyscEvent: function (parentMac, childMacs) {
+        lightSyscEvent: function (parentMac, childMacs, deviceIp) {
             var self = this;
             var splitMac = parentMac.substr((parentMac.length - 3), 3);
             var events = [];
@@ -305,7 +305,7 @@ define(function(){
             events.push(eventSaturation);
             events.push(eventTemperature);
             events.push(eventBrightess);
-            self._addRequestEvent(parentMac, events);
+            self._addRequestEvent(parentMac, events, deviceIp);
         },
         setModelEvent: function(name, childMacs, cid, subCid, h, s, b, flag, type, eventClass, execCid, isLong,
             defaultValue, compare) {
@@ -481,9 +481,10 @@ define(function(){
             };
             return event;
         },
-        _addRequestEvent: function (parentMac, events) {
-            var data = '{"' + MESH_MAC + '": "' + parentMac + '","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_EVENT + '",' +
-                            '"events":' + JSON.stringify(events) + '}';
+        _addRequestEvent: function (parentMac, events, deviceIp) {
+            var data = '{"' + MESH_MAC + '": "' + parentMac +
+                '","'+DEVICE_IP+'": "'+deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_EVENT + '",' +
+                '"events":' + JSON.stringify(events) + '}';
             espmesh.requestDeviceAsync(data);
         },
 

@@ -256,8 +256,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                             }
                         })
                         self.deviceList = devices;
-                        var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
-                                        DEVICE_DELAY + '": ' + DELAY_TIME + '}';
+                        var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                            ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
+                            DEVICE_DELAY + '": ' + DELAY_TIME + '}';
                         console.log(data);
                         espmesh.requestDevicesMulticastAsync(data);
                         espmesh.removeDevicesForMacs(JSON.stringify(macs));
@@ -320,8 +321,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                 var self = this, meshs = [];
                 self.currentStatus = (status == STATUS_ON ? true : false);
                 meshs.push({cid: STATUS_CID, value: parseInt(status)});
-                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
-                           '"characteristics":' + JSON.stringify(meshs) + '}';
+                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                    ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
+                    '"characteristics":' + JSON.stringify(meshs) + '}';
                 espmesh.addQueueTask("requestDevicesMulticastAsync",data);
                 self.changeDevice(macs, status);
             },

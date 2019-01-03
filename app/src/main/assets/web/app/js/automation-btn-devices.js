@@ -147,7 +147,8 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-devices.html", "..
                     }
                 },
                 delEvent: function (parentMac) {
-                    var data = '{"' + MESH_MAC + '": "' + parentMac + '","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
+                    var data = '{"' + MESH_MAC + '": "' + parentMac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
                         '"events":' + JSON.stringify(this.eventNames) + '}';
                     espmesh.requestDeviceAsync(data);
                 },

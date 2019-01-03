@@ -370,7 +370,8 @@ define(["vue", "MINT", "txt!../../pages/addEvent.html"],
                 }
                 MINT.Indicator.open();
                 setTimeout(function() {
-                    var data = '{"' + MESH_MAC + '": "' + mac + '","' + MESH_REQUEST + '": "' + SET_EVENT + '",' +
+                    var data = '{"' + MESH_MAC + '": "' + mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_EVENT + '",' +
                         '"events":' + JSON.stringify(events) + ', "callback": "onSetEvent", "tag": {"event": '+
                         JSON.stringify(events)+', "mac": "'+mac+'"}}';
                     espmesh.requestDeviceAsync(data);

@@ -38,7 +38,8 @@ define(["vue","MINT", "Util", "txt!../../pages/scanInfo.html"],
                         macs.push(item.mac);
                     })
                     MINT.Indicator.open();
-                    var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"' + MESH_REQUEST + '": "' + SET_SNIFFER +
+                    var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                        ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_SNIFFER +
                         '","enable": '+self.scanInfo.enable+',"type":'+self.scanInfo.type+',"notice_threshold":'+
                         self.scanInfo.notice_threshold+',"esp_module_filter":'+self.scanInfo.esp_module_filter+
                         ',"ble_scan_interval":'+self.scanInfo.ble_scan_interval+',"g_ble_scan_window":'+

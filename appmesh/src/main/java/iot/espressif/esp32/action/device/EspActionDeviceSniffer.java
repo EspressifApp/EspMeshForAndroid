@@ -64,7 +64,7 @@ public class EspActionDeviceSniffer implements IEspActionDeviceSniffer {
         for (Map.Entry<String, EspHttpResponse> entry : responseMap.entrySet()) {
             String deviceMac = entry.getKey();
             EspHttpResponse response = entry.getValue();
-            EspHttpHeader contentTypeHeader = response.findHeader(EspHttpUtils.H_NAME_CONTENT_TYPE);
+            EspHttpHeader contentTypeHeader = response.findHeader(EspHttpUtils.CONTENT_TYPE);
             if (contentTypeHeader == null || !CONTENT_TYPE_BIN.equals(contentTypeHeader.getValue())) {
                 continue;
             }

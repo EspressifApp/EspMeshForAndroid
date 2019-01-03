@@ -39,10 +39,10 @@ require(["IScroll", "jQuery", "vue", "vueRouter", "MINT", "Util", "routers", "to
     });
 
     router.beforeEach(function(to, from, next) {
-        var userInfo = window.espmesh.userLoadLastLogged();
+        var userInfo = espmesh.userLoadLastLogged();
         userInfo = JSON.parse(userInfo);
         if(userInfo == null || userInfo == "" || userInfo.status != 0){//如果有就直接到首页咯
-            window.espmesh.userGuestLogin();
+            espmesh.userGuestLogin();
         }
         next();
     });
@@ -60,6 +60,7 @@ require(["IScroll", "jQuery", "vue", "vueRouter", "MINT", "Util", "routers", "to
             wifiInfo: "",
             rssiInfo: -80,
             showScanBle: true,
+            deviceIp: "",
         },
         mutations: {
             setList: function(state, list){
@@ -94,6 +95,9 @@ require(["IScroll", "jQuery", "vue", "vueRouter", "MINT", "Util", "routers", "to
             },
             setShowScanBle: function(state, info){
                 state.showScanBle = info;
+            },
+            setDeviceIp: function(state, info) {
+                state.deviceIp = info;
             }
         }
     });
@@ -110,12 +114,17 @@ require(["IScroll", "jQuery", "vue", "vueRouter", "MINT", "Util", "routers", "to
         store: store,
         router: router,
         mounted: function() {
-            var res = window.espmesh.getLocale();
-            res = JSON.parse(res);
-            if (res.language == "zh") {
-                this.$i18n.locale = "zh";
-            } else {
-                this.$i18n.locale = "en";
+            window.onLocaleGot = this.onLocaleGot;
+            espmesh.getLocale();
+        },
+        methods: {
+            onLocaleGot: function(res) {
+                res = JSON.parse(res);
+                if (res.language == "zh") {
+                    this.$i18n.locale = "zh";
+                } else {
+                    this.$i18n.locale = "en";
+                }
             }
         }
     });

@@ -71,7 +71,8 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
                 meshs.push({cid: HUE_CID, value: hueValue});
                 meshs.push({cid: SATURATION_CID, value: saturation});
                 meshs.push({cid: VALUE_CID, value: luminance});
-                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
+                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                    ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                     '"characteristics":' + JSON.stringify(meshs) + '}';
                 espmesh.addQueueTask("requestDevicesMulticastAsync",data);
 
@@ -114,7 +115,8 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
                 brightness = Math.round(parseFloat(brightness) * 100),
                 meshs.push({cid: TEMPERATURE_CID, value: temperature});
                 meshs.push({cid: BRIGHTNESS_CID, value: brightness});
-                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
+                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                    ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                     '"characteristics":' + JSON.stringify(meshs) + '}';
                 espmesh.addQueueTask("requestDevicesMulticastAsync",data);
                 $.each(this.deviceList, function(i, item){

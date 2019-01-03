@@ -229,7 +229,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
             }
             mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_MAC, macsValue.toString());
             mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_COUNT, String.valueOf(mMacList.size()));
-            mConnection.addRequestProperty(EspHttpUtils.H_NAME_CONTENT_TYPE, DeviceUtil.CONTENT_TYPE_BIN);
+            mConnection.addRequestProperty(EspHttpUtils.CONTENT_TYPE, DeviceUtil.CONTENT_TYPE_BIN);
             mConnection.addRequestProperty(HEADER_BIN_NAME, name);
             mConnection.connect();
 
@@ -316,7 +316,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
             }
             mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_MAC, macsValue.toString());
             mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_COUNT, String.valueOf(mMacList.size()));
-            mConnection.addRequestProperty(EspHttpUtils.H_NAME_CONTENT_TYPE, EspHttpUtils.HEADER_CONTENT_JSON.getValue());
+            mConnection.addRequestProperty(EspHttpUtils.CONTENT_TYPE, EspHttpUtils.HEADER_CONTENT_JSON.getValue());
             mConnection.addRequestProperty(HEADER_BIN_URL, mBinUrl);
 
             byte[] postData = "{}".getBytes();

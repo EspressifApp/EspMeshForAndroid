@@ -217,8 +217,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                             if (itemSub.mac == item.mac) {
                                 item.position = itemSub.floor + "-" + itemSub.area + "-" + itemSub.code;
                                 self.deviceList.splice(i, 1, item);
-                                var data = '{"' + MESH_MAC + '": "' + item.mac + '","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
-                                            '"position":"' + item.position + '"}';
+                                var data = '{"' + MESH_MAC + '": "' + item.mac +
+                                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
+                                        '"position":"' + item.position + '"}';
                                 espmesh.requestDeviceAsync(data);
                                 self.$store.commit("setList", self.deviceList);
                                 return  false;
@@ -244,8 +245,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                     $.each(pairs, function(i, item) {
                         if (item.mac == device.mac) {
                             device.position = item.floor + "-" + item.area + "-" + item.code;
-                            var data = '{"' + MESH_MAC + '": "' + device.mac + '","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
-                                        '"position":"' + device.position + '"}';
+                            var data = '{"' + MESH_MAC + '": "' + device.mac +
+                                    '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
+                                    '"position":"' + device.position + '"}';
                             espmesh.requestDeviceAsync(data);
                             return  false;
                         }
@@ -496,16 +498,18 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
             },
             isSensor: function (tid, characteristics) {
                 if (tid >= MIN_SENSOR && tid <= MAX_SENSOR) {
-                    var temperature = false, humidity = false, luminance = false;;
-                    $.each(characteristics, function(i, item) {
-                        if (item.cid == SENSOR_TEMPERATURE_CID && item.name == SENSOR_TEMPERATURE_NAME) {
-                            temperature = true;
-                        } else if (item.cid == SENSOR_HUMIDITY_CID && item.name == SENSOR_HUMIDITY_NAME) {
-                            humidity = true;
-                        } else if (item.cid == SENSOR_LUMINANCE_CID && item.name == SENSOR_LUMINANCE_NAME) {
-                            luminance = true;
-                        }
-                    });
+                    var temperature = false, humidity = false, luminance = false;
+                    if (!Util._isEmpty(characteristics)) {
+                        $.each(characteristics, function(i, item) {
+                            if (item.cid == SENSOR_TEMPERATURE_CID && item.name == SENSOR_TEMPERATURE_NAME) {
+                                temperature = true;
+                            } else if (item.cid == SENSOR_HUMIDITY_CID && item.name == SENSOR_HUMIDITY_NAME) {
+                                humidity = true;
+                            } else if (item.cid == SENSOR_LUMINANCE_CID && item.name == SENSOR_LUMINANCE_NAME) {
+                                luminance = true;
+                            }
+                        });
+                    }
                     if (temperature && humidity && luminance) {
                         return true;
                     } else {
@@ -517,31 +521,37 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
             },
             getSensorTemperature: function(characteristics) {
                 var temperature = 0;
-                $.each(characteristics, function(i, item) {
-                    if (item.cid == SENSOR_TEMPERATURE_CID && item.name == SENSOR_TEMPERATURE_NAME) {
-                        temperature = item.value;
-                    }
-                });
+                if (!Util._isEmpty(characteristics)) {
+                    $.each(characteristics, function(i, item) {
+                        if (item.cid == SENSOR_TEMPERATURE_CID && item.name == SENSOR_TEMPERATURE_NAME) {
+                            temperature = item.value;
+                        }
+                    });
+                }
                 return temperature;
             },
             getSensorHumidity: function(characteristics) {
                 var humidity = 0;
-                $.each(characteristics, function(i, item) {
-                    if (item.cid == SENSOR_HUMIDITY_CID && item.name == SENSOR_HUMIDITY_NAME) {
-                        humidity = item.value;
-                        return false;
-                    }
-                });
+                if (!Util._isEmpty(characteristics)) {
+                    $.each(characteristics, function(i, item) {
+                        if (item.cid == SENSOR_HUMIDITY_CID && item.name == SENSOR_HUMIDITY_NAME) {
+                            humidity = item.value;
+                            return false;
+                        }
+                    });
+                }
                 return humidity;
             },
             getSensorLuminance: function(characteristics) {
                 var luminance = 0;
-                $.each(characteristics, function(i, item) {
-                    if (item.cid == SENSOR_LUMINANCE_CID && item.name == SENSOR_LUMINANCE_NAME) {
-                        luminance = item.value;
-                        return false;
-                    }
-                });
+                if (!Util._isEmpty(characteristics)) {
+                    $.each(characteristics, function(i, item) {
+                        if (item.cid == SENSOR_LUMINANCE_CID && item.name == SENSOR_LUMINANCE_NAME) {
+                            luminance = item.value;
+                            return false;
+                        }
+                    });
+                }
                 return luminance;
             },
             delDevice: function (e) {
@@ -553,8 +563,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                     MINT.Indicator.open();
                     setTimeout(function() {
                         var mac = self.deviceInfo.mac;
-                        var data = '{"' + MESH_MAC + '": "' + mac + '","' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
-                                        DEVICE_DELAY + '": ' + DELAY_TIME + ',"callback": "onDelDevice", "tag": { "mac": "'+
+                        var data = '{"' + MESH_MAC + '": "' + mac +
+                                '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
+                                DEVICE_DELAY + '": ' + DELAY_TIME + ',"callback": "onDelDevice", "tag": { "mac": "'+
                                         mac +'"}}';
                         espmesh.requestDeviceAsync(data);
                     }, 1000);
@@ -567,28 +578,38 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 var self = this,
                     hueValue = 0, saturation = 0, luminance = 0, status = 0, rgb = "#6b6b6b",
                     mode = 0, temperature = 0, brightness = 0;
-                $.each(characteristics, function(i, item) {
-                    if (item.cid == HUE_CID) {
-                        hueValue = item.value;
-                    }else if (item.cid == SATURATION_CID) {
-                        saturation = item.value;
-                    }else if (item.cid == VALUE_CID) {
-                        luminance = item.value;
-                    } else if (item.cid == STATUS_CID) {
-                        status = item.value;
-                    } else if (item.cid == MODE_CID) {
-                        mode = item.value;
-                    } else if (item.cid == TEMPERATURE_CID) {
-                        temperature = item.value;
-                    } else if (item.cid == BRIGHTNESS_CID) {
-                        brightness = item.value;
-                    }
-                })
+                if (!Util._isEmpty(characteristics)) {
+                    $.each(characteristics, function(i, item) {
+                        if (item.cid == HUE_CID) {
+                            hueValue = item.value;
+                        }else if (item.cid == SATURATION_CID) {
+                            saturation = item.value;
+                        }else if (item.cid == VALUE_CID) {
+                            luminance = item.value;
+                        } else if (item.cid == STATUS_CID) {
+                            status = item.value;
+                        } else if (item.cid == MODE_CID) {
+                            mode = item.value;
+                        } else if (item.cid == TEMPERATURE_CID) {
+                            temperature = item.value;
+                        } else if (item.cid == BRIGHTNESS_CID) {
+                            brightness = item.value;
+                        }
+                    })
+                }
                 if (status == STATUS_ON) {
                     if (mode == MODE_CTB) {
                         rgb = self.modeFun(temperature, brightness);
                     } else {
-                        rgb = Raphael.hsb2rgb(hueValue / 360, saturation / 100, luminance / 100).hex;
+                        rgb = Raphael.hsb2rgb(hueValue / 360, saturation / 100, luminance / 100);
+                        var v = luminance / 100;
+                        if (v <= 0.4)  {
+                            v *= 1.2;
+                        }
+                        if(v <= 0.2) {
+                            v = 0.2;
+                        }
+                        rgb = "rgba("+Math.round(rgb.r)+", "+Math.round(rgb.g)+", "+Math.round(rgb.b)+", "+ v +")";
                     }
                 }
                 if (tid < MIN_LIGHT || tid > MAX_LIGHT) {
@@ -631,8 +652,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                     inputErrorMessage: self.$t('longDesc'),
                     confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj) {
                     self.deviceInfo.name = obj.value;
-                    var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac + '","' + MESH_REQUEST + '": "' + RENAME_DEVICE + '",' +
-                                '"name":' + JSON.stringify(obj.value) + ',"callback": "onEditName"}';
+                    var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + RENAME_DEVICE + '",' +
+                        '"name":' + JSON.stringify(obj.value) + ',"callback": "onEditName"}';
                     setTimeout(function(){
                         espmesh.requestDeviceAsync(data);
                     }, 600);
@@ -642,11 +664,13 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
             },
             getStatus: function(characteristics) {
                 var self = this, status = 0;
-                $.each(characteristics, function(i, item) {
-                    if (item.cid == STATUS_CID) {
-                        status = item.value;
-                    }
-                });
+                if (!Util._isEmpty(characteristics)) {
+                    $.each(characteristics, function(i, item) {
+                        if (item.cid == STATUS_CID) {
+                            status = item.value;
+                        }
+                    });
+                }
                 return (status == STATUS_ON ? true : false);
             },
             close: function (mac, status) {
@@ -669,7 +693,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 });
                 if (!deviceStatus == status) {
                     meshs.push({cid: STATUS_CID, value: parseInt(status)});
-                    var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac + '","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
+                    var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                         '"characteristics":' + JSON.stringify(meshs) + '}';
 
                     self.deviceInfo.characteristics = characteristics;
@@ -789,15 +814,23 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 console.log(res);
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
-                    if (res.result.status_code == 0) {
-                        espmesh.removeDeviceForMac(res.tag.mac);
-                        $.each(self.deviceList, function(i, item) {
-                            if (item.mac == res.tag.mac) {
-                                self.deviceList.splice(i, 1);
-                                return false;
-                            }
-                        })
-                        self.$store.commit("setList", self.deviceList);
+                    if (!Util._isEmpty(res.result)) {
+                        if (!Util._isEmpty(res.result.status_code) && res.result.status_code == 0) {
+                            espmesh.removeDeviceForMac(res.tag.mac);
+                            $.each(self.deviceList, function(i, item) {
+                                if (item.mac == res.tag.mac) {
+                                    self.deviceList.splice(i, 1);
+                                    return false;
+                                }
+                            })
+                            self.$store.commit("setList", self.deviceList);
+                        } else {
+                            MINT.Toast({
+                              message: self.$t('deleteFailDesc'),
+                              position: 'bottom',
+                              duration: 2000
+                            });
+                        }
                     } else {
                         MINT.Toast({
                           message: self.$t('deleteFailDesc'),
@@ -805,6 +838,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                           duration: 2000
                         });
                     }
+
                 } else {
                     MINT.Toast({
                       message: self.$t('deleteFailDesc'),
@@ -1095,6 +1129,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                if (!Util._isEmpty(devices)) {
                    devices = JSON.parse(devices);
                    if(devices.length > 0) {
+
                        self.showAdd = false;
                        self.hideLoad();
                        $.each(self.deviceList, function(i, item) {
@@ -1137,6 +1172,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
 
             },
             onDeviceScanning: function(devices) {
+                console.log(devices);
                 var self = this, macs = [];
                 if (!Util._isEmpty(devices)) {
                     devices = JSON.parse(devices);
@@ -1149,6 +1185,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                             self.deviceList.push(item);
                         }
                     });
+                    if (self.deviceList.length > 0) {
+                        self.$store.commit("setDeviceIp", self.deviceList[0].ip);
+                    }
                }
                self.$store.commit("setList", self.deviceList);
 

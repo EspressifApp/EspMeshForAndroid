@@ -157,7 +157,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/timingAdd.html"], function(v, MI
             },
             saveData: function(name, intervals) {
                 var self= this;
-                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(self.timingMacs) + ',"' + MESH_REQUEST + '": "' + SET_CALENDAR + '","' +
+                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(self.timingMacs) +
+                        ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_CALENDAR + '","' +
                             MESH_CALENDAR + '": ' + JSON.stringify(self.assemblyData(name, self.dayList, intervals)) +
                             ',"callback": "saveResult"}';
                 MINT.Indicator.open();

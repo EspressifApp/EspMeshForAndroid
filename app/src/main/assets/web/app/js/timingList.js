@@ -71,9 +71,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/timingList.html", "./timingDevic
                     confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
                     self.hideOperate();
                     MINT.Indicator.open();
-                    var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"' + MESH_REQUEST +
-                            '": "' + REMOVE_CALENDAR + '","' + MESH_CALENDAR + '":"' + name +
-                            '", "callback": "onRemoveTiming", "tag": {"name": "'+name+'"}}';
+                    var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                        ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST +
+                        '": "' + REMOVE_CALENDAR + '","' + MESH_CALENDAR + '":"' + name +
+                        '", "callback": "onRemoveTiming", "tag": {"name": "'+name+'"}}';
 
                     setTimeout(function() {
                         espmesh.requestDevicesMulticastAsync(data);
@@ -85,7 +86,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/timingList.html", "./timingDevic
 
             },
             getList: function() {
-                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(this.macs) + ',"' + MESH_REQUEST +
+                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(this.macs) +
+                    ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST +
                     '": "' + GTE_CALENDAR + '","callback": "getListResult"}';
                 MINT.Indicator.open();
                 espmesh.requestDevicesMulticastAsync(data);

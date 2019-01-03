@@ -131,8 +131,9 @@ define(["vue", "MINT", "txt!../../pages/attr.html"],
                         }
                     });
                     meshs.push({cid: parseInt(cid), value: parseInt(value)});
-                    var data = '{"' + MESH_MAC + '": "' + self.device.mac + '","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
-                                    '"characteristics":' + JSON.stringify(meshs) + '}';
+                    var data = '{"' + MESH_MAC + '": "' + self.device.mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
+                        '"characteristics":' + JSON.stringify(meshs) + '}';
                     espmesh.requestDeviceAsync(data);
                     self.$store.commit("setList", self.deviceList);
                 }

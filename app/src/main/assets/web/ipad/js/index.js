@@ -546,8 +546,9 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                      confirmButtonText: "Confirm", cancelButtonText: "Cancel"}).then(function(action) {
                     MINT.Indicator.open();
                     JSPLUMB_INSTANCE.deleteConnection(info);
-                    var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
-                                    DEVICE_DELAY + '": "' + DELAY_TIME + '"}';
+                    var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                        ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
+                        DEVICE_DELAY + '": "' + DELAY_TIME + '"}';
                     setTimeout(function(){
                         espmesh.requestDevicesMulticastAsync(data);
                         MINT.Indicator.close();
@@ -676,8 +677,9 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                 MINT.MessageBox.confirm("Confirm restore factory setting?", "Factory data reset",{
                     confirmButtonText: "Confirm", cancelButtonText: "Cancel"}).then(function(action) {
                     MINT.Indicator.open();
-                    var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
-                                    DEVICE_DELAY + '": ' + DELAY_TIME + '}';
+                    var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                        ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
+                        DEVICE_DELAY + '": ' + DELAY_TIME + '}';
                     setTimeout(function(){
                         JSPLUMB_INSTANCE.deleteEveryEndpoint();
                         $("#topocontent").find("div.elebox").remove();
@@ -924,9 +926,10 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                 return event;
             },
             _addRequestEvent: function (parentMac, events, childMac) {
-                var data = '{"' + MESH_MAC + '": "' + parentMac + '","' + MESH_REQUEST + '": "' + SET_EVENT + '",' +
-                                '"events":' + JSON.stringify(events) + ', "callback": "OnAsyncDevice", "tag": {"mac": "'+
-                                parentMac+'", "childMac": "'+childMac+'"}}';
+                var data = '{"' + MESH_MAC + '": "' + parentMac +
+                        '","'+DEVICE_IP+'": "'+this.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_EVENT + '",' +
+                        '"events":' + JSON.stringify(events) + ', "callback": "OnAsyncDevice", "tag": {"mac": "'+
+                        parentMac+'", "childMac": "'+childMac+'"}}';
                 sessionStorage.setItem(childMac+ "_" + parentMac, JSON.stringify(events));
                 espmesh.requestDeviceAsync(data);
             },
@@ -935,7 +938,8 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                     eventMacs = self.getAllMacs();
                 MINT.Indicator.close();
                 MINT.Indicator.open(self.$t('loadEvent'));
-                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(eventMacs) + ',"' + MESH_REQUEST + '": "' +
+                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(eventMacs) +
+                    ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' +
                     GET_EVENT +'","callback": "onInitEvent"}';
                 espmesh.requestDevicesMulticastAsync(data);
             },
@@ -1243,13 +1247,15 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                         }
 
                         if (parentEvents.length > 0) {
-                            var dataEvents = '{"' + MESH_MAC + '": "' + parentMac + '","' + MESH_REQUEST +
-                                    '": "' + SET_EVENT + '",' + '"events":' + JSON.stringify(parentEvents) + '}';
+                            var dataEvents = '{"' + MESH_MAC + '": "' + parentMac +
+                                '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST +
+                                '": "' + SET_EVENT + '",' + '"events":' + JSON.stringify(parentEvents) + '}';
                             espmesh.requestDeviceAsync(dataEvents);
                         }
                         if (events.length > 0) {
-                            var dataEvents = '{"' + MESH_MAC + '": "' + parentMac + '","' + MESH_REQUEST +
-                                    '": "' + REMOVE_EVENT + '",' + '"events":' + JSON.stringify(events) + '}';
+                            var dataEvents = '{"' + MESH_MAC + '": "' + parentMac +
+                                '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST +
+                                '": "' + REMOVE_EVENT + '",' + '"events":' + JSON.stringify(events) + '}';
                             espmesh.requestDeviceAsync(dataEvents);
                         }
                         espmesh.saveDeviceEventsPosition(device.mac, JSON.stringify(device.events),
@@ -1267,8 +1273,9 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                     });
                 }
                 if (!Util._isEmpty(events) && events.length > 0) {
-                    var dataChildEvents = '{"' + MESH_MAC + '": "' + childMac + '","' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
-                                    '"events":' + JSON.stringify(events) + '}';
+                    var dataChildEvents = '{"' + MESH_MAC + '": "' + childMac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
+                        '"events":' + JSON.stringify(events) + '}';
                     espmesh.requestDeviceAsync(dataChildEvents);
                 }
                 espmesh.deleteDeviceEventsPosition(childMac);
@@ -1324,8 +1331,9 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                     $.each(pairs, function(i, item) {
                         if (item.mac == device.mac) {
                             device.position = item.floor + "-" + item.area + "-" + item.code;
-                            var data = '{"' + MESH_MAC + '": "' + device.mac + '","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
-                                        '"position":"' + device.position + '"}';
+                            var data = '{"' + MESH_MAC + '": "' + device.mac +
+                                '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
+                                '"position":"' + device.position + '"}';
                             espmesh.requestDeviceAsync(data);
                             return  false;
                         }

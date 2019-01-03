@@ -89,9 +89,10 @@ define(["vue", "MINT", "txt!../../pages/eventInfo.html", "../js/addEvent"],
                 MINT.MessageBox.confirm("Confirm to delete this event?", "Delete events",{
                         confirmButtonText: "Confirm", cancelButtonText: "Cancel"}).then(function(action) {
                     MINT.Indicator.open();
-                    var data = '{"' + MESH_MAC + '": "' + mac + '","' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
-                                    '"events":' + JSON.stringify(events) + ', "callback": "onDeleteEvent", "tag": {"mac": "'+
-                                    mac+'", "name": "'+name+'"}}';
+                    var data = '{"' + MESH_MAC + '": "' + mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
+                        '"events":' + JSON.stringify(events) + ', "callback": "onDeleteEvent", "tag": {"mac": "'+
+                        mac+'", "name": "'+name+'"}}';
                     setTimeout(function(){
                         espmesh.requestDeviceAsync(data);
                     }, 500);

@@ -601,7 +601,9 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                         console.log(JSON.stringify(events));
                     }
                     self.delEvent();
-                    Util._addRequestEvent(parentMac, events);
+                    setTimeout(function() {
+                        Util._addRequestEvent(parentMac, events, self.$store.state.deviceIp);
+                    }, 3000)
                 },
                 delEvent: function () {
                     var self = this;
@@ -613,8 +615,9 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                         }
                     });
                     if(eventNames.length > 0) {
-                        var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac + '","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
-                                        '"events":' + JSON.stringify(eventNames) + '}';
+                        var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
+                            '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
+                            '"events":' + JSON.stringify(eventNames) + '}';
                         espmesh.requestDeviceAsync(data);
                     }
                 }

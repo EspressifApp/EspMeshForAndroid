@@ -292,8 +292,8 @@ public class EspWebActivity extends AppCompatActivity {
         }
     }
 
-    public void evaluateJavascript(String method) {
-        runOnUiThread(() -> mWebView.evaluateJavascript(method, null));
+    public void evaluateJavascript(String script) {
+        runOnUiThread(() -> mWebView.evaluateJavascript(script, null));
     }
 
     private void notifyWifiChanged() {

@@ -148,8 +148,9 @@ define(["vue", "MINT", "txt!../../pages/deviceTypeInfo.html", "../js/otaInfo"],
                             self.hideOperate();
                             MINT.Indicator.open();
                             setTimeout(function() {
-                                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
-                                                DEVICE_DELAY + '": ' + DELAY_TIME + '}';
+                                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                                    ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
+                                    DEVICE_DELAY + '": ' + DELAY_TIME + '}';
                                 espmesh.requestDevicesMulticastAsync(data);
                                 espmesh.removeDevicesForMacs(JSON.stringify(macs));
                                 var devices = [];

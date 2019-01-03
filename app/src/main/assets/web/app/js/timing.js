@@ -126,8 +126,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/timing.html", "./calendar", "./t
                     dayList = self.getDate();
                 self.timingInfo.days = dayList;
                 self.timingInfo.days_num = dayList.length;
-                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(self.timingMacs) + ',"' + MESH_REQUEST + '": "' + SET_CALENDAR + '","' +
-                            MESH_CALENDAR + '": ' + JSON.stringify(self.timingInfo) + ',"callback": "saveDateResult"}';
+                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(self.timingMacs) +
+                        ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_CALENDAR + '","' +
+                        MESH_CALENDAR + '": ' + JSON.stringify(self.timingInfo) + ',"callback": "saveDateResult"}';
                 MINT.Indicator.open();
                 setTimeout(function() {
                     espmesh.requestDevicesMulticastAsync(data);

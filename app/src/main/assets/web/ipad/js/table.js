@@ -504,8 +504,9 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                     self.deviceList.splice(position, 1, device);
                     meshs.push({cid: STATUS_CID, value: parseInt(characteristic.value)});
                     $("div[data-id='" + mac + "']").find("p").find("i").css("color", color);
-                    var data = '{"' + MESH_MAC + '": "' + mac + '","'+NO_RESPONSE+'": true,"' +MESH_REQUEST + '": "' + SET_STATUS + '",' +
-                            '"characteristics":' + JSON.stringify(meshs) + '}';
+                    var data = '{"' + MESH_MAC + '": "' + mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' +MESH_REQUEST + '": "' + SET_STATUS + '",' +
+                        '"characteristics":' + JSON.stringify(meshs) + '}';
                     espmesh.addQueueTask("requestDeviceAsync", data);
                 }
 

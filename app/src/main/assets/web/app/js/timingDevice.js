@@ -154,7 +154,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/timingDevice.html", "../js/timin
                 saveDevice: function() {
                     var self= this,
                         macs = self.getMacs();
-                    var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) + ',"' + MESH_REQUEST + '": "' + SET_CALENDAR + '","' +
+                    var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
+                        ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_CALENDAR + '","' +
                                 MESH_CALENDAR + '": ' + JSON.stringify(self.timingInfo) + ',"callback": "saveDeviceResult"}';
                     MINT.Indicator.open();
                     setTimeout(function() {

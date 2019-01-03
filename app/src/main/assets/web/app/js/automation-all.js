@@ -75,7 +75,8 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
                     if (cid == "") {
                         obj = {"cid": ""};
                     }
-                    var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac + '","' + MESH_REQUEST + '": "' +
+                    var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' +
                         GET_EVENT +'", "callback": "onGetAllEvent", "tag": '+JSON.stringify(obj)+'}';
                     espmesh.requestDeviceAsync(data);
 
@@ -133,13 +134,13 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
                         if (tid >= MIN_SWITCH && tid <= MAX_SWITCH) {
                             if (tid == TOUCH_PAD_SWITCH) {
                                 setTimeout(function() {
-                                    Util.switchTouchDefaultEvent(parentMac, macs);
+                                    Util.switchTouchDefaultEvent(parentMac, macs, self.$store.state.deviceIp);
                                     MINT.Indicator.close();
                                     self.hide();
                                 }, 500);
                             } else {
                                 setTimeout(function() {
-                                    Util.switchDefaultEvent(parentMac, macs);
+                                    Util.switchDefaultEvent(parentMac, macs, self.$store.state.deviceIp);
                                     MINT.Indicator.close();
                                     self.hide();
                                 }, 500);
@@ -148,13 +149,13 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
                         } else if (tid >= MIN_SENSOR && tid <= MAX_SENSOR) {
                             if (tid == SENSOR_24) {
                                 setTimeout(function() {
-                                    Util.sensor24DefaultEvent(parentMac, macs);
+                                    Util.sensor24DefaultEvent(parentMac, macs, self.$store.state.deviceIp);
                                     MINT.Indicator.close();
                                     self.hide();
                                 }, 500);
                             } else {
                                 setTimeout(function() {
-                                    Util.sensorDefaultEvent(parentMac, macs);
+                                    Util.sensorDefaultEvent(parentMac, macs, self.$store.state.deviceIp);
                                     MINT.Indicator.close();
                                     self.hide();
                                 }, 500);
@@ -162,7 +163,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
 
                         } else if (tid >= MIN_LIGHT && tid <= MAX_LIGHT) {
                             setTimeout(function() {
-                                Util.lightSyscEvent(parentMac, macs);
+                                Util.lightSyscEvent(parentMac, macs, self.$store.state.deviceIp);
                                 MINT.Indicator.close();
                                 self.hide();
                             }, 500);
@@ -185,7 +186,8 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
                     }
                 },
                 delEvent: function (parentMac) {
-                    var data = '{"' + MESH_MAC + '": "' + parentMac + '","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
+                    var data = '{"' + MESH_MAC + '": "' + parentMac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
                         '"events":' + JSON.stringify(this.eventNames) + '}';
                     espmesh.requestDeviceAsync(data);
 

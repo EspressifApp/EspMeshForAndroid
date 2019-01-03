@@ -31,7 +31,8 @@ define(["vue","MINT", "Util", "txt!../../pages/ibeaconInfo.html"],
                 setIbeacon: function() {
                     var self = this;
                     MINT.Indicator.open();
-                    var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac + '","' + MESH_REQUEST + '": "' + SET_IBEACON +
+                    var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_IBEACON +
                         '","name": "'+self.ibeaconInfo.name+'","uuid": "'+self.ibeaconInfo.uuid+'","major":'+
                         self.ibeaconInfo.major+',"minor":'+self.ibeaconInfo.minor+',"power":'+
                         self.ibeaconInfo.power+', "callback": "onSetIbeaconInfo"}';

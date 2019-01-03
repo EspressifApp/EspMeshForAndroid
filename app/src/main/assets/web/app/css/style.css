@@ -1888,7 +1888,8 @@ ul {
 }
 .upgrade-details-info {
 	max-height: 200px;
-	overflow-x: hidden;
+	overflow: hidden;
+	overflow-y: auto;
 	margin-bottom: 10px;
 }
 .details-item {

@@ -374,7 +374,7 @@ public class DeviceUtil {
                         Observable.fromArray(headArray)
                                 .takeUntil(s -> {
                                     String[] kv = s.split(": ");
-                                    boolean readContentLength = kv[0].equalsIgnoreCase(EspHttpUtils.H_NAME_CONTENT_LENGTH);
+                                    boolean readContentLength = kv[0].equalsIgnoreCase(EspHttpUtils.CONTENT_LENGTH);
                                     if (!readContentLength) {
                                         return false;
                                     }

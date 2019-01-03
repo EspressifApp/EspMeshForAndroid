@@ -74,9 +74,10 @@ define(["vue", "MINT", "txt!../../pages/info.html", "../js/colorPicker"],
                     MINT.Indicator.open();
                     var mac = self.deviceInfo.mac,
                         name = self.deviceInfo.name;
-                    var data = '{"' + MESH_MAC + '": "' + mac + '","' + MESH_REQUEST + '": "' + RENAME_DEVICE + '",' +
-                                '"name":' + JSON.stringify(name) + ', "callback": "onEditName", "tag": {"mac": "'+mac+
-                                '", "name": "'+name+'"}}';
+                    var data = '{"' + MESH_MAC + '": "' + mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + RENAME_DEVICE + '",' +
+                        '"name":' + JSON.stringify(name) + ', "callback": "onEditName", "tag": {"mac": "'+mac+
+                        '", "name": "'+name+'"}}';
                     setTimeout(function(){
                         espmesh.requestDeviceAsync(data);``
 
