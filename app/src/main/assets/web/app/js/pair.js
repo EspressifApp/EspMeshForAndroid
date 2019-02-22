@@ -16,12 +16,26 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                 total: 0,
                 selected: 0,
                 flagUl: false,
+                isSelectedMacs: [],
                 deleteShow: false
+            }
+        },
+        computed: {
+            list: function() {
+                if (this.flag) {
+                    this.pairList = this.$store.state.siteList;
+                    if (this.pairList.length > 0) {
+                        this.showAdd = false;
+                    } else {
+                        this.showAdd = true;
+                    }
+                }
             }
         },
         methods:{
             show: function () {
                 var self = this;
+                self.isSelectedMacs = [];
                 self.onBackPair();
                 self.deviceList = self.$store.state.deviceList;
                 self.getPair();
@@ -90,28 +104,41 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                     }, 1000);
                 });
             },
+            selectMac: function(mac) {
+                if (this.deleteShow) {
+                    var num = this.isSelectedMacs.indexOf(mac);
+                    if (num == -1) {
+                        this.isSelectedMacs.push(mac);
+                    } else {
+                        this.isSelectedMacs.splice(num, 1);
+                    }
+                    this.selected = this.isSelectedMacs.length;
+                }
+            },
+            isSelected: function(mac) {
+                var self = this,
+                    flag = false;
+                if (self.isSelectedMacs.indexOf(mac) != -1) {
+                    flag = true;
+                }
+                return flag;
+            },
             selectAllDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    $("span.span-radio").removeClass("active");
+                var doc = $(e.currentTarget).find("span.span-radio")[0];
+                if ($(doc).hasClass("active")) {
+                    $(doc).removeClass("active");
                     this.selected = 0;
+                    this.isSelectedMacs = [];
                 } else {
-                    doc.addClass("active");
-                    $("span.span-radio").addClass("active");
+                    $(doc).addClass("active");
                     this.selected = this.total;
+                    var allMacs = [];
+                    $.each(this.pairList, function(i, item) {
+                        allMacs.push(item.mac);
+                    })
+                    this.isSelectedMacs = allMacs;
                 }
 
-            },
-            selectDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    this.selected -= 1;
-                } else {
-                    doc.addClass("active");
-                    this.selected += 1;
-                }
             },
             onBackPair: function () {
                 this.getPair();
@@ -127,27 +154,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                 });
             },
             getPair: function() {
-                var self = this,
-                    pairs = espmesh.loadHWDevices();
-                if (!Util._isEmpty(pairs)) {
-                    self.pairList = JSON.parse(pairs);
-                }
-                if (self.pairList.length > 0) {
-                    self.showAdd = false;
-                } else {
-                    self.showAdd = true;
-                }
-                self.$store.commit("setSiteList", self.pairList);
+                espmesh.loadHWDevices();
             },
             showPairOperate: function(obj) {
                 var self = this,
                     mac = obj.mac;
                 self.pairInfo = "";
                 if (!self.deleteShow) {
-                    var pairs = espmesh.loadHWDevices();
-                    if (!Util._isEmpty(pairs)) {
-                        self.pairList = JSON.parse(pairs);
-                    }
+                    self.pairList = self.$store.state.siteList;
                     $.each(self.pairList, function(i, item) {
                         if (item.mac == mac) {
                             self.pairInfo = item;
@@ -204,7 +218,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
             },
             setDevicePosition: function(deviceMacs, macs) {
                 var self = this, flag = false,
-                    data = '{"' + MESH_MAC + '": ' + JSON.stringify(deviceMacs) + ',"'+ MESH_REQUEST + '": "' +
+                    data = '{"' + MESH_MAC + '": ' + JSON.stringify(deviceMacs) +
+                        ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+ MESH_REQUEST + '": "' +
                         SET_POSITION + '",' + '"position":"", "callback": "onSetDevicePosition", "tag": {"deviceMacs": '+
                         JSON.stringify(deviceMacs)+',"macs": '+JSON.stringify(macs)+'}}';
                 console.log(data);

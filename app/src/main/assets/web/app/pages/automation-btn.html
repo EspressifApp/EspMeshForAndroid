@@ -67,11 +67,11 @@
             <div class="upgrade-info btn-select">
                 <h3>{{$t('selectDevice')}}({{selected}}/{{count.length}})</h3>
                 <div class="command-select" id="btn-select-device">
-                    <div class="event-item" v-for="item in count">
+                    <div @click="selectMac(item.mac)" class="event-item" v-for="item in count">
                         <div class="event-item-name">{{item.name}}</div>
                         <div class="event-item-power">
-                            <span :data-value="item.mac" @click="selectDevice($event)"
-                                  class="span-radio"><span></span></span>
+                            <span :data-value="item.mac"
+                                  class="span-radio" :class="{'active': isSelected(item.mac)}"><span></span></span>
                         </div>
                     </div>
                 </div>

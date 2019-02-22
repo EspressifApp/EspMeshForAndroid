@@ -20,6 +20,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
                     eventFlag: false,
                     eventCid: -1,
                     eventCidList: [],
+                    isSelectedMacs: [],
                     selected: 0,
                 }
             },
@@ -45,6 +46,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
                     self.existEvent = false;
                     self.eventFlag = false;
                     self.eventCid = -1;
+                    self.isSelectedMacs = [];
                     self.deviceList = self.$store.state.deviceList;
                     $("#" + self.autoIdAll + " span.span-radio").removeClass("active");
                     console.log(JSON.stringify(self.deviceInfo));
@@ -53,7 +55,6 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
                        MINT.Indicator.open();
                        setTimeout(function() {
                            self.getEvent("");
-
                        }, 1000);
                     })
                 },
@@ -192,29 +193,42 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
                     espmesh.requestDeviceAsync(data);
 
                 },
+                selectMac: function(mac) {
+                    var num = this.isSelectedMacs.indexOf(mac);
+                    if (num == -1) {
+                        this.isSelectedMacs.push(mac);
+                    } else {
+                        this.isSelectedMacs.splice(num, 1);
+                    }
+                    this.selected = this.isSelectedMacs.length;
+                },
+                isSelected: function(mac) {
+                    var self = this,
+                        flag = false;
+                    if (self.isSelectedMacs.indexOf(mac) != -1) {
+                        flag = true;
+                    }
+                    return flag;
+                },
                 selectAllDevice: function (e) {
                     var self = this;
-                    var doc = $(e.currentTarget);
-                    if (doc.hasClass("active")) {
-                        doc.removeClass("active");
-                        $("#" + self.autoIdAll + " span.span-radio").removeClass("active");
+                    var doc = $(e.currentTarget).find("span.span-radio")[0];
+                    if ($(doc).hasClass("active")) {
+                        $(doc).removeClass("active");
                         this.selected = 0;
+                        this.isSelectedMacs = [];
                     } else {
-                        doc.addClass("active");
-                        $("#" + self.autoIdAll + " span.span-radio").addClass("active");
+                        $(doc).addClass("active");
                         this.selected = this.count;
+                        var allMacs = [];
+                        $.each(this.deviceList, function(i, item) {
+                            if (item.mac != self.deviceInfo.mac) {
+                                allMacs.push(item.mac);
+                            }
+                        })
+                        this.isSelectedMacs = allMacs;
                     }
 
-                },
-                selectDevice: function (e) {
-                    var doc = $(e.currentTarget);
-                    if (doc.hasClass("active")) {
-                        doc.removeClass("active");
-                        this.selected -= 1;
-                    } else {
-                        doc.addClass("active");
-                        this.selected += 1;
-                    }
                 },
                 onGetAllEvent: function(res) {
                     var self = this;
@@ -233,7 +247,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
                                     $.each(self.deviceList, function(i, item) {
                                         if (executeMacs.indexOf(item.mac) > -1) {
                                             self.selected++;
-                                            $("#" + self.autoIdAll + " span.span-radio[data-value='"+item.mac+"']").addClass("active");
+                                            self.isSelectedMacs.push(item.mac);
                                         }
                                     });
                                 }

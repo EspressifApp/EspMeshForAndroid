@@ -62,11 +62,9 @@ public final class GroupDBManager {
     }
 
     public List<GroupDB> loadGroups() {
-        final List<GroupDB> result = new LinkedList<>();
         List<GroupDB> groupDBs = mDaoSession.getGroupDBDao().loadAll();
-        result.addAll(groupDBs);
 
-        return result;
+        return new LinkedList<>(groupDBs);
     }
 
     public void deleteGroup(long id) {

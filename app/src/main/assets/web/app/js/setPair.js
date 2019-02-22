@@ -31,6 +31,13 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                 slots2:[{values: [], defaultIndex: 0}],
             }
         },
+        computed: {
+            list: function() {
+                if (this.flag) {
+                    this.pairList = this.$store.state.siteList;
+                }
+            }
+        },
         methods:{
             show: function () {
                 var self = this;
@@ -65,12 +72,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                 this.flag = false;
             },
             getPair: function() {
-                var self = this,
-                    pairs = espmesh.loadHWDevices();
-                if (!Util._isEmpty(pairs)) {
-                    self.pairList = JSON.parse(pairs);
-                    self.getPosition();
-                }
+                this.pairList = this.$store.state.siteList;
             },
             getPosition: function() {
                 var self = this;
@@ -112,19 +114,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                     }
 
                 }
-            },
-            getPair: function() {
-                var self = this,
-                    pairs = espmesh.loadHWDevices();
-                if (!Util._isEmpty(pairs)) {
-                    self.pairList = JSON.parse(pairs);
-                }
-                if (self.pairList.length > 0) {
-                    self.showAdd = false;
-                } else {
-                    self.showAdd = true;
-                }
-                self.$store.commit("setSiteList", self.pairList);
             },
             onBackSetPair: function () {
                 window.onBackPressed = this.hide;
@@ -230,7 +219,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                     if (flag) {
                         self.setDevicePosition(self.$t('saveSuccessDesc'), self.$t('saveFailDesc'), "onSetPairPosition");
                     } else {
-                        espmesh.saveHWDevice(self.mac, self.serialNum, self.floor, self.area);
+                        espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
+                            "floor": self.floor, "area":  self.area}]));
                         MINT.Toast({
                             message: self.$t('saveSuccessDesc'),
                             position: 'bottom',
@@ -239,10 +229,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                         self.mac = "";
                         self.getNum();
                     }
-                    var pairs = espmesh.loadHWDevices();
-                    if (!Util._isEmpty(pairs)) {
-                        self.pairList = JSON.parse(pairs);
-                    }
+                    espmesh.loadHWDevices();
                     self.onBackSetPair();
                     MINT.Indicator.close();
                 }, 500);
@@ -251,8 +238,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
             setDevicePosition: function(suc, fail, fun) {
                 var self = this, flag = false,
                     position = self.floor + "-" + self.area + "-" + self.serialNum,
-                    data = '{"' + MESH_MAC + '": "' + self.mac + '","' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
-                        '"position":"' + position + '", "callback": '+fun+', "tag": {"suc": "'+
+                    data = '{"' + MESH_MAC + '": "' + self.mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
+                        '"position":"' + position + '", "callback": "'+fun+'", "tag": {"suc": "'+
                         suc+'", "fail": "'+fail+'"}}';
                 espmesh.requestDeviceAsync(data);
             },
@@ -270,7 +258,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                             return false;
                         }
                     });
-                    espmesh.saveHWDevice(self.mac, self.serialNum, self.floor, self.area);
+                    espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
+                        "floor": self.floor, "area":  self.area}]));
                     MINT.Toast({
                         message: tag.suc,
                         position: 'bottom',
@@ -397,7 +386,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                         self.setDevicePosition(self.$t('editSuccessDesc'), self.$t('editFailDesc'), "onEditPair");
                     } else {
                         espmesh.deleteHWDevice(self.pairInfo.mac);
-                        espmesh.saveHWDevice(self.mac, self.serialNum, self.floor, self.area);
+                        espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
+                                "floor": self.floor, "area":  self.area}]));
                         MINT.Toast({
                             message: self.$t('editSuccessDesc'),
                             position: 'bottom',
@@ -424,7 +414,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                         }
                     });
                     espmesh.deleteHWDevice(self.pairInfo.mac);
-                    espmesh.saveHWDevice(self.mac, self.serialNum, self.floor, self.area);
+                    espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
+                        "floor": self.floor, "area":  self.area}]));
                     MINT.Toast({
                         message: tag.suc,
                         position: 'bottom',

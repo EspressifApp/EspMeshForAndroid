@@ -11,7 +11,7 @@
                     <div class="morebtn">
                         <a @click="showTable"><span class="icon-groups"></span>Group</a>
                         <a @click="addDevice"><span class="icon-plus"></span>Add</a>
-                        <!--<a @click="addPair"><span class="icon-radar"></span>Pair</a>-->
+                        <a @click="showWriting"><span class="icon-radar"></span>Write</a>
                         <!--<a id="statisticsBtn"><span class="fa fa-line-chart"></span>Statistics</a>-->
                         <a @click="resetBtn" id="resetBtn"><span class="icon-reset"></span>Reset</a>
                         <a @click="refreshBtn" id="refreshBtn"><span class="icon-loop"></span>Refresh</a>
@@ -27,7 +27,7 @@
                         <a class="active" data-toggle="collapse"  data-parent="#lefticon"
                            href="#collapse-switch">
                             <i class="icon-groups"></i>
-                            <span>SWITCT</span>
+                            <span>SWITCH</span>
                             <i class="icon-right-dir caret-i"></i>
                         </a>
                         <ul id="collapse-switch" class="nav panel-collapse collapse">
@@ -116,6 +116,6 @@
     <v-table v-on:tableShow="onBackIndex" ref="table"></v-table>
     <v-resetDevice v-on:resetShow="onBackIndex" ref="device"></v-resetDevice>
     <v-scanDevice v-on:scanDeviceShow="onBackIndex" ref="scanDevice"></v-scanDevice>
-    <v-pair v-on:pairShow="onBackIndex" ref="pair"></v-pair>
+    <v-writing v-on:writingShow="onBackIndex" ref="writing"></v-writing>
     <v-remind ref="remind"></v-remind>
 </div>

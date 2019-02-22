@@ -66,12 +66,9 @@ public class EspDeviceState {
     }
 
     public enum State {
-        IDLE,
         OFFLINE,
         LOCAL,
         CLOUD,
-        UPGRADING_LOCAL,
-        UPGRADING_CLOUD,
         DELETED,
         ;
 

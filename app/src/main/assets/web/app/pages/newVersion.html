@@ -1,0 +1,26 @@
+
+<div class="init-width">
+    <transition name="ups">
+        <div v-show="flag" class="new-version-wrapper">
+            <div class="mask"></div>
+            <div class="new-version-content">
+                <div class="new-version-title">
+                    <span class="version-line"></span>
+                    <span class="version-desc" :class="{'version-progress-fail': isFail}">{{title}}</span>
+                    <span class="version-line"></span>
+                    <span @click="hide" class="new-close icon-cross"></span>
+                </div>
+                <div v-show="isStart" class="version-btn-wrapper version-progress">
+                    <div class="version-progress-num">{{downloadSize}}MB/{{totalSize}}MB</div>
+                    <div class="version-progress-wrapper">
+                        <mt-progress :value="progressSize" :bar-height="5"></mt-progress>
+                    </div>
+                </div>
+                <div v-show="!isStart" class="version-btn-wrapper">
+                    <button @click="appVersionUpdate" class="version-btn">{{btnTitle}}</button>
+                </div>
+
+            </div>
+        </div>
+    </transition>
+</div>

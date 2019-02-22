@@ -8,26 +8,29 @@
                     {{group.name}}</h4>
                 <i @click="showOperate" class="icon-more right-top"></i>
             </div>
-            <div class="content-info flex-wrapper" :id="lightId">
+            <div class="content-info flex-wrapper no-padding-bottom" :id="lightId">
                 <div id="light-group-wrapper" class="light-wrapper">
                     <div class="selected-radio">
                         <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
-                        <div><span id="color-selected-id" @click="selectAllDevice($event)" class="span-radio"
-                                   :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
+                        <div @click="selectAllDevice($event)"  class="select-small-radio flex flex-ac flex-jce">
+                            <span id="color-selected-id" class="span-radio"
+                                  :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
                     </div>
-                    <div v-for="item in colorList" class="item">
-                        <div class="item-icon-circle">
-                            <i :class="getIcon(item.tid)" :style="{'color': getGroupColor(item.characteristics, item.tid)}"></i>
-                        </div>
-                        <div class="item-name">
-                            <span :data-value="item.mac">{{getPosition(item.position)}}</span>
-                            <span :data-value="item.mac" :class="{'desc': showDesc(item.position)}">{{item.name}}
+                    <div class="overflow-touch">
+                        <div  @click="selectMac(item.mac)" v-for="item in colorList" class="item">
+                            <div class="item-icon-circle">
+                                <i :class="getIcon(item.tid)" :style="{'color': getGroupColor(item.characteristics, item.tid)}"></i>
+                            </div>
+                            <div class="item-name">
+                                <span>{{getPosition(item.position)}}</span>
+                                <span :class="{'desc': showDesc(item.position)}">{{item.name}}
                                 <span v-show="showDesc(item.position)">({{item.version}})</span></span>
-                            <span :data-value="item.mac" class="desc" v-show="!showDesc(item.position)">{{item.version}}</span>
-                        </div>
-                        <div class="item-power-small">
-                            <span :data-value="item.mac" @click="selectDevice(item.mac, $event)"
+                                <span class="desc" v-show="!showDesc(item.position)">{{item.version}}</span>
+                            </div>
+                            <div class="item-power-small">
+                            <span :data-value="item.mac"
                                   class="span-radio" :class="{'active': isSelected(item.mac)}"><span></span></span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -15,7 +15,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                 oldMacs: [],
                 debugList: [],
                 groupList: [],
-                myChart: "",
+                chartList: [],
+                myChart: [],
                 debugInfo: "",
                 rootData: [],
                 titleList: [],
@@ -29,8 +30,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
             selected: function (val, oldVal) {
                 var self = this;
                 if (self.flag && !Util._isEmpty(self.myChart) && !Util._isEmpty(self.selected) ) {
-                    self.myChart.dispose();
-                    self.initChart(self.getChartData());
+                    if (self.myChart.length > 0) {
+                        self.chartList = [];
+                        self.disposeChart();
+                    }
+                    self.getChartData();
                 }
             }
         },
@@ -55,9 +59,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                 self.temporaryDelList = [];
                 self.selected = "";
                 self.hideThis();
+                self.chartList = [];
                 self.debugInfo = "";
-                if (!Util._isEmpty(self.myChart)) {
-                    self.myChart.dispose();
+                if (self.myChart.length > 0) {
+                    self.disposeChart();
                 }
                 MINT.Indicator.open();
                 window.onGetMesh = this.onGetMesh;
@@ -69,14 +74,21 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                     window.debugResult = self.debugResult;
                 }, 1000);
             },
+            disposeChart: function() {
+                var self = this;
+                $.each(self.myChart, function(i, item) {
+                    item.chart.dispose();
+                })
+                self.myChart = [];
+            },
             refresh: function() {
                 this.initHtml();
             },
             hide: function () {
                 this.flag = false;
                 this.rootData = [];
-                if (!Util._isEmpty(this.myChart)) {
-                    this.myChart.dispose();
+                if (this.myChart.length > 0) {
+                    this.disposeChart();
                 }
                 window.debugResult = "";
                 MINT.Indicator.close();
@@ -164,19 +176,19 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                         self.titleList.push(item.meshId);
                     }
                 })
+                self.rootData = rootItem;
                 if (self.titleList.length > 0 && Util._isEmpty(self.selected)) {
                     self.selected = self.titleList[0];
                 }
-                self.rootData = rootItem;
             },
             getChartData: function() {
-                var self = this, obj = {};
+                var self = this, objList = [];
                 $.each(self.rootData, function(i, item) {
                     if (item.meshId == self.selected) {
-                        obj = item;
+                        objList.push(item);
                     }
                 })
-                return obj;
+                self.chartList = objList;
             },
             setTitle: function(id) {
                 var self = this, name = id;
@@ -215,11 +227,19 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                 }
                 return color;
             },
-            initChart: function (data) {
+            debugChart: function(data, id) {
                 var self = this;
-                self.myChart = echarts.init(document.getElementById("chart"));
+                setTimeout(function() {
+                    self.initChart(data, id);
+                }, 500)
+            },
+            initChart: function (data, id) {
+                var self = this;
+                console.log(JSON.stringify(data));
+                console.log(id);
+                var chart = echarts.init(document.getElementById(id));
                 window.addEventListener('resize',function(){
-                    self.myChart.resize();
+                    chart.resize();
                 });
                 var option = {
                     tooltip: {
@@ -275,9 +295,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                         }
                     ]
                 }
-                self.myChart.setOption(option);
+                chart.setOption(option);
                 var timeOutEvent = 0;
-                self.myChart.on("mousedown", function(params) {
+                chart.on("mousedown", function(params) {
                     timeOutEvent = setTimeout(function(){
                         self.getDebugInfo(params.data.id);
                         setTimeout(function() {
@@ -285,14 +305,15 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                         })
                     },500);
                 })
-                self.myChart.on("mousemove", function(params) {
+                chart.on("mousemove", function(params) {
                     clearTimeout(timeOutEvent);//清除定时器
                     timeOutEvent = 0;
                 })
-                self.myChart.on("mouseup", function(params) {
+                chart.on("mouseup", function(params) {
                     clearTimeout(timeOutEvent);//清除定时器
                     timeOutEvent = 0;
-                })
+                });
+                self.myChart.push({id: id, chart: chart});
             },
             showDebugInfo: function () {
                 this.$refs.debugInfo.show();
@@ -310,17 +331,15 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                 window.onBackPressed = this.hide;
             },
             setPair: function(device) {
-                var self = this, position = "", pairMacs = [];
-                pairs = espmesh.loadHWDevices();
-                if (!Util._isEmpty(pairs)) {
-                    pairs = JSON.parse(pairs);
-                    $.each(pairs, function(i, item) {
-                        pairMacs.push(item.mac);
-                    });
-                }
+                var self = this, position = "", pairMacs = [],
+                pairs = self.$store.state.siteList;
+                $.each(pairs, function(i, item) {
+                    pairMacs.push(item.mac);
+                });
                 if (!Util._isEmpty(device.position)) {
                     position = device.position.split("-");
-                    espmesh.saveHWDevice(device.mac, position[2], position[0], position[1]);
+                    espmesh.saveHWDevices(JSON.stringify([{"mac": device.mac, "code": position[2],
+                        "floor": position[0], "area":  position[1]}]));
 
                 } else {
                     $.each(pairs, function(i, item) {
@@ -334,6 +353,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                         }
                     });
                 }
+                espmesh.loadHWDevices();
                 return device;
             },
             getPosition: function(position) {
@@ -346,6 +366,24 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                     obj = objP;
                 }
                 return obj;
+            },
+            changChart: function() {
+                var self = this;
+                self.getChartData();
+                $.each(self.chartList, function(i, item) {
+                    $.each(self.myChart, function(j, itemSub) {
+                        if (item.id == itemSub.id) {
+                            itemSub.chart.setOption({
+                                 series:[
+                                     {
+                                         data: [item]
+                                     }
+                                 ]
+                             })
+                             return false;
+                        }
+                    })
+                })
             },
             onGetMesh: function(res) {
                 var self = this;
@@ -381,17 +419,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                                     position: 'bottom',
                                 });
                                 self.deviceList.push.apply(self.deviceList, self.temporaryAddList);
-                                if (!Util._isEmpty(self.myChart)) {
+                                if (self.myChart.length > 0) {
                                     self.getOldList();
                                     self.getMesh(self.temporaryAddMacs);
                                     self.getInitData();
-                                    self.myChart.setOption({
-                                        series:[
-                                            {
-                                                data: [self.getChartData()]
-                                            }
-                                        ]
-                                    })
+                                    self.changChart();
                                 }
                                 self.$store.commit("setList", self.deviceList);
                                 self.temporaryAddList = [];
@@ -448,13 +480,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                                 });
                                 if (!Util._isEmpty(self.myChart)) {
                                     self.getInitData();
-                                    self.myChart.setOption({
-                                        series:[
-                                            {
-                                                data: [self.getChartData()]
-                                            }
-                                        ]
-                                    })
+                                    self.changChart();
                                 }
                                 self.$store.commit("setList", self.deviceList);
                                 self.temporaryDelList = [];
@@ -476,14 +502,12 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
             },
             debugResult: function(res) {
                 var self = this;
+                console.log(res);
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
                     self.debugList = res.result;
                 }
                 self.getInitData();
-                setTimeout(function() {
-                    self.initChart(self.getChartData());
-                })
                 MINT.Indicator.close();
             }
         },

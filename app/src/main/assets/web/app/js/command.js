@@ -49,6 +49,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
         methods:{
             show: function() {
                 this.requestList = [{key: "request", value: null}];
+                window.onLoadAllValuesInFile = this.onLoadAllValuesInFile;
+                window.onSend = this.onSend;
                 this.chartShow = false;
                 this.commandShow = false;
                 this.loadSelectList = [];
@@ -60,7 +62,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
                 window.onBackPressed = this.hide;
                 this.getLoadSelect();
                 this.addFlag = true;
-                window.onSend = this.onSend;
             },
             hide: function () {
                 this.addFlag = false;
@@ -96,42 +97,20 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
             },
             delVal: function(i) {
                 var self = this;
-                MINT.MessageBox.confirm("确定要删除吗", "删除").then(function(obj) {
+                MINT.MessageBox.confirm(self.$t('delInfoDesc'), self.$t('deleteBtn')).then(function(obj) {
                     self.requestList.splice(i, 1);
                 });
             },
             loadSelect: function() {
-                var self= this,
-                    loadCommands = espmesh.loadPrefAllV(COMMAND_LIST_FILE);
-                self.loadSelectList = [];
-                if (!Util._isEmpty(loadCommands)) {
-                    loadCommands = JSON.parse(loadCommands);
-                    for(var i in loadCommands) {
-                        self.loadSelectList.push(i);
-                    }
-                    self.commandShow = !self.commandShow;
+                var self= this;
+                self.commandShow = !self.commandShow;
+                if (self.loadSelectList.length > 0) {
                     self.selectValue = self.jsonStr;
                 }
 
             },
             getLoadSelect: function() {
-                var self= this,
-                    loadCommands = espmesh.loadPrefAllV(COMMAND_LIST_FILE);
-                self.loadSelectList = [];
-                if (!Util._isEmpty(loadCommands)) {
-                    loadCommands = JSON.parse(loadCommands);
-                    for(var i in loadCommands) {
-                        self.loadSelectList.push(i);
-                    }
-                    var num = self.loadSelectList.length - 1;
-                    if (num > -1) {
-                        self.requestList = [];
-                        var obj = JSON.parse(self.loadSelectList[num]);
-                        for (var i in obj) {
-                            self.requestList.push({key: i, value: JSON.stringify(obj[i])});
-                        }
-                    }
-                }
+                espmesh.loadAllValuesInFile(COMMAND_LIST_FILE);
             },
             checkRadio: function() {
                 var self = this;
@@ -147,7 +126,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
             },
             send: function() {
                 var self = this, data = '{"' + MESH_MAC + '": ' + JSON.stringify(self.commandMacs)
-                    + ',', json = "", list = [];
+                    + ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'",', json = "", list = [];
                 if (self.radioValue == "false") {
                      data += '"' + NO_RESPONSE + '": true,';
                 }
@@ -198,11 +177,39 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
                     self.resultText = res.result;
-                    espmesh.savePrefKV(COMMAND_LIST_FILE, JSON.stringify(res.tag), "");
+                    espmesh.saveValuesForKeysInFile(JSON.stringify({"name": COMMAND_LIST_FILE,
+                        "content": [{key: encodeURIComponent(JSON.stringify(res.tag)), value: ""}]}))
                 }
                 MINT.Indicator.close();
                 self.resultShow = true;
+                self.getLoadSelect();
                 window.onBackPressed = this.hide;
+            },
+            onLoadAllValuesInFile: function(res) {
+                var self = this;
+                console.log(res);
+                self.loadSelectList = [];
+                if (!Util._isEmpty(res)) {
+                    res = JSON.parse(res);
+                    var content = res.content;
+                    var lastKey = "";
+
+                    for(var i in content) {
+                        console.log(i);
+                        self.loadSelectList.push(decodeURIComponent(i));
+                    }
+                    var num = self.loadSelectList.length - 1;
+                    if (self.loadSelectList.length > 0) {
+                        self.requestList = [];
+                        if (!Util._isEmpty(res.latest_key)) {
+                            lastKey = JSON.parse(decodeURIComponent(res.latest_key));
+                            for (var i in lastKey) {
+                                self.requestList.push({key: i, value: JSON.stringify(lastKey[i])});
+                            }
+                        }
+
+                    }
+                }
             }
 
         },

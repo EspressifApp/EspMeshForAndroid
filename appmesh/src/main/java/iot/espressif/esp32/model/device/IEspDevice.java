@@ -68,14 +68,14 @@ public interface IEspDevice {
      *
      * @return current device rom version
      */
-    String getCurrentRomVersion();
+    String getRomVersion();
 
     /**
      * Set current device rom version
      *
      * @param version current device rom version
      */
-    void setCurrentRomVersion(String version);
+    void setRomVersion(String version);
 
     /**
      * Get device name
@@ -120,39 +120,25 @@ public interface IEspDevice {
     void setDeviceTypeName(String name);
 
     /**
-     * Get whether the device support mesh
-     *
-     * @return support mesh or not
-     */
-    boolean isMesh();
-
-    /**
-     * Set whether the device support mesh
-     *
-     * @param isMesh support mesh
-     */
-    void setMesh(boolean isMesh);
-
-    /**
      * Get #InetAddress of the station device
      *
      * @return device InetAddress
      */
-    InetAddress getInetAddress();
+    InetAddress getLanAddress();
 
     /**
      * Set #InetAddress of the station device
      *
-     * @param inetAddress device address
+     * @param lanAddress device address
      */
-    void setInetAddress(InetAddress inetAddress);
+    void setLanAddress(InetAddress lanAddress);
 
     /**
      * Get device host address
      *
      * @return device host address
      */
-    String getHostAddress();
+    String getLanHostAddress();
 
     /**
      * Set device current state
@@ -378,4 +364,8 @@ public interface IEspDevice {
     void setMlinkVersion(int version);
 
     int getMlinkVersion();
+
+    void setTrigger(int trigger);
+
+    int getTrigger();
 }

@@ -9,10 +9,16 @@
                 <i @click="refresh" class="icon-loop right-top"></i>
             </div>
             <div class="content-info chart">
-                <mt-navbar v-show="titleList.length > 1" v-model="selected">
-                    <mt-tab-item v-for="item in titleList" :id="item">{{setTitle(item)}}</mt-tab-item>
-                </mt-navbar>
-                <div id="chart"></div>
+                <div class="overflow-touch">
+                    <mt-navbar v-show="titleList.length > 1" v-model="selected">
+                        <mt-tab-item v-for="item in titleList" :id="item">{{setTitle(item)}}</mt-tab-item>
+                    </mt-navbar>
+
+                    <div :id="item.id" class="debug-chart" v-for="item in chartList">
+                        {{debugChart(item, item.id)}}
+                    </div>
+                </div>
+
             </div>
         </div>
     </transition>

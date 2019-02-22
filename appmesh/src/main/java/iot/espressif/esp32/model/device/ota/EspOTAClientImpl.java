@@ -71,7 +71,7 @@ class EspOTAClientImpl extends EspOTAClient {
 
     private void init(File bin, OTACallback callback) {
         IEspDevice firstDevice = mDevices.iterator().next();
-        mAddress = firstDevice.getInetAddress();
+        mAddress = firstDevice.getLanAddress();
         mPort = firstDevice.getProtocolPort();
 
         mBin = bin;
@@ -96,6 +96,11 @@ class EspOTAClientImpl extends EspOTAClient {
         }
 
         mThread.start();
+    }
+
+    @Override
+    public void stop() {
+        close();
     }
 
     @Override

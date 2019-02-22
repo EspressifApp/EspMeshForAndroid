@@ -42,10 +42,11 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     eventUp: [],
                     eventDown: [],
                     existEvent: false,
+                    isSelectedMacs: [],
                     shortPress: [{"id": "1", "name": this.$t('onOff')},
                         {"id": "8", "name": this.$t('brightness')},
-                        {"id": "9", "name": this.$t('temp')},
-                        {"id": "10", "name": this.$t('hue')},
+                        {"id": "9", "name": this.$t('hue')},
+                        {"id": "10", "name": this.$t('temp')},
                         {"id": "2", "name": this.$t('brightMode'), h: "60", s: "0", b: "100"},
                         //{"id": "3", "name": this.$t('blinkMode'), h: "222", s: "57", b: "91"},
                         //{"id": "4", "name": this.$t('glitterMode'), h: "176", s: "55", b: "77"},
@@ -53,8 +54,8 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                         {"id": "6", "name": this.$t('cozyMode'), h: "60", s: "10", b: "100"},
                         {"id": "7", "name": this.$t('bedtime'), h: "33", s: "100", b: "66"}],
                     longPress: [
-                            {"id": "11", "name": this.$t('brightness')},{"id": "12", "name": this.$t('temp')},
-                        {"id": "13", "name": this.$t('hue')}],
+                            {"id": "11", "name": this.$t('brightness')},{"id": "12", "name": this.$t('hue')},
+                        {"id": "13", "name": this.$t('temp')}],
                 }
             },
             computed: {
@@ -77,7 +78,8 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     self.eventFlag = true;
                     self.eventCid = "";
                     self.showSelect = false;
-                    window.onBackPressed = this.hide;
+                    window.onBackPressed = self.hide;
+                    window.onDelButton = self.onDelButton;
                     self.deviceList = self.$store.state.deviceList;
                     self.pressList = {"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": [],
                                             "10": [], "11": [], "12": [], "13": []};
@@ -92,6 +94,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     self.eventUp = [];
                     self.eventDown = [];
                     self.selected = 0;
+                    self.isSelectedMacs = [];
                     setTimeout(function() {
                         self.meshDrop();
                         MINT.Indicator.open();
@@ -309,8 +312,10 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     }
                 },
                 isExist: function(list) {
+                    var self = this;
+                    self.isSelectedMacs = [];
                     $.each(list, function(i, item) {
-                        $("#btn-select-device span.span-radio[data-value='"+item+"']").addClass("active");
+                        self.isSelectedMacs.push(item);
                     })
                 },
                 saveDevice: function() {
@@ -460,15 +465,22 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     }
                     this.initBtnEvent(eventCid, id, false);
                 },
-                selectDevice: function (e) {
-                    var doc = $(e.currentTarget);
-                    if (doc.hasClass("active")) {
-                        doc.removeClass("active");
-                        this.selected -= 1;
+                selectMac: function(mac) {
+                    var num = this.isSelectedMacs.indexOf(mac);
+                    if (num == -1) {
+                        this.isSelectedMacs.push(mac);
                     } else {
-                        doc.addClass("active");
-                        this.selected += 1;
+                        this.isSelectedMacs.splice(num, 1);
                     }
+                    this.selected = this.isSelectedMacs.length;
+                },
+                isSelected: function(mac) {
+                    var self = this,
+                        flag = false;
+                    if (self.isSelectedMacs.indexOf(mac) != -1) {
+                        flag = true;
+                    }
+                    return flag;
                 },
                 hide: function () {
                     this.showFlag = false;
@@ -600,12 +612,12 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                         });
                         console.log(JSON.stringify(events));
                     }
-                    self.delEvent();
+                    self.delEvent(parentMac, events);
                     setTimeout(function() {
-                        Util._addRequestEvent(parentMac, events, self.$store.state.deviceIp);
+
                     }, 3000)
                 },
-                delEvent: function () {
+                delEvent: function (parentMac, events) {
                     var self = this;
                     var eventNames = [];
                     $.each(self.deviceEvents, function(i, item) {
@@ -617,8 +629,20 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     if(eventNames.length > 0) {
                         var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
                             '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
-                            '"events":' + JSON.stringify(eventNames) + '}';
+                            '"events":' + JSON.stringify(eventNames) + ',"callback": "onDelButton", "tag": {"mac": "'+
+                            parentMac+'", "events": '+JSON.stringify(events)+'}}';
                         espmesh.requestDeviceAsync(data);
+                    } else {
+                        Util._addRequestEvent(parentMac, events, self.$store.state.deviceIp);
+                    }
+                },
+                onDelButton: function(res) {
+                    console.log(res);
+                    if (!Util._isEmpty(res)) {
+                        res = JSON.parse(res);
+                        var tag = res.tag;
+                        console.log(tag.parentMac);
+                        Util._addRequestEvent(tag.mac, tag.events, this.$store.state.deviceIp);
                     }
                 }
             },

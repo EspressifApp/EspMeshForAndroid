@@ -2,6 +2,7 @@ require.config({
     paths : {
         jQuery : 'jquery/jquery.min',
         IScroll: 'jquery/iscroll',
+        "FastClick": 'jquery/fastclick',
         "vue":"vue/vue.min",
         "vueRouter":"vue/vue-router.min",
         'jquery.ui' : 'jquery/jquery-ui.min',
@@ -25,8 +26,8 @@ require.config({
         "jquery.ui.touch-punch" : ["jQuery", "jquery.ui"],
     }
 });
-require(["IScroll", "jQuery", "vue", "vueRouter", "MINT", "Util", "routers", "touch", "Vuex", "i18n", "zh", "en", "jquery.ui", "jquery.ui.touch-punch"],
-    function(IScroll, $, Vue, VueRouter, MINT, Util, routers, touch, Vuex, VueI18n, zh, en) {
+require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "routers", "touch", "Vuex", "i18n", "zh", "en", "jquery.ui", "jquery.ui.touch-punch"],
+    function(IScroll, $, FastClick, Vue, VueRouter, MINT, Util, routers, touch, Vuex, VueI18n, zh, en) {
     Vue.use(VueRouter);
     //Vue.use(ELEMENT);
     Vue.use(MINT);
@@ -34,16 +35,17 @@ require(["IScroll", "jQuery", "vue", "vueRouter", "MINT", "Util", "routers", "to
     Vue.use(VueI18n);
     document.oncontextmenu=new Function("event.returnValue=false");
     document.onselectstart=new Function("event.returnValue=false");
+    FastClick.attach(document.body);
     var router = new VueRouter({
         routes: routers
     });
 
     router.beforeEach(function(to, from, next) {
-        var userInfo = espmesh.userLoadLastLogged();
-        userInfo = JSON.parse(userInfo);
-        if(userInfo == null || userInfo == "" || userInfo.status != 0){//如果有就直接到首页咯
-            espmesh.userGuestLogin();
-        }
+
+//        userInfo = JSON.parse(userInfo);
+//        if(userInfo == null || userInfo == "" || userInfo.status != 0){//如果有就直接到首页咯
+//            espmesh.userGuestLogin();
+//        }
         next();
     });
     var store = new Vuex.Store({
@@ -58,9 +60,14 @@ require(["IScroll", "jQuery", "vue", "vueRouter", "MINT", "Util", "routers", "to
             conScanDeviceList: [],
             siteList: [],
             wifiInfo: "",
+            blueInfo: false,
             rssiInfo: -80,
             showScanBle: true,
             deviceIp: "",
+            systemInfo: "",
+            appInfo: "",
+            newAppInfo: "",
+            isNewVersion: false,
         },
         mutations: {
             setList: function(state, list){
@@ -81,6 +88,9 @@ require(["IScroll", "jQuery", "vue", "vueRouter", "MINT", "Util", "routers", "to
             setWifiInfo: function(state, info){
                 state.wifiInfo = info;
             },
+            setBlueInfo: function(state, info){
+                state.blueInfo = info;
+            },
             setScanDeviceList: function(state, info){
                 state.scanDeviceList = info;
             },
@@ -98,6 +108,18 @@ require(["IScroll", "jQuery", "vue", "vueRouter", "MINT", "Util", "routers", "to
             },
             setDeviceIp: function(state, info) {
                 state.deviceIp = info;
+            },
+            setSystemInfo: function(state, info) {
+                state.systemInfo = info;
+            },
+            setAppInfo: function(state, info) {
+                state.appInfo = info;
+            },
+            setNewAppInfo: function(state, info) {
+                state.newAppInfo = info;
+            },
+            setIsNewVersion: function(state, info) {
+                state.isNewVersion = info;
             }
         }
     });
@@ -115,7 +137,10 @@ require(["IScroll", "jQuery", "vue", "vueRouter", "MINT", "Util", "routers", "to
         router: router,
         mounted: function() {
             window.onLocaleGot = this.onLocaleGot;
+            window.onGetAppInfo = this.onGetAppInfo;
+            espmesh.userGuestLogin();
             espmesh.getLocale();
+            espmesh.getAppInfo();
         },
         methods: {
             onLocaleGot: function(res) {
@@ -125,7 +150,12 @@ require(["IScroll", "jQuery", "vue", "vueRouter", "MINT", "Util", "routers", "to
                 } else {
                     this.$i18n.locale = "en";
                 }
-            }
+                this.$store.commit("setSystemInfo", res.os);
+            },
+            onGetAppInfo: function(res) {
+                console.log(res);
+                this.$store.commit("setAppInfo", JSON.parse(res));
+            },
         }
     });
     touch.VueTouch.setVue(Vue);

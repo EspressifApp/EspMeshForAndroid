@@ -1,8 +1,6 @@
 package blufi.espressif.params;
 
 public interface BlufiParameter {
-    int[] SUPPORT_PROTOCOL_VERSION = {1, 0};
-
     int OP_MODE_NULL = 0x00;
     int OP_MODE_STA = 0x01;
     int OP_MODE_SOFTAP = 0x02;

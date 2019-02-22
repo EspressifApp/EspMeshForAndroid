@@ -16,6 +16,8 @@ define(["vue", "MINT", "txt!../../pages/setTable.html",],
             show: function() {
                 var self = this;
                 window.onBackPressed = self.hide;
+                console.log(COL_NUM);
+                console.log(ROW_NUM);
                 self.slots1 = [{values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], defaultIndex: COL_NUM - 1}];
                 self.slots2 = [{values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], defaultIndex: ROW_NUM - 1}];
                 self.initSetTable();

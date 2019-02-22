@@ -1,0 +1,28 @@
+
+<div class="init-width">
+    <transition name="ups">
+        <div v-show="addFlag" class="ota-upgrade">
+            <div @click="hide" class="mask"></div>
+            <div class="upgrade-info command">
+                <h3>{{$t('setIP')}}<span @click="delIp" class="upgrade-details">{{$t('clearBtn')}}</span></h3>
+                <div class="command-wrapper send-ip-wrapper">
+                    <div class="send-input">
+                        <div class="position-relative flex ip-wrapper">
+                            <input type="number" placeholder="IP" v-model="setOne" min="0" max="255" maxlength="3" class="form-control">
+                            <input type="number" placeholder="IP" v-model="setTwo" min="0" max="255" maxlength="3" class="form-control">
+                            <input type="number" placeholder="IP" v-model="setThree" min="0" max="255" maxlength="3" class="form-control">
+                            <input type="number" placeholder="IP" v-model="setFour" min="0" max="255" maxlength="3" class="form-control">
+                        </div>
+                        <div class="position-relative">
+                            <input type="number" placeholder="Port" v-model="port"  class="form-control" >
+                        </div>
+                    </div>
+                    <div class="result-flex">
+                        <button @click="hide" class="btn register-btn retry">{{$t('cancelBtn')}}</button>
+                        <button @click="send" class="btn register-btn">{{$t('confirmBtn')}}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

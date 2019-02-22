@@ -68,12 +68,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/setDevicePair.html"],
                 this.flag = false;
             },
             getPair: function() {
-                var self = this,
-                    pairs = espmesh.loadHWDevices();
-                if (!Util._isEmpty(pairs)) {
-                    self.pairList = JSON.parse(pairs);
-                    self.getPosition();
-                }
+                self.pairLis = this.$store.state.siteList;
             },
             getPosition: function() {
                 var self = this;
@@ -196,8 +191,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/setDevicePair.html"],
             setDevicePosition: function(fun) {
                 var self = this, flag = false;
                     position = self.floor + "-" + self.area + "-" + self.serialNum,
-                    data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac + '","' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
-                                                '"position":"' + position + '", "callback": '+fun+'}';
+                    data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
+                        '"position":"' + position + '", "callback": "'+fun+'"}';
                 espmesh.requestDeviceAsync(data);
             },
             getNum: function() {
@@ -283,7 +279,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/setDevicePair.html"],
                         }
                     });
                     self.$store.commit("setList", self.deviceList);
-                    espmesh.saveHWDevice(self.mac, self.serialNum, self.floor, self.area);
+                    espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
+                        "floor": self.floor, "area":  self.area}]));
                     MINT.Toast({
                         message: self.$t('saveSuccessDesc'),
                         position: 'bottom',
@@ -313,7 +310,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/setDevicePair.html"],
                         }
                     });
                     self.$store.commit("setList", self.deviceList);
-                    espmesh.saveHWDevice(self.mac, self.serialNum, self.floor, self.area);
+                    espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
+                        "floor": self.floor, "area":  self.area}]));
                     MINT.Toast({
                         message: self.$t('editSuccessDesc'),
                         position: 'bottom',

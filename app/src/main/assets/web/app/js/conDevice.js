@@ -37,6 +37,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                 window.onScanBLE = this.onConScanBLE;
                 espmesh.stopBleScan();
                 this.wifiInfo = this.$store.state.wifiInfo;
+                console.log(JSON.stringify(this.wifiInfo));
                 this.addFlag = true;
                 this.value = 0;
                 this.count = 0;
@@ -68,14 +69,20 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                         });
                         $.each(self.rssiList, function(i, item) {
                             var itemRssi = item.rssi;
-                            if (itemRssi != 0 && itemRssi > rssi && scanMacs.indexOf(item.bssid) > -1) {
+                            if (itemRssi != 0 && itemRssi > rssi && scanMacs.indexOf(item.bssid) != -1 &&
+                                !item.only_beacon) {
                                 rssi = itemRssi;
                                 rssiMac = item.mac;
                                 version = item.version
                             }
                         })
+                        if (Util._isEmpty(rssiMac)) {
+                            self.setFail(self.$t('farDeviceDesc'));
+                            return false;
+                        }
                         var data = {"ble_addr": rssiMac,"ssid": self.wifiName,"password": self.password,
-                            "white_list": scanMacs, "mesh_id": self.convert(self.meshId),"version": version};
+                            "white_list": scanMacs, "bssid": self.wifiInfo.bssid, "mesh_id": self.convert(self.meshId),
+                            "version": version};
                         data = Object.assign(data, self.moreObj)
                         console.log(JSON.stringify(data));
                         console.log(JSON.stringify(scanMacs));
@@ -86,7 +93,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                         self.setFail(self.$t('farDeviceDesc'));
                     }
 
-                }, 4000);
+                }, 5000);
 
             },
             convert: function(bssid) {
@@ -108,8 +115,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
             },
             onConfigureProgress: function(config) {
                 var self = this;
+                console.log(config);
                 config = JSON.parse(config);
-                if (config.code >= 100 && config.code != 200) {
+                if (config.code < 400 && config.code > 300) {
                     if (config.progress >= self.value) {
                         self.value = config.progress;
                     }
@@ -117,7 +125,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                         self.textList.push(config.message);
                     }
                     window.onConfigureProgress = self.onConfigureProgress;
-                } else if (config.code == 200) {
+                } else if (config.code == 300) {
                     self.value = config.progress;
                     if (self.textList.indexOf(config.message) < 0) {
                         self.textList.push(config.message);
@@ -133,22 +141,24 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                     }, 1000);
                 } else {
                     if (config.code == -20) {
-                        self.setFail(config.message)
+                        self.setFail(config.message);
+                    } else if (config.code == 1) {
+                        self.setFail(self.$t('conRouteFailDesc'));
+                    } else if (config.code == 16) {
+                        self.setFail(self.$t('pwdFailDesc'));
+                    } else if (config.code == 17) {
+                        self.setFail("AP not found");
+                    } else if (config.code == 18) {
+                        self.setFail("AP forbid");
+                    } else if (config.code == 19) {
+                        self.setFail("Configure data error");
+                    } else if (self.count < 3) {
+                        self.count++;
+                        setTimeout(function() {
+                            self.conWifi();
+                        }, 2000);
                     } else {
-                        if (self.count < 3) {
-                            self.count++;
-                            setTimeout(function() {
-                                self.conWifi();
-                            }, 2000);
-                        } else {
-                             if (config.code == 1) {
-                                 self.setFail(self.$t('conRouteFailDesc'))
-                             } else if (config.code == 2) {
-                                 self.setFail(self.$t('pwdFailDesc'))
-                             } else {
-                                 self.setFail(config.message);
-                             }
-                        }
+                        self.setFail(config.message);
                     }
 
                 }

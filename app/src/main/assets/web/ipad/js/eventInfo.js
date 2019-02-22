@@ -16,17 +16,17 @@ define(["vue", "MINT", "txt!../../pages/eventInfo.html", "../js/addEvent"],
         },
 
         computed: {
-
+            list: function() {
+                this.getDeviceEvents();
+            }
         },
         methods:{
             show: function() {
                 var self = this;
                 window.onBackPressed = self.hide;
                 self.deviceInfo = self.$store.state.deviceInfo;
-                var res = espmesh.loadDeviceEventsPositioin(self.deviceInfo.mac);
-                self.deviceEvent = JSON.parse(res);
-                self.eventList = JSON.parse(self.deviceEvent.events);
                 window.onDeleteEvent = this.onDeleteEvent;
+                self.$parent.loadAllDeviceEventsPosition();
                 self.flag = true;
             },
             hide: function () {
@@ -36,11 +36,22 @@ define(["vue", "MINT", "txt!../../pages/eventInfo.html", "../js/addEvent"],
             hideParent: function() {
                 window.onBackPressed = this.hide;
             },
-            setEventList: function() {
+            getDeviceEvents: function() {
                 var self = this;
-                var res = espmesh.loadDeviceEventsPositioin(self.deviceInfo.mac);
-                self.deviceEvent = JSON.parse(res);
-                self.eventList = JSON.parse(self.deviceEvent.events);
+                var eventsPositions = self.$store.state.eventsPositions;
+                if (eventsPositions.length > 0) {
+                    $.each(eventsPositions, function(i, item) {
+                        if (item.mac == self.deviceInfo.mac) {
+                            self.deviceEvent = item;
+                            self.eventList = JSON.parse(self.deviceEvent.events);
+                            return false;
+                        }
+                    });
+                }
+            },
+            setEventList: function() {
+                this.$parent.loadAllDeviceEventsPosition();
+                this.getDeviceEvents();
             },
             getIcon: function () {
                 var self = this,

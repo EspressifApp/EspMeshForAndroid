@@ -23,6 +23,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import h5.espressif.esp32.action.EspActionJSON;
 import h5.espressif.esp32.model.other.EspDeviceComparator;
+import h5.espressif.esp32.model.web.JSApi;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -206,7 +207,7 @@ public class MainDeviceNotifyHelper {
                 }
                 for (String mac : macs) {
                     IEspDevice dev = mUser.getDeviceForMac(mac);
-                    if (dev != null && dev.getInetAddress() != null) {
+                    if (dev != null && dev.getLanAddress() != null) {
                         runnable.devices.add(dev);
                     }
                 }
@@ -231,7 +232,7 @@ public class MainDeviceNotifyHelper {
                 }
                 for (String mac : macs) {
                     IEspDevice dev = mUser.getDeviceForMac(mac);
-                    if (dev != null && dev.getInetAddress() != null) {
+                    if (dev != null && dev.getLanAddress() != null) {
                         runnable.devices.add(dev);
                     }
                 }
@@ -285,7 +286,7 @@ public class MainDeviceNotifyHelper {
                     .forEach(device -> {
                         JSONObject json = new EspActionJSON().doActionParseDeviceStatus(device);
                         if (mActivity != null) {
-                            mActivity.notifyDeviceStatusChanged(json);
+                            mActivity.evaluateJavascript(JSApi.onDeviceStatusChanged(json.toString()));
                         }
                     });
         }
@@ -332,8 +333,8 @@ public class MainDeviceNotifyHelper {
             Set<IEspDevice> meshAddrDevices = new HashSet<>();
             Observable.fromIterable(mUser.getAllDeviceList())
                     .filter(device -> device.isState(EspDeviceState.State.LOCAL))
-                    .doOnNext(device -> hostDeviceMap.put(device.getInetAddress().getHostAddress(), device))
-                    .filter(device -> device.getInetAddress().getHostAddress().equals(address))
+                    .doOnNext(device -> hostDeviceMap.put(device.getLanAddress().getHostAddress(), device))
+                    .filter(device -> device.getLanAddress().getHostAddress().equals(address))
                     .doOnNext(meshAddrDevices::add)
                     .subscribe();
 
@@ -354,7 +355,7 @@ public class MainDeviceNotifyHelper {
                     .doOnNext(entry -> {
                         String host = entry.getKey();
                         for (IEspDevice device : mUser.getAllDeviceList()) {
-                            if (host.equals(device.getHostAddress())) {
+                            if (host.equals(device.getLanHostAddress())) {
                                 delDevices.add(device);
                             }
                         }
@@ -390,7 +391,7 @@ public class MainDeviceNotifyHelper {
                     .subscribeOn(AndroidSchedulers.mainThread())
                     .forEach(device -> {
                         if (mActivity != null) {
-                            mActivity.notifyDeviceLost(device.getMac());
+                            mActivity.evaluateJavascript(JSApi.onDeviceLost(device.getMac()));
                         }
                     });
 
@@ -401,7 +402,7 @@ public class MainDeviceNotifyHelper {
                     .forEach(device -> {
                         JSONObject json = new EspActionJSON().doActionParseDevice(device);
                         if (json != null && mActivity != null) {
-                            mActivity.notifyDeviceFound(json);
+                            mActivity.evaluateJavascript(JSApi.onDeviceFound(json.toString()));
                         }
                     });
         }

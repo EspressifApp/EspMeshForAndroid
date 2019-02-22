@@ -7,12 +7,13 @@
                 <h4>{{$t('scanToDesc')}}<span class="scan-num">{{count}}</span>{{$t('countDeviceDesc')}}
                     <i class="icon-cross" @click="hide"></i></h4>
                 <div class="con-device">
-                    <img class="fa-pulse" src="images/light.jpg"/>
+                    <img v-if="imageShow" class="fa-pulse" src="images/button.png">
+                    <img v-else class="fa-pulse" src="images/light.jpg"/>
                 </div>
                 <div class="position-absolute btn-register-wrapper bottom-45">
                     <button type="submit" class="btn register-btn" @click="addConDevice">{{$t('joinBtn')}}</button>
                 </div>
-                <div class="position-absolute btn-register-wrapper bottom-15">
+                <div class="position-absolute btn-register-wrapper bottom-7">
                     <a @click="joinConDevice">{{$t('selectJoinBtn')}}</a>
                 </div>
             </div>

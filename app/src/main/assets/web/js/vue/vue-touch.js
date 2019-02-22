@@ -33,7 +33,7 @@ define(function(){
                             this.touchType=="longtap"&&this.vueCallBack(this.binding.value,e);
                             this.longTouch=false;
                         };
-                    }.bind(this),500);
+                    }.bind(this),700);
                 },
                 end:function(e){
                     var disX=e.changedTouches[0].pageX-this.vueTouches.x;

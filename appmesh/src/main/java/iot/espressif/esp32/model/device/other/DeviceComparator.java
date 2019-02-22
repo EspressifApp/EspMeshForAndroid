@@ -72,9 +72,6 @@ public class DeviceComparator {
         if (device.isState(EspDeviceState.State.CLOUD)
                 || device.isState(EspDeviceState.State.LOCAL)) {
             return 1;
-        } else if (device.isState(EspDeviceState.State.UPGRADING_CLOUD)
-                || device.isState(EspDeviceState.State.UPGRADING_LOCAL)) {
-            return 3;
         } else if (device.isState(EspDeviceState.State.OFFLINE)) {
             return 5;
         } else {

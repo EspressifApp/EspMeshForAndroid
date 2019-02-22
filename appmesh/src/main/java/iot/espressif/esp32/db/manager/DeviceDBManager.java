@@ -21,7 +21,7 @@ public final class DeviceDBManager {
 
     public void saveDevice(@NonNull IEspDevice device) {
         DeviceDB staDB = new DeviceDB(device.getMac(), device.getName(), device.getDeviceTypeId(),
-                device.getCurrentRomVersion(), device.getProtocol(), device.getProtocolPort());
+                device.getRomVersion(), device.getProtocol(), device.getProtocolPort());
         mDaoSession.getDeviceDBDao().insertOrReplace(staDB);
     }
 

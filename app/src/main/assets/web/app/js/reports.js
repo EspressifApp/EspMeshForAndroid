@@ -12,6 +12,7 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
             data: function(){
                 return {
                     addFlag: false,
+                    newDate: "",
                     todayData: [],
                     yesterdayData: [],
                     todayChart: "",
@@ -28,6 +29,10 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                 show: function() {
                     var self = this;
                     window.onBackPressed = self.hide;
+                    window.onTodayData = self.onTodayData;
+                    window.onYesterdayData = self.onYesterdayData;
+                    window.onWeekData = self.onWeekData;
+                    window.onMonthData = self.onMonthData;
                     self.todayXData = [];
                     self.todayYData = [];
                     self.monthXData = [];
@@ -39,14 +44,12 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                     MINT.Indicator.open();
                 },
                 getData: function() {
-                    var self = this,
-                        date = new Date();
-                    self.todayData = self.getPeople(self.getZeroTime(date), self.getCurrentTime(date));
-                    self.yesterdayData = self.getPeople(self.getYesterday(date), self.getOneTime(date));
-                    self.weekData = self.getPeople(self.getWeek(date), self.getCurrentTime(date));
-                    self.monthData = self.getPeople(self.getTheMonth(date), self.getCurrentTime(date));
-                    self.getLineToday(date);
-                    self.getBarMonth(date);
+                    var self = this;
+                    self.newDate = new Date();
+                    self.getPeople(self.getZeroTime(self.newDate), self.getCurrentTime(self.newDate), "onTodayData");
+                    self.getPeople(self.getYesterday(self.newDate), self.getOneTime(self.newDate), "onYesterdayData");
+                    self.getPeople(self.getWeek(self.newDate), self.getCurrentTime(self.newDate), "onWeekData");
+                    self.getPeople(self.getTheMonth(self.newDate), self.getCurrentTime(self.newDate), "onMonthData");
                     MINT.Indicator.close();
                     //self.initPieEcharts("pie-chart");
                 },
@@ -84,7 +87,6 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                     self.todayXData = [];
                     var startTime = self.getZeroTime(date);
                     for(var i = 0; i <= hours; i++) {
-
                         if (i == 0) {
                             self.todayYData.push(0);
                         } else {
@@ -150,9 +152,6 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                             list.push(item);
                         }
                     });
-                    console.log(JSON.stringify(zeroTime));
-                    console.log(JSON.stringify(currentTime));
-                    console.log(JSON.stringify(list));
                     return list.length;
                 },
                 hide: function () {
@@ -160,13 +159,35 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                     espmesh.stopScanSniffer();
                     this.$emit("reportsInfoShow");
                 },
-                getPeople: function(startTime, endTime) {
-                    var list = [],
-                        res = espmesh.loadSniffers(startTime, endTime, false);
+                getPeople: function(startTime, endTime, callback) {
+                   espmesh.loadSniffers(JSON.stringify({"min_time": startTime, "max_time": endTime,
+                            "del_duplicate": false, "callback": callback}));
+                },
+                onTodayData: function(res) {
+                    this.todayData = [];
                     if (!Util._isEmpty(res)) {
-                        list = JSON.parse(res);
+                        this.todayData = JSON.parse(res);
                     }
-                    return list;
+                    this.getLineToday(this.newDate);
+                    this.getBarMonth(this.newDate);
+                },
+                onYesterdayData: function(res) {
+                    this.yesterdayData = [];
+                    if (!Util._isEmpty(res)) {
+                        this.yesterdayData = JSON.parse(res);
+                    }
+                },
+                onWeekData: function(res) {
+                    this.weekData = [];
+                    if (!Util._isEmpty(res)) {
+                        this.weekData = JSON.parse(res);
+                    }
+                },
+                onMonthData: function(res) {
+                    this.monthData = [];
+                    if (!Util._isEmpty(res)) {
+                        this.monthData = JSON.parse(res);
+                    }
                 },
                 initLineEcharts: function (id) {
                     var self = this;

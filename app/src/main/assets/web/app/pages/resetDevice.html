@@ -12,11 +12,11 @@
             <div @click="hideFlag" class="selected-radio filter-wrapper">
                 <div class="input-info">
                     <div @click="showHeightFun" class="cell-down">
-                        <span class="icon-right"></span>
+                        <span class="icon-right" :class="{'active': showHeight}"></span>
                     </div>
                     <input type="search" v-model="searchReset" class="form-control" :placeholder="$t('search')">
                 </div>
-                <div class="radio-info"><span :id="selectAllId" @click="selectAllDevice($event)" class="span-radio"
+                <div @click="selectAllDevice($event)" class="radio-info flex flex-ac flex-jce"><span :id="selectAllId" class="span-radio"
                            :class="{'active': (selected == count && count != 0)}"><span></span></span></div>
             </div>
             <div @click="hideFlag" class="filter-content">
@@ -38,22 +38,22 @@
 
             </div>
             <div @click="hideFlag" class="content-info scan-device flex-wrapper" :id="resetId" :class="{'height': showHeight}">
-                <div v-for="item in list" class="item">
-                    <div @click="saveScanMac(item.mac)" class="item-icon-circle">
-                        <i :class="getIcon(item.tid)"></i>
-                        <span v-show="showMark(item.mac)"><i class="icon-mark"></i></span>
-                    </div>
-                    <div class="item-name">
-                        <span>{{item.name}}({{getPosition(item.position)}})</span>
-                        <span class="desc">Rssi: {{item.rssi}}&nbsp;&nbsp;&nbsp;Dis: {{distance(item.rssi)}}m</span>
-                    </div>
-                    <div class="item-power-small">
-                        <span :data-value="item.mac" @click="selectDevice(item.mac, $event)"
-                              class="span-radio" :class="{'active': isSelected(item.mac)}"><span></span></span>
+                <div class="overflow-touch">
+                    <div @click="selectMac(item.mac)" v-for="item in list" class="item">
+                        <div @click.stop="saveScanMac(item.mac)" class="item-icon-circle">
+                            <i :class="getIcon(item.tid)"></i>
+                            <span v-show="showMark(item.mac)"><i class="icon-mark"></i></span>
+                        </div>
+                        <div class="item-name">
+                            <span>{{item.name}}({{getPosition(item.position)}})</span>
+                            <span class="desc">Mac: {{item.bssid}}&nbsp;&nbsp;&nbsp;Rssi: {{item.rssi}}</span>
+                        </div>
+                        <div class="item-power-small">
+                            <span :data-value="item.mac" class="span-radio" :class="{'active': isSelected(item.mac)}"><span></span></span>
+                        </div>
                     </div>
                 </div>
             </div>
-
             <div v-show="showFooterInfo" class="position-absolute btn-register-wrapper scan-btn">
                 <button :class="{'bg-gray': selected <= 0}" type="submit" class="btn register-btn" @click="addDevice">{{$t('next')}}</button>
             </div>

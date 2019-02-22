@@ -121,6 +121,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
             hide: function () {
                 this.$emit("groupColorShow");
                 this.showFlag = false;
+                this.$refs.color.hideColor();
             },
             showDesc: function(position) {
                 var flag = false;
@@ -131,14 +132,22 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
             },
             isShowSet: function() {
                 var self = this,
-                    id = self.group.id;
-                if (id >= MIN_SWITCH &&  id <= MAX_SENSOR) {
+                    macs = self.group.device_macs,
+                    isFlag = true;
+
+                $.each(self.deviceList, function(i, item) {
+                    if (macs.indexOf(item.mac) != -1) {
+                        var id = item.tid;
+                        if (id >= MIN_LIGHT &&  id <= MAX_LIGHT) {
+                            isFlag = false;
+                            return false;
+                        }
+                    }
+                });
+                if (isFlag) {
                     self.attrList = [];
                     self.getAttrList();
                     self.showSet = true;
-                    self.showColor = false;
-                } else if (id > MAX_SENSOR) {
-                    self.showSet = false;
                     self.showColor = false;
                 } else {
                     self.showSet = false;
@@ -206,6 +215,15 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                     this.isSelectedMacs.splice(num, 1);
                 }
             },
+            selectMac: function(mac) {
+                var num = this.isSelectedMacs.indexOf(mac);
+                if (num == -1) {
+                    this.isSelectedMacs.push(mac);
+                } else {
+                    this.isSelectedMacs.splice(num, 1);
+                }
+                this.selected = this.isSelectedMacs.length;
+            },
             isSelected: function(mac) {
                 var self = this,
                     flag = false;
@@ -215,14 +233,13 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 return flag;
             },
             selectAllDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    $("span.span-radio").removeClass("active");
+                var doc = $(e.currentTarget).find("span.span-radio")[0];
+                if ($(doc).hasClass("active")) {
+                    $(doc).removeClass("active");
                     this.selected = 0;
                     this.isSelectedMacs = [];
                 } else {
-                    doc.addClass("active");
+                    $(doc).addClass("active");
                     $("span.span-radio").addClass("active");
                     this.selected = this.total;
                     var allMacs = [];
@@ -232,18 +249,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                     this.isSelectedMacs = allMacs;
                 }
 
-            },
-            selectDevice: function (mac, e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    this.delSelectMac(mac);
-                    this.selected -= 1;
-                } else {
-                    doc.addClass("active");
-                    this.addSelectMac(mac);
-                    this.selected += 1;
-                }
             },
             getMacs: function() {
                 var docs = $("#"+ this.lightId + " .item span.span-radio.active"),
@@ -374,7 +379,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                     {inputValue: self.group.name, inputPlaceholder: self.$t('addGroupInput'),
                     confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj)  {
                     self.group.name = obj.value;
-                    espmesh.saveGroup(JSON.stringify(self.group));
+                    espmesh.saveGroups(JSON.stringify([self.group]));
                     self.changeStore();
                     self.groupList.push(self.group);
                     self.$store.commit("setGroupList", self.groupList);
@@ -479,6 +484,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
             },
             operate: function (id, e) {
                 this.groupMacs = this.getMacs();
+                if (id == "color-group-wrapper") {
+                    this.$refs.color.show();
+                }
                 $(e.currentTarget).addClass("active").siblings().removeClass("active");
                 $("#" +id).removeClass("hidden").siblings().addClass("hidden");
             },
@@ -608,7 +616,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                         ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                     '"characteristics":' + JSON.stringify(meshs) + '}';
-                espmesh.addQueueTask("requestDevicesMulticastAsync",data);
+                espmesh.addQueueTask(JSON.stringify({"method":"requestDevicesMulticastAsync","argument": data}));
                 console.log(self.deviceList.length);
                 $.each(self.deviceList, function(i, item){
                     if (macs.indexOf(item.mac) > -1) {

@@ -68,13 +68,16 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
             device.setName(name);
 
             String version = respJSON.optString(KEY_VERSION);
-            device.setCurrentRomVersion(version);
+            device.setRomVersion(version);
 
             String position = respJSON.optString(KEY_POSITION);
             device.setPosition(position);
 
             String meshId = respJSON.optString(KEY_MESH_ID);
             device.setMeshId(meshId);
+
+            int trigger = respJSON.optInt(KEY_TRIGGER);
+            device.setTrigger(trigger);
 
             String idfVersion = respJSON.optString(KEY_IDF_VERSION);
             device.setIdfVersion(idfVersion);

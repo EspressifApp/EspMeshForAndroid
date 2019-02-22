@@ -5,6 +5,7 @@
             <div class="col-xs-12 no-padding">
                 <p class="event-title">Event information<span  @click="hide" class="icon-cross cancel-times"></span></p>
             </div>
+            {{list}}
             <div class="col-xs-12 no-padding" id="event-all">
                 <div v-for="item in eventList" class='col-sm-4 col-xs-6 margin-bottom-30'>
                     <div class='col-xs-12 event-item' @click="showItemEvent(item.name)">

@@ -22,6 +22,7 @@ public class NetUtil {
     public static final int WIFI_SECURITY_WEP = 0x01;
     public static final int WIFI_SECURITY_WPA = 0x02;
 
+    public static final String WIFI_SSID_NONE = "<unknown ssid>";
 
     public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getApplicationContext()
@@ -185,10 +186,20 @@ public class NetUtil {
     }
 
     /**
+     * Check is the frequency 2.4G channel or not.
+     *
+     * @param frequency The frequency need check
+     * @return true if the frequency is 2.4G
+     */
+    public static boolean is24GHz(int frequency) {
+        return frequency > 2400 && frequency < 2500;
+    }
+
+    /**
      * Get the channel by the frequency.
      *
      * @param frequency The wifi frequency.
-     * @return The wifi channel.
+     * @return The wifi channel. -1 is unknown channel.
      */
     public static int getWifiChannel(int frequency) {
         switch (frequency) {
@@ -326,9 +337,18 @@ public class NetUtil {
     public static byte[] getOriginalSsidBytes(WifiInfo info) {
         try {
             Method method = info.getClass().getMethod("getWifiSsid");
+            if (method == null) {
+                return null;
+            }
             method.setAccessible(true);
             Object wifiSsid = method.invoke(info);
+            if (wifiSsid == null) {
+                return null;
+            }
             method = wifiSsid.getClass().getMethod("getOctets");
+            if (method == null) {
+                return null;
+            }
             method.setAccessible(true);
             return (byte[]) method.invoke(wifiSsid);
         } catch (NoSuchMethodException e) {
@@ -346,9 +366,18 @@ public class NetUtil {
     public static byte[] getOriginalSsidBytes(ScanResult scanResult) {
         try {
             Field field = scanResult.getClass().getField("wifiSsid");
+            if (field == null) {
+                return null;
+            }
             field.setAccessible(true);
             Object wifiSsid = field.get(scanResult);
+            if (wifiSsid == null) {
+                return null;
+            }
             Method method = wifiSsid.getClass().getMethod("getOctets");
+            if (method == null) {
+                return null;
+            }
             method.setAccessible(true);
             return (byte[]) method.invoke(wifiSsid);
         } catch (NoSuchFieldException e) {

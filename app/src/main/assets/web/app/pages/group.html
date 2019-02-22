@@ -13,24 +13,27 @@
             <i class="icon-search"></i>
             <input v-model="searchName" type="search" class="form-control" :placeholder="$t('searchGroup')">
         </div>
-        <div class="content-info" id="content-info">
-            <div v-show="isShowGroup(item.device_macs, item.is_user)" :key="item.id" v-for="item in list" @click.self="showColor(item)"
-                 v-longtap="{fn: showOperate, obj: item}" class="item">
-                <div @click.stop="showColor(item)" class="item-icon-circle">
-                    <i class="icon-groups"></i>
-                    <span>{{getDevicesByGroup(item.device_macs)}}</span>
-                </div>
-                <div @click.stop="showColor(item)" class="item-name">
-                    <span>{{item.name}}</span>
-                </div>
-                <div v-show="isShow(item.device_macs)" class="item-power">
-                    <div class="switch-wrapper">
+        <div class="content-info no-padding-bottom" id="content-info">
+            <div class="overflow-touch">
+                <div v-show="isShowGroup(item.device_macs, item.is_user)" :key="item.id" v-for="item in list" @click.self="showColor(item)"
+                     v-longtap="{fn: showOperate, obj: item}" class="item">
+                    <div @click.stop="showColor(item)" class="item-icon-circle">
+                        <i class="icon-groups"></i>
+                        <span>{{getDevicesByGroup(item.device_macs)}}</span>
+                    </div>
+                    <div @click.stop="showColor(item)" class="item-name">
+                        <span>{{item.name}}</span>
+                    </div>
+                    <div v-show="isShow(item.device_macs)" class="item-power">
+                        <div class="switch-wrapper">
                         <span :class="{'active': !getStatusByGroup(item.device_macs)}"
                               @click="close(item.device_macs, 0, item.id)">OFF</span>
-                        <span :class="{'active': getStatusByGroup(item.device_macs)}"
-                              @click="close(item.device_macs, 1, item.id)">ON</span>
+                            <span :class="{'active': getStatusByGroup(item.device_macs)}"
+                                  @click="close(item.device_macs, 1, item.id)">ON</span>
+                        </div>
                     </div>
                 </div>
+
             </div>
 
         </div>
@@ -58,6 +61,7 @@
                     <li @click="showInfo"><span>{{$t('editGroup')}}</span></li>
                     <li @click="joinMesh"><span>{{$t('joinBtn')}}</span></li>
                     <li @click="showOta"><span>{{$t('otaUpdate')}}</span></li>
+                    <!--<li @click="showSendIP"><span>{{$t('setIP')}}</span></li>-->
                     <li @click="showCommand"><span>{{$t('command')}}</span></li>
                     <li @click="hideOperate" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
                 </ul>
@@ -73,4 +77,5 @@
     <v-joinMesh v-on:meshShow="onBackGroup" :joinMeshSlider="joinSliderGroup" :selectMeshAllId="selectMeshAllId"
                 :joinMeshId="joinMeshGroup" :group="groupObj" v-if="groupObj" ref="mesh"></v-joinMesh>
     <v-command v-on:commandShow="onBackGroup" :commandMacs="commandMacs" ref="command"></v-command>
+    <v-sendIP v-on:sendIPShow="onBackGroup" :commandMacs="commandMacs" ref="sendIP"></v-sendIP>
 </div>

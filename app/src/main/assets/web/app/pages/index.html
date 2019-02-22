@@ -13,56 +13,60 @@
             <i class="icon-search"></i>
             <input v-model="searchName" type="search" class="form-control" :placeholder="$t('search')">
         </div>
-        <div class="content-info flex-wrapper" id="device-list">
-            <mt-loadmore :top-method="loadTop" @top-status-change="handleTopChange" ref="loadmore">
-                {{list}}
-                <div v-if="!showAdd" v-infinite-scroll="loadMoreList"
-                     infinite-scroll-disabled="loadMoreing"
-                     infinite-scroll-distance="30">
-                    <div v-for="item in loadList" :id="item.mac" :key="item.mac" v-longtap="{fn: showOperate, mac: item.mac}"
-                          @click.self="operateItem(item)" class="item">
-                        <div @click.stop="operateItem(item)" class="item-icon-circle">
-                            <i :class="getIcon(item.tid)"
-                               :style="{'color': getColor(item.characteristics, item.tid)}"></i>
-                        </div>
-                        <div @click.stop="operateItem(item)" class="item-name">
-                            <span :class="{'cr-warning': getFlag(item.position)}">{{getPosition(item.position)}}</span>
-                            <span  :class="{'desc': showDesc(item.position)}">{{item.name}}
+        <div class="content-info flex-wrapper no-padding-bottom" id="device-list">
+            <div class="overflow-touch">
+                <mt-loadmore :top-method="loadTop" @top-status-change="handleTopChange" ref="loadmore">
+                    {{list}}
+                    <div v-if="!showAdd" v-infinite-scroll="loadMoreList"
+                         infinite-scroll-disabled="loadMoreing"
+                         infinite-scroll-distance="30">
+                        <div v-for="item in loadList" :id="item.mac" :key="item.mac" v-longtap="{fn: showOperate, mac: item.mac}"
+                             @click.self="operateItem(item)" class="item">
+                            <div @click.stop="operateItem(item)" class="item-icon-circle">
+                                <i :class="getIcon(item.tid)"
+                                   :style="{'color': getColor(item.characteristics, item.tid)}"></i>
+                                <span v-show="linkShow(item)"><i class="icon-link"></i></span>
+                            </div>
+                            <div @click.stop="operateItem(item)" class="item-name">
+                                <span :class="{'cr-warning': getFlag(item.position)}">{{getPosition(item.position)}}</span>
+                                <span v-show="!showDesc(item.name)">{{item.mac}}</span>
+                                <span v-show="showDesc(item.name)"  :class="{'desc': showDesc(item.position)}">{{item.name}}
                                 <span v-show="showDesc(item.position)">({{item.version}})</span></span>
-                            <span class="desc" v-show="!showDesc(item.position)">
+                                <span class="desc" v-show="!showDesc(item.position)">
                                 {{item.version}}
                             </span>
-                        </div>
-                        <div class="item-power">
-                            <div v-show="isLigth(item.tid)" class="switch-wrapper">
-                                <span :class="{'active': !getStatus(item.characteristics)}" @click="close(item.mac, 0)">OFF</span>
-                                <span :class="{'active': getStatus(item.characteristics)}" @click="close(item.mac, 1)">ON</span>
                             </div>
-                            <div v-show="isSensor(item.tid, item.characteristics)" class="sensor-wrapper">
-                                <span class="desc">temp: {{getSensorTemperature(item.characteristics)}}℃</span>
-                                <span class="desc">humi: {{getSensorHumidity(item.characteristics)}}%</span>
-                                <span class="desc">lumi: {{getSensorLuminance(item.characteristics)}}cd</span>
+                            <div class="item-power">
+                                <div v-show="isLigth(item.tid)" class="switch-wrapper">
+                                    <span :class="{'active': !getStatus(item.characteristics)}" @click="close(item.mac, 0)">OFF</span>
+                                    <span :class="{'active': getStatus(item.characteristics)}" @click="close(item.mac, 1)">ON</span>
+                                </div>
+                                <div v-show="isSensor(item.tid, item.characteristics)" class="sensor-wrapper">
+                                    <span class="desc">temp: {{getSensorTemperature(item.characteristics)}}℃</span>
+                                    <span class="desc">humi: {{getSensorHumidity(item.characteristics)}}%</span>
+                                    <span class="desc">lumi: {{getSensorLuminance(item.characteristics)}}cd</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div v-if="showAdd" class="add-wrapper">
-                    <h3>{{$t('addDevice')}}</h3>
-                    <p>{{$t('listDesc')}}</p>
-                    <div @click="addDevice($event)">
-                        <i class="icon-plus"></i>
+                    <div v-if="showAdd" class="add-wrapper">
+                        <h3>{{$t('addDevice')}}</h3>
+                        <p>{{$t('listDesc')}}</p>
+                        <div @click="addDevice($event)">
+                            <i class="icon-plus"></i>
+                        </div>
                     </div>
-                </div>
-                <div slot="top" class="mint-loadmore-top">
-                    <span v-show="topStatus !== 'loading'" :class="{ 'rotate': topStatus === 'drop' }">↓</span>
-                    <div v-show="topStatus === 'loading'" id="loader-wrapper-small">
-                        <div class="loader loader-small"></div>
-                        <div class="loader-section section-left"></div>
-                        <div class="loader-section section-right"></div>
+                    <div slot="top" class="mint-loadmore-top">
+                        <span v-show="topStatus !== 'loading'" :class="{ 'rotate': topStatus === 'drop' }">↓</span>
+                        <div v-show="topStatus === 'loading'" id="loader-wrapper-small">
+                            <div class="loader loader-small"></div>
+                            <div class="loader-section section-left"></div>
+                            <div class="loader-section section-right"></div>
+                        </div>
                     </div>
-                </div>
-            </mt-loadmore>
+                </mt-loadmore>
+            </div>
         </div>
         <v-load :loadDesc="loadDesc" ref="load"></v-load>
         <v-footer :current="device"></v-footer>
@@ -88,6 +92,7 @@
                     <li @click="showOta"><span>{{$t('otaUpdate')}}</span></li>
                     <li @click="showPair"><span>{{$t('location')}}</span></li>
                     <li @click="showAuto"><span>{{$t('association')}}</span></li>
+                    <!--<li @click="showSendIp"><span>{{$t('setIP')}}</span></li>-->
                     <li @click="showCommand"><span>{{$t('command')}}</span></li>
                     <!--<li @click="showIbeacon"><span>Ibeacon</span></li>-->
                     <li @click="hideOperate" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
@@ -112,4 +117,5 @@
     <v-remind ref="remind"></v-remind>
     <v-setDevicePair v-on:setDevicePairShow="onBackIndex" ref="setDevicePair"></v-setDevicePair>
     <v-command v-on:commandShow="onBackIndex" :commandMacs="commandMacs" ref="command"></v-command>
+    <v-sendIP v-on:sendIPShow="onBackIndex" :commandMacs="commandMacs" ref="sendIP"></v-sendIP>
 </div>

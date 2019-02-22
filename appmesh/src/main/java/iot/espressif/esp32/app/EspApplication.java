@@ -15,6 +15,7 @@ import java.util.Random;
 import iot.espressif.esp32.db.dao.DaoMaster;
 import iot.espressif.esp32.db.dao.DaoSession;
 import iot.espressif.esp32.db.manager.EspDBManager;
+import iot.espressif.esp32.db.database.MeshOpenHelper;
 import libs.espressif.utils.RandomUtil;
 
 public class EspApplication extends Application {
@@ -22,7 +23,7 @@ public class EspApplication extends Application {
     private final Object mCacheLock = new Object();
     private String mVersionName;
     private int mVersionCode;
-    private DaoMaster.DevOpenHelper mDBHelper;
+    private MeshOpenHelper mDBHelper;
     private HashMap<String, Object> mCacheMap;
     private boolean mSupportBLE;
 
@@ -63,7 +64,7 @@ public class EspApplication extends Application {
             mVersionCode = -1;
         }
 
-        mDBHelper = new DaoMaster.DevOpenHelper(this, EspDBManager.DB_NAME, null);
+        mDBHelper = new MeshOpenHelper(this, EspDBManager.DB_NAME);
         SQLiteDatabase db = mDBHelper.getWritableDatabase();
         DaoSession daoSession = new DaoMaster(db).newSession();
         EspDBManager.init(daoSession);
@@ -99,13 +100,10 @@ public class EspApplication extends Application {
     public String putCache(Object value) {
         synchronized (mCacheLock) {
             String key;
-            while (true) {
+            do {
                 int keyLength = new Random().nextInt(20) + 20;
                 key = RandomUtil.randomString(keyLength);
-                if (!mCacheMap.containsKey(key)) {
-                    break;
-                }
-            }
+            } while (mCacheMap.containsKey(key));
 
             mCacheMap.put(key, value);
             return key;

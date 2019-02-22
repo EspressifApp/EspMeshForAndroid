@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import iot.espressif.esp32.action.IEspAction;
 import iot.espressif.esp32.action.device.IEspActionDevice;
+import iot.espressif.esp32.constants.DeviceConstants;
 import iot.espressif.esp32.model.callback.DeviceRequestCallable;
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.user.EspUser;
@@ -44,7 +46,8 @@ public class DeviceUtil {
 
     public static final String CONTENT_TYPE_BIN = "application/bin";
 
-    private static final String FILE_REQUEST = "/device_request";
+    public static final String FILE_REQUEST = "/device_request";
+
     private static final String HEADER_MESH_MAC = IEspActionDevice.HEADER_NODE_MAC;
     private static final String HEADER_MESH_COUNT = IEspActionDevice.HEADER_NODE_COUNT;
 
@@ -86,7 +89,7 @@ public class DeviceUtil {
      */
     public static EspHttpResponse httpLocalRequest(IEspDevice device, byte[] content,
                                                    EspHttpParams params, EspHttpHeader... headers) {
-        return httpLocalRequest(device.getProtocol(), device.getHostAddress(), device.getProtocolPort(),
+        return httpLocalRequest(device.getProtocol(), device.getLanHostAddress(), device.getProtocolPort(),
                 device.getMac(), content, params, headers);
     }
 
@@ -132,7 +135,7 @@ public class DeviceUtil {
         HashMap<InetAddress, List<IEspDevice>> inetDevicesMap = new HashMap<>();
         final HashMap<String, IEspDevice> protocolMap = new HashMap<>();
         for (IEspDevice device : devices) {
-            InetAddress address = device.getInetAddress();
+            InetAddress address = device.getLanAddress();
 
             if (address != null) {
                 protocolMap.put(address.getHostAddress(), device);
@@ -319,15 +322,23 @@ public class DeviceUtil {
 
     private static List<EspHttpResponse> multicast(String url, Collection<String> bssids, byte[] content,EspHttpParams params,
                           EspHttpHeader... headers) {
+        Collection<String> dstBssids;
+        if (bssids.size() >= 200) {
+            dstBssids = new ArrayList<>(1);
+            dstBssids.add(DeviceConstants.MAC_BROADCAST);
+        } else {
+            dstBssids = bssids;
+        }
+
         final int newHeaderCount = 3;
         EspHttpHeader[] newHeaders = new EspHttpHeader[headers.length + newHeaderCount];
         StringBuilder bssidsSB = new StringBuilder();
-        for (String bssid : bssids) {
+        for (String bssid : dstBssids) {
             bssidsSB.append(bssid).append(',');
         }
         bssidsSB.deleteCharAt(bssidsSB.length() - 1);
         newHeaders[1] = new EspHttpHeader(HEADER_MESH_MAC, bssidsSB.toString());
-        newHeaders[0] = new EspHttpHeader(HEADER_MESH_COUNT, String.valueOf(bssids.size()));
+        newHeaders[0] = new EspHttpHeader(HEADER_MESH_COUNT, String.valueOf(dstBssids.size()));
         newHeaders[2] = EspHttpUtils.HEADER_CONTENT_JSON;
         System.arraycopy(headers, 0, newHeaders, newHeaderCount, headers.length);
 
@@ -337,7 +348,7 @@ public class DeviceUtil {
         }
 
         List<EspHttpResponse> result = new LinkedList<>();
-        boolean chunkedResp = bssids.size() > 1;
+        boolean chunkedResp = response.findHeader(EspHttpUtils.CONTENT_LENGTH) == null;
         if (chunkedResp) {
             List<EspHttpResponse> chunkedRespList = getChunkedResponseList(response.getContent());
             result.addAll(chunkedRespList);
@@ -474,7 +485,7 @@ public class DeviceUtil {
                         break;
                     }
 
-                    String host = device.getHostAddress();
+                    String host = device.getLanHostAddress();
                     if (host == null) {
                         continue;
                     }
@@ -537,7 +548,7 @@ public class DeviceUtil {
      * @return like aa:bb:cc:dd:ee:ff
      */
     public static String convertColonBssid(String bssid) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(18);
         for (int i = 0; i < bssid.length(); i += 2) {
             sb.append(bssid.substring(i, i + 2)).append(":");
         }

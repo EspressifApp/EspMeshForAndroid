@@ -2,18 +2,13 @@ package h5.espressif.esp32.action;
 
 import java.util.UUID;
 
-public interface IEspActionDeviceConfigure {
-    UUID UUID_WIFI_SERVICE = UUID.fromString("0000ffff-0000-1000-8000-00805f9b34fb");
-    UUID UUID_WRITE_CHARACTERISTIC = UUID.fromString("0000ff01-0000-1000-8000-00805f9b34fb");
-    UUID UUID_NOTIFICATION_CHARACTERISTIC = UUID.fromString("0000ff02-0000-1000-8000-00805f9b34fb");
+import iot.espressif.esp32.action.device.IEspActionDeviceConfigure;
 
+public interface IEspActionDeviceConfigure2 extends IEspActionDeviceConfigure {
 
     String PREFIX_BLUFI = "MESH";
 
-    String KEY_CODE = "code";
-    String KEY_MESSAGE = "message";
-
-    int PROGRESS_IDEA = 0;
+    int PROGRESS_IDLE = 0;
     int PROGRESS_START = 5;
     int PROGRESS_BLE_CONNECTED = 10;
     int PROGRESS_SERVICE_DISCOVER = 15;
@@ -23,17 +18,25 @@ public interface IEspActionDeviceConfigure {
     int PROGRESS_FAILED = 99;
     int PROGRESS_COMPLETE = 100;
 
-    int CODE_SUC = 200;
+    // App normal code, range is [300 - 399]
+    int CODE_SUC = 300;
+    int CODE_IDLE = 399;
+    int CODE_PROGRESS_START = 301;
+    int CODE_PROGRESS_SCAN = 302;
+    int CODE_PROGRESS_CONNECT = 303;
+    int CODE_PROGRESS_SERVICE = 304;
+    int CODE_PROGRESS_CHAR = 305;
+    int CODE_PROGRESS_SECURITY = 306;
+    int CODE_PROGRESS_CONFIGURE = 307;
+    int CODE_PROGRESS_RECEIVE_WIFI = 308;
 
-    int CODE_PROGRESS_START = 100;
-    int CODE_PROGRESS_SCAN = 101;
-    int CODE_PROGRESS_CONNECT = 102;
-    int CODE_PROGRESS_SERVICE = 103;
-    int CODE_PROGRESS_CHAR = 104;
-    int CODE_PROGRESS_SECURITY = 105;
-    int CODE_PROGRESS_CONFIGURE = 106;
-    int CODE_PROGRESS_RECEIVE_WIFI = 107;
+    // Mesh error code, range is [0 - 255]
+    int CODE_ERR_WIFI_PASSWORD = 0x10;
+    int CODE_ERR_AP_NOT_FOUND = 0x11;
+    int CODE_ERR_AP_FORBID = 0x12;
+    int CODE_ERR_CONFIGURE = 0x13;
 
+    // App error code
     int CODE_ERR_BLE_SCAN = -2;
     int CODE_ERR_BLE_CONN = -3;
     int CODE_ERR_GATT_SERVICE = -4;
@@ -51,8 +54,6 @@ public interface IEspActionDeviceConfigure {
     int CODE_ERR_SSID = -30;
     int CODE_ERR_WHITE_LIST = -31;
     int CODE_ERR_EXCEPTION = -40;
-    int CODE_ERR_WIFI_CONN = 1;
-    int CODE_ERR_WIFI_PASSWORD = 2;
 
     interface ProgressCallback {
         void onUpdate(int progress, int status, String message);

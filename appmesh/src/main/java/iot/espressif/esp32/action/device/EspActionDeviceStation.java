@@ -127,12 +127,14 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
         LinkedBlockingQueue<Object> scanTaskQueue = new LinkedBlockingQueue<>();
         int mdnsCount = 1;
         int udpCount = 3;
-        Observable.just(listener)
-                .subscribeOn(Schedulers.io())
-                .doOnNext(this::scanMDNS)
-                .doOnComplete(() -> scanTaskQueue.add(Boolean.TRUE))
-                .subscribe();
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < mdnsCount; i ++) {
+            Observable.just(listener)
+                    .subscribeOn(Schedulers.io())
+                    .doOnNext(this::scanMDNS)
+                    .doOnComplete(() -> scanTaskQueue.add(Boolean.TRUE))
+                    .subscribe();
+        }
+        for (int i = 0; i < udpCount; i++) {
             Observable.just(listener)
                     .subscribeOn(Schedulers.io())
                     .doOnNext(this::scanUDP)
@@ -405,12 +407,12 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
         HashSet<String> staMacSet = new HashSet<>();
         LinkedList<IEspDevice> stations = new LinkedList<>(scanStations);
         for (IEspDevice device : stations) {
-            staAddrSet.add(device.getHostAddress());
+            staAddrSet.add(device.getLanHostAddress());
             staMacSet.add(device.getMac());
         }
 
         for (IEspDevice rootUserDev : rootUserDevices) {
-            if (staAddrSet.contains(rootUserDev.getHostAddress())) {
+            if (staAddrSet.contains(rootUserDev.getLanHostAddress())) {
                 continue;
             }
             if (staMacSet.contains(rootUserDev.getMac())) {
@@ -422,7 +424,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
         mLog.d("TCP check device size = " + tcpCheckDevices.size());
         for (IEspDevice tcpDevice : tcpCheckDevices) {
             List<MeshNode> nodes = new EspActionDeviceTopology().doActionGetMeshNodeLocal(
-                    tcpDevice.getProtocol(), tcpDevice.getHostAddress(), tcpDevice.getProtocolPort());
+                    tcpDevice.getProtocol(), tcpDevice.getLanHostAddress(), tcpDevice.getProtocolPort());
             for (MeshNode node : nodes) {
                 IEspDevice nodeDev = EspDeviceFactory.parseMeshNode(node);
                 if (nodeDev != null) {

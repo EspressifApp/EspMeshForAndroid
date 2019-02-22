@@ -17,6 +17,7 @@ define(["vue", "Util", "txt!../../pages/addGroup.html"], function(v, Util, addGr
                 total: 0,
                 selected: 0,
                 searchName: "",
+                isSelectedMacs: [],
             }
         },
         computed: {
@@ -34,6 +35,13 @@ define(["vue", "Util", "txt!../../pages/addGroup.html"], function(v, Util, addGr
                     })
                     list = searchList;
                 }
+                if ($("#" + self.addGroupId).hasClass("active")) {
+                    var allMacs = [];
+                    $.each(list, function(i, item) {
+                        allMacs.push(item.bssid);
+                    })
+                    self.isSelectedMacs = allMacs;
+                }
                 self.total = list.length;
                 return self.sortList(list);
             }
@@ -41,8 +49,8 @@ define(["vue", "Util", "txt!../../pages/addGroup.html"], function(v, Util, addGr
         methods:{
             show: function() {
                 window.onBackPressed = this.hide;
-                $("span.span-radio").removeClass("active");
                 this.selected = 0;
+                this.isSelectedMacs = [];
                 this.addFlag = true;
 
             },
@@ -82,46 +90,44 @@ define(["vue", "Util", "txt!../../pages/addGroup.html"], function(v, Util, addGr
                     macs.push($(docs[i]).attr("data-value"));
                 };
                 var obj = {name: this.name, is_user: false, is_mesh: false, device_macs: macs};
-                var res = espmesh.saveGroup(JSON.stringify(obj));
-                if (res) {
-                    var groupList = this.$store.state.groupList;
-                    obj.id = res;
-                    groupList.push(obj);
-                    this.$store.commit("setGroupList", groupList);
-                    this.hide();
-                    this.$router.push({
-                        path: "/group"
-                    });
+                espmesh.saveGroups(JSON.stringify([obj]));
+                espmesh.loadGroups();
+                this.hide();
+                this.$router.push({
+                    path: "/group"
+                });
+            },
+            selectMac: function(mac) {
+                var num = this.isSelectedMacs.indexOf(mac);
+                if (num == -1) {
+                    this.isSelectedMacs.push(mac);
+                } else {
+                    this.isSelectedMacs.splice(num, 1);
                 }
+                this.selected = this.isSelectedMacs.length;
+            },
+            isSelected: function(mac) {
+                var self = this,
+                    flag = false;
+                if (self.isSelectedMacs.indexOf(mac) != -1) {
+                    flag = true;
+                }
+                return flag;
             },
             selectAllDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    $("span.span-radio").removeClass("active");
+                var doc = $(e.currentTarget).find("span.span-radio")[0];
+                if ($(doc).hasClass("active")) {
+                    $(doc).removeClass("active");
                     this.selected = 0;
+                    this.isSelectedMacs = [];
                 } else {
-                    doc.addClass("active");
-                    $("span.span-radio").addClass("active");
+                    $(doc).addClass("active");
                     this.selected = this.total;
-                }
-
-            },
-            selectDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    this.selected -= 1;
-                } else {
-                    doc.addClass("active");
-                    this.selected += 1;
-                }
-            },
-            _isEmpty: function (str) {
-                if (str === "" || str === null || str === undefined || str === "null" || str === "undefined" ) {
-                    return true;
-                } else {
-                    return false;
+                    var allMacs = [];
+                    $.each(this.deviceList, function(i, item) {
+                        allMacs.push(item.mac);
+                    })
+                    this.isSelectedMacs = allMacs;
                 }
             },
         },

@@ -1,0 +1,134 @@
+<transition name="moves">
+    <div v-show="writingFlag" class="add-info operate-way">
+        <div class="topobody">
+            <div class="topoheader">
+                <div class="col-xs-12 no-padding">
+                    <div class="funcbtn">
+                        <div @click="hideTable" class="returnBtn">
+                            <i class="icon-left"></i>
+                        </div>
+                        <div class="morebtn">
+                            <a @click="colorPlateBtn" class="navigation-device"><span class="icon-contrast"></span><span>Color</span></a>
+                            <a @click="clearWriting" class="navigation-device"><span class="icon-clear"></span><span>Clear</span></a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="topocon">
+                <div id="toporight-wirting-table" class="toporight table-right no-padding">
+                    <div id="table-wirting-wrapper" class="table-responsive flex flex-ac fle-jcc">
+                        <table id="table-drop-wirting" class="table table-bordered unactive">
+                            <tr>
+                                <td v-for="item in trList0">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList1">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList2">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList3">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList4">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList5">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList6">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList7">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList8">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList9">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList10">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList11">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList12">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList13">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList14">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td v-for="item in trList15">
+                                    <span :data-id="item" class="writing-round"></span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <transition name="moves">
+            <div v-show="colorFlag" class="operate-way">
+                <div @click="hideColor" class="mask"></div>
+                <div class="color-wrapper">
+                    <div class="flex flex-m">
+                        <span v-for="item in colorList" @click="selectColor(item)"
+                              class="flex flex-ac flex-jcc" :style="{'background': item}">
+                            <i v-show="currentRgb == item" class="icon-ok-circled"></i>
+                        </span>
+                        <span @click="writeColor(oneList, 0, true)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                              :class="{'active': currentWrite == 0}" :style="{'background': currentRgb}">乐</span>
+                        <span @click="writeColor(twoList, 1, true)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                              :class="{'active': currentWrite == 1}" :style="{'background': currentRgb}">鑫</span>
+                        <span @click="writeColor(threeList, 2, true)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                              :class="{'active': currentWrite == 2}" :style="{'background': currentRgb}">欢</span>
+                        <span @click="writeColor(fourList, 3, true)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                              :class="{'active': currentWrite == 3}" :style="{'background': currentRgb}">迎</span>
+                        <span @click="writeColor(fiveList, 4, true)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                              :class="{'active': currentWrite == 4}" :style="{'background': currentRgb}">您</span>
+                        <span @click="writeCycle(5)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                              :class="{'active': currentWrite == 5}" :style="{'background': currentRgb}">循环</span>
+                    </div>
+
+                </div>
+            </div>
+        </transition>
+    </div>
+</transition>

@@ -12,7 +12,7 @@ public interface IEspActionDevice extends IEspAction {
     String KEY_ROOT_MAC = "root_mac";
     String KEY_STATE = "state";
     String KEY_LAYER = "layer";
-    String KEY_IP = "ip";
+    String KEY_HOST = "host";
     String KEY_IDF_VERSION = "idf_version";
     String KEY_MDF_VERSION = "mdf_version";
     String KEY_MLINK_VERSION = "mlink_version";

@@ -28,22 +28,23 @@ public class EspActionJSON implements IEspActionJSON {
                     .put(KEY_NAME, device.getName())
                     .put(KEY_POSITION, device.getPosition())
                     .put(KEY_LAYER, device.getMeshLayerLevel())
-                    .put(KEY_VERSION, device.getCurrentRomVersion())
+                    .put(KEY_VERSION, device.getRomVersion())
                     .put(KEY_IDF_VERSION, device.getIdfVersion())
                     .put(KEY_MDF_VERSION, device.getMdfVersion())
                     .put(KEY_MLINK_VERSION, device.getMlinkVersion())
+                    .put(KEY_TRIGGER, device.getTrigger())
                     .put(KEY_MESH_ID, device.getMeshId());
             String ip = "";
             JSONArray stateArray = new JSONArray();
             if (device.isState(EspDeviceState.State.LOCAL)) {
                 stateArray.put("local");
-                ip = device.getInetAddress().getHostAddress();
+                ip = device.getLanAddress().getHostAddress();
             }
             if (device.isState(EspDeviceState.State.CLOUD)) {
                 stateArray.put("cloud");
             }
             json.put(KEY_STATE, stateArray)
-                    .put(KEY_IP, ip);
+                    .put(KEY_HOST, ip);
 
             JSONArray charaArray = new JSONArray();
             for (EspDeviceCharacteristic chara : device.getCharacteristics()) {

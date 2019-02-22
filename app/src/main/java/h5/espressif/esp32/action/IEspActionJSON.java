@@ -20,4 +20,5 @@ public interface IEspActionJSON extends IEspActionDevice {
     String KEY_IDF_VERSION = IEspActionDeviceInfo.KEY_IDF_VERSION;
     String KEY_MDF_VERSION = IEspActionDeviceInfo.KEY_MDF_VERSION;
     String KEY_MLINK_VERSION = IEspActionDeviceInfo.KEY_MLINK_VERSION;
+    String KEY_TRIGGER =IEspActionDeviceInfo.KEY_TRIGGER;
 }

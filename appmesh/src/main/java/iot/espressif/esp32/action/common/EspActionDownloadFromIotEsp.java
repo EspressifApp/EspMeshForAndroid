@@ -15,6 +15,7 @@ import iot.espressif.esp32.model.other.EspRomQueryResult;
 import iot.espressif.esp32.model.other.EspRxObserver;
 import libs.espressif.log.EspLog;
 import libs.espressif.net.EspHttpHeader;
+import libs.espressif.net.EspHttpResponse;
 import libs.espressif.net.EspHttpUtils;
 
 public class EspActionDownloadFromIotEsp extends EspActionDownload implements IEspActionDownloadFromIotEsp {
@@ -26,7 +27,11 @@ public class EspActionDownloadFromIotEsp extends EspActionDownload implements IE
 
         JSONObject romJSON;
         try {
-            romJSON = EspHttpUtils.Get(URL_QUERY, null, header).getContentJSON();
+            EspHttpResponse response = EspHttpUtils.Get(URL_QUERY, null, header);
+            if (response == null) {
+                return null;
+            }
+            romJSON = response.getContentJSON();
         } catch (Exception e) {
             e.printStackTrace();
             return null;

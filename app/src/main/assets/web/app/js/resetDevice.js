@@ -57,7 +57,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                         })
                         list = macList;
                     }
-
                     if ($("#" + self.selectAllId).hasClass("active")) {
                         var allMacs = [];
                         $.each(list, function(i, item) {
@@ -72,11 +71,12 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                     });
                 }
                 return list;
-            }
+            },
         },
         methods:{
             show: function() {
                 var self = this;
+                window.onLoadMacs = self.onLoadMacs;
                 self.getLoadMacs();
                 self.getPair();
                 self.scanDeviceList = [];
@@ -124,17 +124,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                 }
             },
             getPair: function() {
-                var self = this,
-                    pairs = espmesh.loadHWDevices();
-                if (!Util._isEmpty(pairs)) {
-                    self.resetPairList = JSON.parse(pairs);
-                }
-                self.$store.commit("setSiteList", self.resetPairList);
+                this.resetPairList = this.$store.state.siteList;
             },
             getPairInfo: function(mac) {
                 var self = this, position = "";
-                    staMac = espmesh.getStaMacsForBleMacs(JSON.stringify([mac]));
-                staMac = JSON.parse(staMac);
+                var staMac = Util.staMacForBleMacs([mac]);
                 if (staMac.length > 0) {
                     $.each(self.resetPairList, function(i, item) {
                         if (item.mac == staMac[0]) {
@@ -156,8 +150,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                 this.$parent.conReload();
             },
             getLoadMacs: function() {
-                var macs = espmesh.loadMacs();
-                this.scanMacs = JSON.parse(macs)
+                espmesh.loadMacs();
+            },
+            onLoadMacs: function(res) {
+                this.scanMacs = JSON.parse(res);
             },
             importDevice: function() {
                 this.flagUl = false;
@@ -219,7 +215,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                 window.onBackPressed = self.hide;
             },
             addDevice: function () {
-                var self = this;
+                var self = this, flag = false;
                 if (self.selected > 0) {
                     espmesh.stopBleScan();
                     var docs = $("#" + self.resetId + " span.span-radio.active"),
@@ -228,12 +224,23 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                         macs.push($(docs[i]).attr("data-value"));
                     };
                     $.each(self.scanDeviceList, function(i, item) {
-                        if (macs.indexOf(item.mac) > -1) {
+                        if (macs.indexOf(item.mac) != -1) {
                             list.push(item);
+                            if (!item.only_beacon) {
+                                flag = true;
+                            }
                         }
                     });
-                    self.$store.commit("setScanDeviceList", list);
-                    self.$refs.device.show();
+                    if (flag) {
+                        self.$store.commit("setScanDeviceList", list);
+                        self.$refs.device.show();
+                    } else {
+                        MINT.Toast({
+                            message: self.$t('noConfigDesc'),
+                            position: 'bottom',
+                        });
+                    }
+
                 }
             },
             getPosition: function(position) {
@@ -252,17 +259,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                 this.showDesc = false;
                 window.onBackPressed = this.hide;
             },
-            addSelectMac: function(mac) {
+            selectMac: function(mac) {
                 var num = this.isSelectedMacs.indexOf(mac);
                 if (num == -1) {
                     this.isSelectedMacs.push(mac);
-                }
-            },
-            delSelectMac: function(mac) {
-                var num = this.isSelectedMacs.indexOf(mac);
-                if (num != -1) {
+                } else {
                     this.isSelectedMacs.splice(num, 1);
                 }
+                this.selected = this.isSelectedMacs.length;
             },
             isSelected: function(mac) {
                 var self = this,
@@ -272,28 +276,12 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                 }
                 return flag;
             },
-            selectDevice: function (mac, e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    this.delSelectMac(mac);
-                    this.selected -= 1;
-                } else {
-                    doc.addClass("active");
-                    this.addSelectMac(mac);
-                    this.selected += 1;
-                }
-            },
             selectAllDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    $("span.span-radio").removeClass("active");
+                var doc = $(e.currentTarget).find("span.span-radio")[0];
+                if ($(doc).hasClass("active")) {
                     this.selected = 0;
                     this.isSelectedMacs = [];
                 } else {
-                    doc.addClass("active");
-                    $("span.span-radio").addClass("active");
                     this.selected = this.count;
                     var allMacs = [];
                     $.each(this.scanDeviceList, function(i, item) {
@@ -301,15 +289,13 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                     })
                     this.isSelectedMacs = allMacs;
                 }
-
             },
             distance: function(rssi) {
                 return Util.distance(rssi);
             },
             startBleScan: function() {
-                var self = this,
-                    flag = espmesh.isBluetoothEnable();
-                if (flag) {
+                var self = this;
+                if (self.$store.state.blueInfo) {
                     espmesh.startBleScan();
                 } else {
                     MINT.Toast({
@@ -318,7 +304,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                         duration: 2000
                     });
                 }
-
             },
             setScanList: function(devices) {
                 var self = this;
@@ -327,7 +312,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                     if(Util.isMesh(name, item.version)) {
                         var flag = true,
                             obj = {mac: item.mac, name: name, rssi: item.rssi, bssid: item.bssid,
-                                position: self.getPairInfo(item.mac), tid: item.tid};
+                                position: self.getPairInfo(item.mac), tid: item.tid, only_beacon: item.only_beacon};
                         $.each(self.scanDeviceList, function(j, itemSub) {
                             if (item.mac == itemSub.mac) {
                                 if (item.rssi >= self.rssiValue) {
@@ -347,7 +332,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
             },
             onConScanBLE: function (devices) {
                 var self = this;
-                console.log(devices);
                 devices = JSON.parse(devices);
                 self.setScanList(devices);
                 if (self.$refs.import.importFlag) {

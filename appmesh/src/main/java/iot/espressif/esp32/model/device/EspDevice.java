@@ -20,12 +20,11 @@ class EspDevice implements IEspDevice {
     private long mId;
     private String mKey;
     private String mMac;
-    private String mCurrentRomVersion;
+    private String mRomVersion;
     private String mName;
     private int mTypeId;
     private String mTypeName;
-    private boolean mIsMesh;
-    private InetAddress mInetAddress;
+    private InetAddress mLanAddress;
     private EspDeviceState mState;
     private String mParentDeviceMac;
     private String mRootDeviceMac;
@@ -40,6 +39,7 @@ class EspDevice implements IEspDevice {
     private String mIdfVersion;
     private String mMdfVersion;
     private int mMlinkVersion;
+    private int mTrigger;
 
     EspDevice() {
         mCharaArray = new SparseArray<>();
@@ -78,13 +78,13 @@ class EspDevice implements IEspDevice {
     }
 
     @Override
-    public String getCurrentRomVersion() {
-        return mCurrentRomVersion;
+    public String getRomVersion() {
+        return mRomVersion;
     }
 
     @Override
-    public void setCurrentRomVersion(String version) {
-        mCurrentRomVersion = version;
+    public void setRomVersion(String version) {
+        mRomVersion = version;
     }
 
     @Override
@@ -121,28 +121,18 @@ class EspDevice implements IEspDevice {
     }
 
     @Override
-    public boolean isMesh() {
-        return mIsMesh;
+    public InetAddress getLanAddress() {
+        return mLanAddress;
     }
 
     @Override
-    public void setMesh(boolean isMesh) {
-        mIsMesh = isMesh;
+    public String getLanHostAddress() {
+        return mLanAddress == null ? null : mLanAddress.getHostAddress();
     }
 
     @Override
-    public InetAddress getInetAddress() {
-        return mInetAddress;
-    }
-
-    @Override
-    public String getHostAddress() {
-        return mInetAddress == null ? null : mInetAddress.getHostAddress();
-    }
-
-    @Override
-    public void setInetAddress(InetAddress inetAddress) {
-        mInetAddress = inetAddress;
+    public void setLanAddress(InetAddress lanAddress) {
+        mLanAddress = lanAddress;
     }
 
     @Override
@@ -339,6 +329,16 @@ class EspDevice implements IEspDevice {
     @Override
     public int getMlinkVersion() {
         return mMlinkVersion;
+    }
+
+    @Override
+    public void setTrigger(int trigger) {
+        mTrigger = trigger;
+    }
+
+    @Override
+    public int getTrigger() {
+        return mTrigger;
     }
 
     @Override

@@ -217,7 +217,7 @@ public class EspHttpUtils {
             return null;
         }
 
-        EspHttpResponse response = null;
+        EspHttpResponse response;
         try {
             response = readResponse(connection);
         } catch (IOException e) {
@@ -256,9 +256,13 @@ public class EspHttpUtils {
             if (values == null || values.isEmpty()) {
                 continue;
             }
-            String value = values.get(0);
+            StringBuilder value = new StringBuilder();
+            for (String v : values) {
+                value.append(v).append(',');
+            }
+            value.deleteCharAt(value.length() - 1);
 
-            EspHttpHeader respHeader = new EspHttpHeader(key, value);
+            EspHttpHeader respHeader = new EspHttpHeader(key, value.toString());
             response.setHeader(respHeader);
             log.i(key + ": " + value);
         }
@@ -452,18 +456,5 @@ public class EspHttpUtils {
     public static String encode(String value)
             throws UnsupportedEncodingException {
         return URLEncoder.encode(value, "UTF-8");
-    }
-
-    public static String percentEncode(String value) {
-        try {
-            return value == null ? null :
-                    URLEncoder.encode(value, "UTF-8")
-                            .replace("+", "%20")
-                            .replace("*", "%2A")
-                            .replace("%7E", "~");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
     }
 }

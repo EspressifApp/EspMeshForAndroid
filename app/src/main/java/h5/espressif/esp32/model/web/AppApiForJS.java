@@ -34,11 +34,6 @@ public class AppApiForJS {
     }
 
     @JavascriptInterface
-    public boolean isBluetoothEnable() {
-        return mImpl.isBluetoothEnable();
-    }
-
-    @JavascriptInterface
     public boolean isLocationEnable() {
         return mImpl.isLocationEnable();
     }
@@ -57,18 +52,18 @@ public class AppApiForJS {
      * @return like {"version_name":"0.9.0", "version_code":20}
      */
     @JavascriptInterface
-    public String getAppInfo() {
-        return mImpl.getAppInfo();
+    public void getAppInfo() {
+        mImpl.getAppInfo();
     }
 
     @JavascriptInterface
-    public String getUpgradeFiles() {
-        return mImpl.getUpgradeFiles();
+    public void getUpgradeFiles() {
+        mImpl.getUpgradeFiles();
     }
 
     @JavascriptInterface
-    public void registerWifiChange() {
-        mImpl.registerWifiChange();
+    public void registerPhoneStateChange() {
+        mImpl.registerPhoneStateChange();
     }
 
     @JavascriptInterface
@@ -102,9 +97,11 @@ public class AppApiForJS {
         "version":0, // -1 is old version, 0 or greater is new version
 
         "ssid":"ssid",
+        "bssid":"AB:CD:EF:12:34:56",
         "password":"password",
         "white_list":["aabbccddeeff", "112233445566"],
         "mesh_id":[1,2,3,4,5,6],
+        "mesh_type":0,
 
         "vote_percentage":1,
         "vote_max_count":1,
@@ -164,7 +161,7 @@ public class AppApiForJS {
 
     /*
     {
-        "address":["192.168.1.110"]
+        "host":["192.168.1.110"]
     }
      */
     @JavascriptInterface
@@ -172,14 +169,27 @@ public class AppApiForJS {
         mImpl.stopOTA(request);
     }
 
-    @JavascriptInterface
-    public void otaReboot(String macs) {
-        mImpl.otaReboot(macs);
+    /**
+     * @param info:
+    {
+        "host":"192.168.1.111",
+        "macs":["aabbccddeeff", "112233445566"]
     }
-
+     */
     @JavascriptInterface
-    public void reboot(String macs) {
-        mImpl.reboot(macs);
+    public void otaReboot(String info) {
+        mImpl.otaReboot(info);
+    }
+    /**
+     * @param info:
+    {
+        "host":"192.168.1.111",
+        "macs":["aabbccddeeff", "112233445566"]
+    }
+     */
+    @JavascriptInterface
+    public void reboot(String info) {
+        mImpl.reboot(info);
     }
 
     @JavascriptInterface
@@ -197,9 +207,18 @@ public class AppApiForJS {
         mImpl.stopScanSniffer();
     }
 
+    /**
+     * @param request:
+    {
+        "min_time":10000, // UTC time
+        "max_time":20000, // UTC time
+        "del_duplicate":true,
+        "callback":"js_method"
+    }
+     */
     @JavascriptInterface
-    public String loadSniffers(long minTime, long maxTime, boolean delDuplicate) {
-        return mImpl.loadSniffers(minTime, maxTime, delDuplicate);
+    public void loadSniffers(String request) {
+        mImpl.loadSniffers(request);
     }
 
     @JavascriptInterface
@@ -233,12 +252,12 @@ public class AppApiForJS {
     }
 
     @JavascriptInterface
-    public String downloadLatestRom() {
-        return mImpl.downloadLatestRom();
+    public void downloadLatestRom() {
+        mImpl.downloadLatestRom();
     }
 
     @JavascriptInterface
-    void checkLatestApk() {
+    public void checkAppVersion() {
         mImpl.checkLatestApk();
     }
 
@@ -249,18 +268,20 @@ public class AppApiForJS {
     }
      */
     @JavascriptInterface
-    void downloadApkAndInstall(String request) {
+    public void appVersionUpdate(String request) {
         mImpl.downloadApkAndInstall(request);
     }
 
-    @JavascriptInterface
-    public boolean addQueueTask(String methodName) {
-        return mImpl.addQueueTask(methodName);
+    /**
+     * @param request:
+    {
+        "method":"method_name",
+        "argument":"argument"
     }
-
+     */
     @JavascriptInterface
-    public boolean addQueueTask(String methodName, String argument) {
-        return mImpl.addQueueTask(methodName, argument);
+    public void addQueueTask(String request) {
+        mImpl.addQueueTask(request);
     }
 
     @JavascriptInterface
@@ -334,8 +355,8 @@ public class AppApiForJS {
     }
 
     @JavascriptInterface
-    public String loadAPs() {
-        return mImpl.loadAPs();
+    public void loadAPs() {
+        mImpl.loadAPs();
     }
 
     @JavascriptInterface
@@ -344,8 +365,8 @@ public class AppApiForJS {
     }
 
     @JavascriptInterface
-    public String loadDeviceTable() {
-        return mImpl.loadDeviceTable();
+    public void loadDeviceTable() {
+        mImpl.loadDeviceTable();
     }
 
     @JavascriptInterface
@@ -354,8 +375,8 @@ public class AppApiForJS {
     }
 
     @JavascriptInterface
-    public String loadTableDevices() {
-        return mImpl.loadTableDevices();
+    public void loadTableDevices() {
+        mImpl.loadTableDevices();
     }
 
     @JavascriptInterface
@@ -389,8 +410,8 @@ public class AppApiForJS {
     }
 
     @JavascriptInterface
-    public String loadGroups() {
-        return mImpl.loadGroups();
+    public void loadGroups() {
+        mImpl.loadGroups();
     }
 
     @JavascriptInterface
@@ -433,19 +454,42 @@ public class AppApiForJS {
         mImpl.deleteScene(id);
     }
 
+    /**
+     * @param request:
+     {
+        "mac":"aabbccddeeff",
+        "events":"events",
+        "position":"position"
+     }
+     */
     @JavascriptInterface
-    public void saveDeviceEventsPosition(String mac, String events, String position) {
-        mImpl.saveDeviceEventsPosition(mac, events, position);
+    public void saveDeviceEventsPosition(String request) {
+        mImpl.saveDeviceEventsPosition(request);
     }
 
+    /**
+     * @param request:
+    {
+        "mac":"aabbccddeeff",
+        "callback":"js_method",
+        "tag":"tag"
+    }
+     */
     @JavascriptInterface
-    public String loadDeviceEventsPositioin(String mac) {
-        return mImpl.loadDeviceEventsPositioin(mac);
+    public void loadDeviceEventsPositioin(String request) {
+        mImpl.loadDeviceEventsPositioin(request);
     }
 
+    /**
+     * @param request:
+    {
+    "callback":"js_method",
+    "tag":"tag"
+    }
+     */
     @JavascriptInterface
-    public String loadAllDeviceEventsPosition() {
-        return mImpl.loadAllDeviceEventsPosition();
+    public void loadAllDeviceEventsPosition(String request) {
+        mImpl.loadAllDeviceEventsPosition(request);
     }
 
     @JavascriptInterface
@@ -468,26 +512,14 @@ public class AppApiForJS {
         mImpl.removeDevicesForMacs(macArray);
     }
 
-
-
     @JavascriptInterface
-    public String loadHWDevices() {
-        return mImpl.loadHWDevices();
+    public void loadHWDevices() {
+        mImpl.loadHWDevices();
     }
 
     @JavascriptInterface
-    public void saveHWDevice(String mac, String code, String floor, String area) {
-        mImpl.saveHWDevice(mac, code, floor, area);
-    }
-
-    @JavascriptInterface
-    public void saveHWDevices(String arrayStr) {
-        mImpl.saveHWDevices(arrayStr);
-    }
-
-    @JavascriptInterface
-    public void deleteHWDevice(String mac) {
-        mImpl.deleteHWDevice(mac);
+    public void saveHWDevices(String request) {
+        mImpl.saveHWDevices(request);
     }
 
     @JavascriptInterface
@@ -496,8 +528,8 @@ public class AppApiForJS {
     }
 
     @JavascriptInterface
-    public String loadMeshIds() {
-        return mImpl.loadMeshIds();
+    public void loadMeshIds() {
+        mImpl.loadMeshIds();
     }
 
     @JavascriptInterface
@@ -508,11 +540,6 @@ public class AppApiForJS {
     @JavascriptInterface
     public void deleteMeshId(String meshId) {
         mImpl.deleteMeshId(meshId);
-    }
-
-    @JavascriptInterface
-    public String loadLastMeshId() {
-        return mImpl.loadLastMeshId();
     }
 
     @JavascriptInterface
@@ -531,37 +558,75 @@ public class AppApiForJS {
     }
 
     @JavascriptInterface
-    public String loadMacs() {
-        return mImpl.loadMacs();
+    public void loadMacs() {
+        mImpl.loadMacs();
+    }
+
+    /**
+     * @param request:
+    {
+        "name":"fileName",
+        "content":[
+            {"key":"key1", "value":"value1"},
+            {"key":"key2", "value":"value2"},
+            ...
+        ]
+    }
+     */
+    @JavascriptInterface
+    public void saveValuesForKeysInFile(String request) {
+        mImpl.saveValuesForKeysInFile(request);
+    }
+
+    /**
+     *
+     * @param request:
+    {
+        "name":"fileName",
+        "keys":["key1", "key2", ...]
+    }
+     */
+    @JavascriptInterface
+    public void removeValuesForKeysInFile(String request) {
+        mImpl.removeValuesForKeysInFile(request);
+    }
+
+    /**
+     *
+     * @param request:
+    {
+        "name":"fileName",
+        "key":"key"
+    }
+     */
+    @JavascriptInterface
+    public void loadValueForKeyInFile(String request) {
+        mImpl.loadValueForKeyInFile(request);
+    }
+
+    /**
+     * @param fileName
+     */
+    @JavascriptInterface
+    public void loadAllValuesInFile(String fileName) {
+        mImpl.loadAllValuesInFile(fileName);
     }
 
     @JavascriptInterface
-    public void savePrefKV(String fileName, String key, String name) {
-        mImpl.savePrefKV(fileName, key, name);
+    public void closeDeviceLongSocket(String host) {
+        mImpl.closeDeviceLongSocket(host);
     }
 
-    @JavascriptInterface
-    public void savePrefKVMap(String fileName, String kvMap) {
-        mImpl.savePrefKVMap(fileName, kvMap);
+    /**
+     * @param request:
+    {
+        "host":"192.168.1.111",
+        "macs":["112233445566", "aabbcccddeeff"],
+        ...
     }
-
+     */
     @JavascriptInterface
-    public void removePrefK(String fileName, String key) {
-        mImpl.removePrefK(fileName, key);
-    }
-
-    @JavascriptInterface
-    public void removePrefKArray(String fileName, String kArray) {
-        mImpl.removePrefKArray(fileName, kArray);
-    }
-
-    @JavascriptInterface
-    public String loadPrefV(String fileName, String key) {
-        return mImpl.loadPrefV(fileName, key);
-    }
-
-    @JavascriptInterface
-    public String loadPrefAllV(String fileName) {
-        return mImpl.loadPrefAllV(fileName);
+    public void requestDeviceLongSocket(String request) {
+        mImpl.requestDeviceLongSocket(request);
     }
 }

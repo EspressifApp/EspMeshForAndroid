@@ -11,26 +11,28 @@
             </div>
             <div class="selected-radio">
                 <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
-                <div><span @click="selectAllDevice($event)" class="span-radio"
+                <div @click="selectAllDevice($event)" class="select-all-radio flex flex-ac flex-jce"><span class="span-radio"
                            :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
             </div>
             <div class="input-info">
                 <i class="icon-search"></i>
                 <input v-model="searchName" type="search" class="form-control" :placeholder="$t('searchMAC')">
             </div>
-            <div class="content-info flex-wrapper" :id="importId">
-                <div v-for="item in importList" class="item">
-                    <div :data-mac="item.mac" class="item-icon-circle">
-                        <i :data-mac="item.mac" class="icon-light icon-blue"></i>
-                    </div>
-                    <div :data-mac="item.mac" class="item-name">
-                        <span :data-mac="item.mac">{{item.floor}}-{{item.area}}-{{item.code}}</span>
-                        <span :data-mac="item.mac" class="desc">MAC: {{item.mac}}</span>
-                    </div>
-                    <div class="item-power-small">
-                        <span :data-position="item.floor + '-' + item.area + '-' + item.code"
-                              :data-value="item.mac" @click="selectDevice($event)"
+            <div class="content-info flex-wrapper no-padding-bottom" :id="importId">
+                <div class="overflow-touch">
+                    <div @click="selectDevice(item.mac)" v-for="item in importList" class="item">
+                        <div :data-mac="item.mac" class="item-icon-circle">
+                            <i :data-mac="item.mac" class="icon-light icon-blue"></i>
+                        </div>
+                        <div :data-mac="item.mac" class="item-name">
+                            <span :data-mac="item.mac">{{item.floor}}-{{item.area}}-{{item.code}}</span>
+                            <span :data-mac="item.mac" class="desc">MAC: {{item.mac}}</span>
+                        </div>
+                        <div class="item-power-small">
+                        <span :id="item.mac + '-import'" :data-position="item.floor + '-' + item.area + '-' + item.code"
+                              :data-value="item.mac"
                               class="span-radio active"><span></span></span>
+                        </div>
                     </div>
                 </div>
             </div>

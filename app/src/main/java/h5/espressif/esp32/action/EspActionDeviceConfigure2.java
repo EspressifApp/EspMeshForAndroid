@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,19 +12,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import blufi.espressif.BlufiClient;
 import blufi.espressif.params.BlufiConfigureParams;
 import blufi.espressif.response.BlufiStatusResponse;
-import iot.espressif.esp32.action.device.IEspActionDeviceConfigure.EspBlufi;
-import iot.espressif.esp32.action.device.IEspActionDeviceConfigure.EspBlufiCallback;
+import iot.espressif.esp32.action.device.EspActionDeviceConfigure;
 import iot.espressif.esp32.db.manager.EspDBManager;
 
-public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
+public class EspActionDeviceConfigure2 implements IEspActionDeviceConfigure2 {
 
     public EspBlufi doActionConfigureBlufi2(String deviceMac, int deviceVersion, BlufiConfigureParams params,
                                             ProgressCallback callback) {
-        iot.espressif.esp32.action.device.EspActionDeviceConfigure actionConf =
-                new iot.espressif.esp32.action.device.EspActionDeviceConfigure();
+        EspActionDeviceConfigure actionConf = new EspActionDeviceConfigure();
 
         if (callback != null) {
-            callback.onUpdate(PROGRESS_IDEA, CODE_PROGRESS_START, "Start configure");
+            callback.onUpdate(PROGRESS_IDLE, CODE_PROGRESS_START, "Start configure");
         }
 
         if (TextUtils.isEmpty(params.getStaSSID())) {
@@ -98,11 +97,17 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
                 if (callback != null) {
                     String msg;
                     switch (errCode) {
-                        case CODE_ERR_WIFI_CONN:
-                            msg = "Connect wifi failed";
-                            break;
                         case CODE_ERR_WIFI_PASSWORD:
                             msg = "Wifi password error";
+                            break;
+                        case CODE_ERR_AP_NOT_FOUND:
+                            msg = "AP not found";
+                            break;
+                        case CODE_ERR_AP_FORBID:
+                            msg = "AP forbid";
+                            break;
+                        case CODE_ERR_CONFIGURE:
+                            msg = "Configure data error";
                             break;
                         default:
                             msg = "Receive error code " + errCode;
@@ -158,6 +163,7 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
             }
         });
 
+        Log.d(getClass().getSimpleName(), "Start doActionConfigureBlufi2");
         return blufi;
     }
 }

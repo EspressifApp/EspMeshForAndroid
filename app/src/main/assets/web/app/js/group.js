@@ -1,6 +1,6 @@
 define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./resetDevice", "../js/addGroup",
-"../js/groupInfo", "../js/groupColor", "../js/otaInfo", "../js/joinMesh", "./command"],
-    function(v, MINT, Util, group, footer, resetDevice, addGroup, groupInfo, groupColor, otaInfo, joinMesh, command) {
+"../js/groupInfo", "../js/groupColor", "../js/otaInfo", "../js/joinMesh", "./command", "./sendIP"],
+    function(v, MINT, Util, group, footer, resetDevice, addGroup, groupInfo, groupColor, otaInfo, joinMesh, command, sendIP) {
 
     var Group = v.extend({
         template: group,
@@ -66,11 +66,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
             },
             loadGroups: function() {
                 this.onBackGroup();
-                var res = espmesh.loadGroups();
-                if (!Util._isEmpty(res)) {
-                    this.groupList = JSON.parse(res);
-                    this.$store.commit("setGroupList", this.groupList);
-                }
+                espmesh.loadGroups();
             },
             getAllStatus: function () {
                 var self = this,statusFlag = false;
@@ -93,6 +89,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
             getStatusByGroup: function (macs) {
                 var self = this, statusFlag = false;
                 if (macs.length > 0) {
+                    self.deviceList = self.$store.state.deviceList;
                     $.each(self.deviceList, function(i, item) {
                         if (macs.indexOf(item.mac) > -1) {
                             $.each(item.characteristics, function(j, itemSub) {
@@ -127,7 +124,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                 return flag;
 
             },
-
             isShowGroup: function(macs, flag) {
                 var self = this, countFlag = false;
                 if (macs.length > 0) {
@@ -160,9 +156,15 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                 self.flag = false;
                 MINT.MessageBox.prompt(self.$t('addGroupDesc'), self.$t('addGroupTitle'),
                     {inputValue: "", inputPlaceholder: self.$t('addGroupInput'),
-                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj) {
-                    self.$refs.add.show();
-                    self.groupName = obj.value;
+                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn'),
+                    inputValidator: function(val) {
+                                return Util.isExistGroup(self.groupList, val)
+                              }, inputErrorMessage: self.$t('isExistGroupDesc')
+                    }).then(function(obj) {
+                        setTimeout(function() {
+                            self.$refs.add.show();
+                            self.groupName = obj.value;
+                        }, 100)
                 });
 
             },
@@ -197,6 +199,15 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                     self.$refs.command.show();
                 })
             },
+            showSendIP: function() {
+                var self = this;
+                self.infoShow = false;
+                self.commandMacs = [];
+                self.commandMacs = this.groupObj.device_macs;
+                setTimeout(function() {
+                    self.$refs.sendIP.show();
+                })
+            },
             editName: function () {
                 var self = this;
                 self.hideOperate();
@@ -204,7 +215,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                     {inputValue: self.groupObj.name, inputPlaceholder: self.$t('addGroupInput'),
                     confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj)  {
                     self.groupObj.name = obj.value;
-                    espmesh.saveGroup(JSON.stringify(self.groupObj));
+                    espmesh.saveGroups(JSON.stringify([self.groupObj]));
                     self.changeStore();
                     self.groupList.push(self.groupObj);
                     self.$store.commit("setGroupList", self.groupList);
@@ -226,15 +237,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                         espmesh.deleteGroup(self.groupObj.id);
                         $("#" + self.groupObj.id).remove();
                         self.changeStore();
-                        var list = self.$store.state.mixList;
-                        $.each(list, function(i, item) {
-                            if (item.type == RECENT_TYPE_GROUP) {
-                                if (item.obj.id == self.groupObj.id) {
-                                    list.splice(i, 1);
-                                    return false;
-                                }
-                            }
-                        })
                         self.$store.commit("setGroupList", self.groupList);
                     });
                 }
@@ -287,7 +289,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                         return false;
                     }
                 });
-
             },
             showOperate: function (group) {
                 var self = this, status = 0;
@@ -324,7 +325,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                     ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                     '"characteristics":' + JSON.stringify(meshs) + '}';
-                espmesh.addQueueTask("requestDevicesMulticastAsync",data);
+                espmesh.addQueueTask(JSON.stringify({"method":"requestDevicesMulticastAsync","argument": data}));
                 self.changeDevice(macs, status);
             },
             operateClose: function(macs, status, id) {
@@ -382,7 +383,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
             "v-otaInfo": otaInfo,
             "v-groupColor": groupColor,
             "v-joinMesh": joinMesh,
-            "v-command": command
+            "v-command": command,
+            "v-sendIP": sendIP
         }
     });
     return Group;

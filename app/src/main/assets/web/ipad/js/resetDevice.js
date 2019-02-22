@@ -1,5 +1,5 @@
-define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./importDevice"],
-    function(v, Util, resetDevice, addDevice, importDevice) {
+define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./importDevice"],
+    function(v, MINT, Util, resetDevice, addDevice, importDevice) {
 
     var ResetDevice = v.extend({
 
@@ -15,6 +15,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                 scanMacs: [],
                 resetId: "resetDevice-id",
                 importId: "reset-import-id",
+                selectAllId: "resetDevice-select-id",
                 count: 0,
                 selected: 0,
                 searchReset: "",
@@ -23,7 +24,9 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                 rssiMax: -40,
                 rssiValue: -80,
                 showFilter: false,
-                showHeight: false
+                showHeight: false,
+                isSelectedMacs: [],
+                showFooterInfo: true,
             }
         },
         computed: {
@@ -31,7 +34,6 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                 var self = this, list = [];
                 if (self.addFlag) {
                     self.scanDeviceList = self.$store.state.scanDeviceList;
-                    self.getLoadMacs();
                     if (Util._isEmpty(self.searchReset)) {
                         $.each(self.scanDeviceList, function(i, item) {
                             if (item.rssi >= self.rssiValue) {
@@ -55,23 +57,31 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                         })
                         list = macList;
                     }
+                    if ($("#" + self.selectAllId).hasClass("active")) {
+                        var allMacs = [];
+                        $.each(list, function(i, item) {
+                            allMacs.push(item.mac);
+                        })
+                        self.isSelectedMacs = allMacs;
+                    }
+                    self.count = list.length;
                     setTimeout(function() {
                         var docs = $("#" + self.resetId + " span.span-radio.active");
                         self.selected = docs.length;
                     });
-                    self.count = list.length;
                 }
                 return list;
-            }
+            },
         },
         methods:{
             show: function() {
                 var self = this;
+                window.onLoadMacs = self.onLoadMacs;
                 self.getLoadMacs();
                 self.getPair();
                 self.scanDeviceList = [];
+                self.isSelectedMacs = [];
                 self.$store.commit("setScanDeviceList", self.scanDeviceList);
-                $("#" + self.resetId + " span.span-radio").addClass("active");
                 self.setScanList(self.scanDeviceList);
                 self.selected = self.count = self.scanDeviceList.length;
                 self.rssiValue = self.$store.state.rssiInfo;
@@ -79,11 +89,22 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                 self.showFilter = false;
                 self.showHeight = false;
                 self.flagUl = false;
+                self.showFooterInfo = true;
+                self.initResetSlider();
                 setTimeout(function() {
                     self.onBackReset();
-                    self.initResetSlider();
+                    window.onBluetoothStateChanged = self.onBluetoothStateChanged;
+                    $("#" + self.selectAllId).addClass("active");
                 });
                 self.addFlag = true;
+                var oHeight = $(document).height();     //获取当前窗口的高度
+                $(window).resize(function () {
+                    if ($(document).height() >= oHeight) {
+                        self.showFooterInfo = true;
+                    } else {
+                        self.showFooterInfo = false;
+                    }
+                })
             },
             showFlag: function() {
                 this.flagUl = !this.flagUl;
@@ -93,22 +114,21 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                     this.onBackReset();
                 }
             },
+            getIcon: function (tid) {
+                return Util.getIcon(tid);
+            },
             hideFlag: function() {
-                this.flagUl = false;
-                this.onBackReset();
+                if (this.flagUl) {
+                    this.flagUl = false;
+                    this.onBackReset();
+                }
             },
             getPair: function() {
-                var self = this,
-                    pairs = espmesh.loadHWDevices();
-                if (!Util._isEmpty(pairs)) {
-                    self.resetPairList = JSON.parse(pairs);
-                }
-                self.$store.commit("setSiteList", self.resetPairList);
+                this.resetPairList = this.$store.state.siteList;
             },
             getPairInfo: function(mac) {
                 var self = this, position = "";
-                    staMac = espmesh.getStaMacsForBleMacs(JSON.stringify([mac]));
-                staMac = JSON.parse(staMac);
+                var staMac = Util.staMacForBleMacs([mac]);
                 if (staMac.length > 0) {
                     $.each(self.resetPairList, function(i, item) {
                         if (item.mac == staMac[0]) {
@@ -131,8 +151,10 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                 this.$parent.conReload();
             },
             getLoadMacs: function() {
-                var macs = espmesh.loadMacs();
-                this.scanMacs = JSON.parse(macs)
+                espmesh.loadMacs();
+            },
+            onLoadMacs: function(res) {
+                this.scanMacs = JSON.parse(res);
             },
             importDevice: function() {
                 this.flagUl = false;
@@ -143,14 +165,19 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                 setTimeout(function() {
                     $("#resetSlider").slider({
                         range: "min",
+                        step: 1,
                         min: self.rssiMin,
                         max: self.rssiMax,
                         value: self.rssiValue,
-                        slide: function (event, ui) {
+                        slide: function(event, ui) {
+                            self.rssiValue = ui.value;
+                            self.$store.commit("setRssi", self.rssiValue);
+                        },
+                        stop: function(event, ui) {
                             self.rssiValue = ui.value;
                             self.$store.commit("setRssi", self.rssiValue);
                         }
-                    });
+                    })
                 })
             },
             showHeightFun: function() {
@@ -169,6 +196,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                     espmesh.saveMac(mac);
                     self.scanMacs.push(mac);
                 }
+                self.getLoadMacs();
             },
             showMark: function(mac) {
                 var flag = false;
@@ -188,7 +216,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                 window.onBackPressed = self.hide;
             },
             addDevice: function () {
-                var self = this;
+                var self = this, flag = false;
                 if (self.selected > 0) {
                     espmesh.stopBleScan();
                     var docs = $("#" + self.resetId + " span.span-radio.active"),
@@ -197,12 +225,23 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                         macs.push($(docs[i]).attr("data-value"));
                     };
                     $.each(self.scanDeviceList, function(i, item) {
-                        if (macs.indexOf(item.mac) > -1) {
+                        if (macs.indexOf(item.mac) != -1) {
                             list.push(item);
+                            if (!item.only_beacon) {
+                                flag = true;
+                            }
                         }
                     });
-                    self.$store.commit("setScanDeviceList", list);
-                    self.$refs.device.show();
+                    if (flag) {
+                        self.$store.commit("setScanDeviceList", list);
+                        self.$refs.device.show();
+                    } else {
+                        MINT.Toast({
+                            message: self.$t('noConfigDesc'),
+                            position: 'bottom',
+                        });
+                    }
+
                 }
             },
             getPosition: function(position) {
@@ -221,38 +260,43 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                 this.showDesc = false;
                 window.onBackPressed = this.hide;
             },
-            selectDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    this.selected -= 1;
+            selectMac: function(mac) {
+                var num = this.isSelectedMacs.indexOf(mac);
+                if (num == -1) {
+                    this.isSelectedMacs.push(mac);
                 } else {
-                    doc.addClass("active");
-                    this.selected += 1;
+                    this.isSelectedMacs.splice(num, 1);
                 }
+                this.selected = this.isSelectedMacs.length;
+            },
+            isSelected: function(mac) {
+                var self = this,
+                    flag = false;
+                if (self.isSelectedMacs.indexOf(mac) != -1) {
+                    flag = true;
+                }
+                return flag;
             },
             selectAllDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    $("span.span-radio").removeClass("active");
+                var doc = $(e.currentTarget).find("span.span-radio")[0];
+                if ($(doc).hasClass("active")) {
                     this.selected = 0;
+                    this.isSelectedMacs = [];
                 } else {
-                    doc.addClass("active");
-                    $("span.span-radio").addClass("active");
                     this.selected = this.count;
+                    var allMacs = [];
+                    $.each(this.scanDeviceList, function(i, item) {
+                        allMacs.push(item.mac);
+                    })
+                    this.isSelectedMacs = allMacs;
                 }
-
             },
             distance: function(rssi) {
-                var iRssi = Math.abs(rssi),
-                    power = (iRssi - 49) / (10 * 4.5);
-                return Math.pow(10, power).toFixed(2);
+                return Util.distance(rssi);
             },
             startBleScan: function() {
-                var self = this,
-                    flag = espmesh.isBluetoothEnable();
-                if (flag) {
+                var self = this;
+                if (self.$store.state.blueInfo) {
                     espmesh.startBleScan();
                 } else {
                     MINT.Toast({
@@ -269,7 +313,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                     if(Util.isMesh(name, item.version)) {
                         var flag = true,
                             obj = {mac: item.mac, name: name, rssi: item.rssi, bssid: item.bssid,
-                                    position: self.getPairInfo(item.mac)};
+                                position: self.getPairInfo(item.mac), tid: item.tid, only_beacon: item.only_beacon};
                         $.each(self.scanDeviceList, function(j, itemSub) {
                             if (item.mac == itemSub.mac) {
                                 if (item.rssi >= self.rssiValue) {
@@ -283,6 +327,7 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                             self.scanDeviceList.push(obj);
                         }
                     }
+
                 })
                 self.$store.commit("setScanDeviceList", self.scanDeviceList);
             },
@@ -299,7 +344,6 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                         window.onBackPressed = self.hide;
                     }
                 }
-
             },
             onBluetoothStateChanged: function(blue) {
                 blue = JSON.parse(blue);
@@ -307,7 +351,6 @@ define(["vue", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./imp
                     espmesh.startBleScan();
                 }
             }
-
         },
         components: {
             "v-addDevice": addDevice,

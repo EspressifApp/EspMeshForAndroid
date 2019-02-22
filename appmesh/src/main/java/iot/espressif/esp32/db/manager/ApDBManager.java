@@ -42,9 +42,7 @@ public final class ApDBManager {
     public List<ApDB> loadAps() {
         List<ApDB> dbs = mDaoSession.getApDBDao().loadAll();
 
-        List<ApDB> result = new ArrayList<>();
-        result.addAll(dbs);
-        return result;
+        return new ArrayList<>(dbs);
     }
 
     /**

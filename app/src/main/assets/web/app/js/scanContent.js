@@ -23,14 +23,15 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanContent.html"],
                 show: function() {
                     var self = this;
                     window.onBackPressed = self.hide;
+                    window.onScanLoadSniffers = self.onScanLoadSniffers;
+                    window.onSniffersDiscovered = self.onSniffersDiscovered;
                     self.addFlag = true;
                     self.snifferList = [];
                     MINT.Indicator.open();
                     setTimeout(function() {
-                        var res = espmesh.loadSniffers(-1, -1, false);
-                        MINT.Indicator.close();
-                        self.loadData(res);
-                        espmesh.startScanSniffer();
+                        espmesh.loadSniffers(JSON.stringify({"min_time": -1, "max_time": -1,
+                                "del_duplicate": false, "callback": "onScanLoadSniffers"}));
+
                     },1000)
                 },
                 hide: function () {
@@ -56,8 +57,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanContent.html"],
                 },
                 loadData: function(sniffers) {
                     var self = this;
-                    console.log(sniffers
-                    );
+                    console.log(sniffers);
                     if (!Util._isEmpty(sniffers)) {
                         sniffers = JSON.parse(sniffers);
                         $.each(sniffers, function(i, item) {
@@ -82,6 +82,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanContent.html"],
                         });
                     }
                 },
+                onScanLoadSniffers: function(res) {
+                    MINT.Indicator.close();
+                    this.loadData(res);
+                    espmesh.startScanSniffer();
+                },
                 format: function (fmt, date) {
                     date = new Date(date);
                     var o = {
@@ -105,7 +110,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanContent.html"],
                 }
             },
             created: function () {
-                 window.onSniffersDiscovered = this.onSniffersDiscovered;
+
             },
 
         });

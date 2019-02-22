@@ -1,8 +1,8 @@
 package iot.espressif.esp32.model.group;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 
 class EspGroup implements IEspGroup {
@@ -65,9 +65,7 @@ class EspGroup implements IEspGroup {
     @Override
     public List<String> getDeviceBssids() {
         synchronized (mBssids) {
-            LinkedList<String> result = new LinkedList<>();
-            result.addAll(mBssids);
-            return result;
+            return new ArrayList<>(mBssids);
         }
     }
 

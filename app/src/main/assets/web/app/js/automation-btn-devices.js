@@ -29,6 +29,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-devices.html", "..
                     eventNames: [],
                     deviceList: [],
                     selectMacs: [],
+                    isSelectedMacs: [],
                     selected: 0,
 
                 }
@@ -59,6 +60,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-devices.html", "..
                     self.eventDevices = false;
                     self.autoIdBtn = self.autoId + "-btn";
                     self.selectMacs = [];
+                    self.isSelectedMacs = [];
                     self.isMuch = false;
                     self.showFlag = true;
                     self.deviceList = self.$store.state.deviceList;
@@ -80,7 +82,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-devices.html", "..
                             if (executeMacs.indexOf(item.mac) > -1) {
                                 self.existEvent = true;
                                 self.selected++;
-                                $("#" + self.autoIdBtn + " span.span-radio[data-value='"+item.mac+"']").addClass("active");
+                                self.isSelectedMacs.push(item.mac);
                             }
                         });
                     }
@@ -154,27 +156,39 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-devices.html", "..
                 },
                 selectAllDevice: function (e) {
                     var self = this;
-                    var doc = $(e.currentTarget);
-                    if (doc.hasClass("active")) {
-                        doc.removeClass("active");
-                        $("#" + self.autoIdBtn + " span.span-radio").removeClass("active");
+                    var doc = $(e.currentTarget).find("span.span-radio")[0];
+                    if ($(doc).hasClass("active")) {
+                        $(doc).removeClass("active");
                         this.selected = 0;
+                        this.isSelectedMacs = [];
                     } else {
-                        doc.addClass("active");
-                        $("#" + self.autoIdBtn + " span.span-radio").addClass("active");
+                        $(doc).addClass("active");
                         this.selected = this.count;
+                        var allMacs = [];
+                        $.each(self.deviceList, function(i, item) {
+                            if (item.tid >= MIN_LIGHT && item.tid <= MAX_LIGHT && item.mac != self.deviceInfo.mac) {
+                                allMacs.push(item.mac);
+                            }
+                        });
+                        this.isSelectedMacs = allMacs;
                     }
-
                 },
-                selectDevice: function (e) {
-                    var doc = $(e.currentTarget);
-                    if (doc.hasClass("active")) {
-                        doc.removeClass("active");
-                        this.selected -= 1;
+                selectMac: function(mac) {
+                    var num = this.isSelectedMacs.indexOf(mac);
+                    if (num == -1) {
+                        this.isSelectedMacs.push(mac);
                     } else {
-                        doc.addClass("active");
-                        this.selected += 1;
+                        this.isSelectedMacs.splice(num, 1);
                     }
+                    this.selected = this.isSelectedMacs.length;
+                },
+                isSelected: function(mac) {
+                    var self = this,
+                        flag = false;
+                    if (self.isSelectedMacs.indexOf(mac) != -1) {
+                        flag = true;
+                    }
+                    return flag;
                 },
             },
             components: {

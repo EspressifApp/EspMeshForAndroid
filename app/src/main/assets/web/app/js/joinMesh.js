@@ -45,7 +45,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/joinMesh.html", "./importDevice"
                 var self = this, list = [];
                 if (self.addFlag) {
                     self.scanDeviceList = self.$store.state.scanDeviceList;
-                    self.getLoadMacs();
                     if (Util._isEmpty(self.searchReset)) {
                         $.each(self.scanDeviceList, function(i, item) {
                             if (item.rssi >= self.rssiValue) {
@@ -72,7 +71,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/joinMesh.html", "./importDevice"
                     if ($("#" + self.selectMeshAllId).hasClass("active")) {
                         var allMacs = [];
                         $.each(list, function(i, item) {
-                            allMacs.push(item.mac);
+                            allMacs.push(item.bssid);
                         })
                         self.isSelectedMacs = allMacs;
                     }
@@ -88,6 +87,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/joinMesh.html", "./importDevice"
         methods:{
             show: function() {
                 var self = this;
+                window.onLoadMacs = this.onLoadMacs;
                 self.getLoadMacs();
                 self.getPair();
                 self.isSelectedMacs = [];
@@ -120,17 +120,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/joinMesh.html", "./importDevice"
                 return Util.getIcon(tid);
             },
             getPair: function() {
-                var self = this,
-                    pairs = espmesh.loadHWDevices();
-                if (!Util._isEmpty(pairs)) {
-                    self.resetPairList = JSON.parse(pairs);
-                }
-                self.$store.commit("setSiteList", self.resetPairList);
+                this.resetPairList = this.$store.state.siteList;
             },
             getPairInfo: function(mac) {
                 var self = this, position = "";
-                    staMac = espmesh.getStaMacsForBleMacs(JSON.stringify([mac]));
-                staMac = JSON.parse(staMac);
+                    staMac = Util.staMacForBleMacs([mac]);
                 if (staMac.length > 0) {
                     $.each(self.resetPairList, function(i, item) {
                         if (item.mac == staMac[0]) {
@@ -163,8 +157,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/joinMesh.html", "./importDevice"
                 this.$refs.import.show();
             },
             getLoadMacs: function() {
-                var macs = espmesh.loadMacs();
-                this.scanMacs = JSON.parse(macs)
+                espmesh.loadMacs();
+            },
+            onLoadMacs: function(res) {
+                this.scanMacs = JSON.parse(res);
             },
             getPosition: function(position) {
                 var str = Util.getPosition(position);
@@ -210,6 +206,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/joinMesh.html", "./importDevice"
                     espmesh.saveMac(mac);
                     self.scanMacs.push(mac);
                 }
+                self.getLoadMacs();
             },
             showMark: function(mac) {
                 var flag = false;
@@ -250,17 +247,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/joinMesh.html", "./importDevice"
                 window.onScanBLE = self.onConScanBLE;
                 window.onBackPressed = self.hide;
             },
-            addSelectMac: function(mac) {
+            selectMac: function(mac) {
                 var num = this.isSelectedMacs.indexOf(mac);
                 if (num == -1) {
                     this.isSelectedMacs.push(mac);
-                }
-            },
-            delSelectMac: function(mac) {
-                var num = this.isSelectedMacs.indexOf(mac);
-                if (num != -1) {
+                } else {
                     this.isSelectedMacs.splice(num, 1);
                 }
+                this.selected  = this.isSelectedMacs.length;
             },
             isSelected: function(mac) {
                 var self = this,
@@ -270,32 +264,18 @@ define(["vue", "MINT", "Util", "txt!../../pages/joinMesh.html", "./importDevice"
                 }
                 return flag;
             },
-            selectDevice: function (mac, e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    this.delSelectMac(mac);
-                    this.selected -= 1;
-                } else {
-                    doc.addClass("active");
-                    this.addSelectMac(mac);
-                    this.selected += 1;
-                }
-            },
             selectAllDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    $("span.span-radio").removeClass("active");
+                var doc = $(e.currentTarget).find("span.span-radio")[0];
+                if ($(doc).hasClass("active")) {
+                    $(doc).removeClass("active");
                     this.selected = 0;
                     this.isSelectedMacs = [];
                 } else {
-                    doc.addClass("active");
-                    $("span.span-radio").addClass("active");
+                    $(doc).addClass("active");
                     this.selected = this.count;
                     var allMacs = [];
                     $.each(this.scanDeviceList, function(i, item) {
-                        allMacs.push(item.mac);
+                        allMacs.push(item.bssid);
                     })
                     this.isSelectedMacs = allMacs;
                 }

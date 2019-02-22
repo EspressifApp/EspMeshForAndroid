@@ -19,6 +19,7 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
         data: function(){
             return {
                 initSize: 260,
+                showColor: false,
                 pickerShow: true,
                 device: this.$store.state.deviceInfo,
                 deviceList: this.$store.state.deviceList
@@ -48,9 +49,15 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
                 };
                 var hsbColor = "hsb("+hueValue / 360+","+saturation / 100+","+luminance / 100+")";
                 self.initColor(hsbColor, [temperature, brightness]);
+                setTimeout(function() {
+                    self.showColor = true;
+                })
             },
             hide: function() {
                 this.$emit("colorShow");
+            },
+            hideColor: function() {
+                this.showColor = false;
             },
             initColor: function (hsbColor, colors) {
                 var doc = $(document),
@@ -77,7 +84,7 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                     ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                     '"characteristics":' + JSON.stringify(meshs) + '}';
-                espmesh.addQueueTask("requestDevicesMulticastAsync",data);
+                espmesh.addQueueTask(JSON.stringify({"method":"requestDevicesMulticastAsync","argument": data}));
 
                 $.each(this.deviceList, function(i, item){
                     if (macs.indexOf(item.mac) > -1) {
@@ -124,7 +131,7 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                     ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                     '"characteristics":' + JSON.stringify(meshs) + '}';
-                espmesh.addQueueTask("requestDevicesMulticastAsync",data);
+                espmesh.addQueueTask(JSON.stringify({"method":"requestDevicesMulticastAsync","argument": data}));
                 $.each(this.deviceList, function(i, item){
                     if (macs.indexOf(item.mac) > -1) {
                         var characteristics = [];

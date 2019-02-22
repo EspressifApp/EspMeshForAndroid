@@ -104,11 +104,7 @@ class EspUserImpl {
     }
 
     private void syncState(IEspDevice device, IEspDevice stateDev) {
-        if (stateDev.isState(EspDeviceState.State.UPGRADING_LOCAL)) {
-            device.addState(EspDeviceState.State.UPGRADING_LOCAL);
-        } else if (stateDev.isState(EspDeviceState.State.UPGRADING_CLOUD)) {
-            device.addState(EspDeviceState.State.UPGRADING_CLOUD);
-        } else if (stateDev.isState(EspDeviceState.State.DELETED)) {
+        if (stateDev.isState(EspDeviceState.State.DELETED)) {
             device.addState(EspDeviceState.State.DELETED);
         }
     }

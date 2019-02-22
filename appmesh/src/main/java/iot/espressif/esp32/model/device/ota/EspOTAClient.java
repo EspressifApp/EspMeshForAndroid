@@ -77,6 +77,8 @@ public abstract class EspOTAClient {
 
     public abstract void start();
 
+    public abstract void stop();
+
     public abstract void close();
 
     void runOtaCallback(Runnable runnable) {

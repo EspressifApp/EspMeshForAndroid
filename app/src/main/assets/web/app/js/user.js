@@ -13,9 +13,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../
             }
         },
         mounted: function() {
-            var userInfo = espmesh.userLoadLastLogged();
-            userInfo = JSON.parse(userInfo);
-            this.$store.commit("setUserName", userInfo.username);
+            this.$store.commit("setUserName", "Guest");
         },
         computed: {
             currentWifi: function () {

@@ -3,6 +3,7 @@ require.config({
         jQuery : 'jquery/jquery.min',
         IScroll: 'jquery/iscroll',
         bootstrap : 'bootstrap/bootstrap.min',
+        "FastClick": 'jquery/fastclick',
         "bootstrapSlider": 'jquery/bootstrap-slider.min',
         'jquery.ui' : 'jquery/jquery-ui.min',
         "jsPlumb" : 'jquery/jsplumb.min',
@@ -35,9 +36,9 @@ require.config({
         },
     }
 });
-require(["IScroll", "jQuery", "jsPlumb", "Hammer", "vue", "Util", "vueRouter", "MINT", "routers", "touch", "Vuex", "i18n", "zh", "en",
+require(["IScroll", "jQuery", "FastClick", "jsPlumb", "Hammer", "vue", "Util", "vueRouter", "MINT", "routers", "touch", "Vuex", "i18n", "zh", "en",
     "bootstrap", "jquery.ui", "jquery.ui.touch-punch"],
-    function(IScroll, $, jsPlumb, Hammer, Vue, Util, VueRouter, MINT, routers, touch, Vuex, VueI18n, zh, en) {
+    function(IScroll, $, FastClick, jsPlumb, Hammer, Vue, Util, VueRouter, MINT, routers, touch, Vuex, VueI18n, zh, en) {
     Vue.use(VueRouter);
     //Vue.use(ELEMENT);
     Vue.use(MINT);
@@ -46,15 +47,16 @@ require(["IScroll", "jQuery", "jsPlumb", "Hammer", "vue", "Util", "vueRouter", "
     Vue.use(VueI18n);
     document.oncontextmenu=new Function("event.returnValue=false");
     document.onselectstart=new Function("event.returnValue=false");
+    FastClick.attach(document.body);
     var router = new VueRouter({
         routes: routers
     });
     router.beforeEach(function(to, from, next) {
-        var userInfo = espmesh.userLoadLastLogged();
-        userInfo = JSON.parse(userInfo);
-        if(userInfo == null || userInfo == "" || userInfo.status != 0){//如果有就直接到首页咯
-            espmesh.userGuestLogin();
-        }
+//        var userInfo = espmesh.userLoadLastLogged();
+//        userInfo = JSON.parse(userInfo);
+//        if(userInfo == null || userInfo == "" || userInfo.status != 0){//如果有就直接到首页咯
+//
+//        }
         next();
     });
     var store = new Vuex.Store({
@@ -68,11 +70,16 @@ require(["IScroll", "jQuery", "jsPlumb", "Hammer", "vue", "Util", "vueRouter", "
             scanDeviceList: [],
             conScanDeviceList: [],
             wifiInfo: "",
+            siteList: [],
             topColor: 0,
             leftColor: 0,
             rssiInfo: -80,
             showScanBle: true,
             showLoading: true,
+            deviceIp: "",
+            systemInfo: "",
+            blueInfo: false,
+            eventsPositions: [],
         },
         mutations: {
             setList: function(state, list){
@@ -89,6 +96,9 @@ require(["IScroll", "jQuery", "jsPlumb", "Hammer", "vue", "Util", "vueRouter", "
             },
             setDeviceInfo: function(state, info){
                 state.deviceInfo = info;
+            },
+            setSiteList: function(state, info){
+                state.siteList = info;
             },
             setWifiInfo: function(state, info){
                 state.wifiInfo = info;
@@ -113,6 +123,18 @@ require(["IScroll", "jQuery", "jsPlumb", "Hammer", "vue", "Util", "vueRouter", "
             },
             setShowLoading: function(state, info){
                 state.showLoading = info;
+            },
+            setBlueInfo: function(state, info){
+                state.blueInfo = info;
+            },
+            setDeviceIp: function(state, info) {
+                state.deviceIp = info;
+            },
+            setSystemInfo: function(state, info) {
+                state.systemInfo = info;
+            },
+            setEventsPositions: function(state, info) {
+                state.eventsPositions = info;
             }
         }
     });
@@ -131,6 +153,7 @@ require(["IScroll", "jQuery", "jsPlumb", "Hammer", "vue", "Util", "vueRouter", "
         mounted: function() {
             window.onLocaleGot = this.onLocaleGot;
             espmesh.getLocale();
+            espmesh.userGuestLogin();
         },
         methods: {
             onLocaleGot: function(res) {
@@ -140,6 +163,7 @@ require(["IScroll", "jQuery", "jsPlumb", "Hammer", "vue", "Util", "vueRouter", "
                 } else {
                     this.$i18n.locale = "en";
                 }
+                this.$store.commit("setSystemInfo", res.os);
             }
         }
     });

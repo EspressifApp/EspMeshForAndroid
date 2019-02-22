@@ -130,6 +130,10 @@ class EspOTAClientImpl2 extends EspOTAClient {
         return String.format("%s://%s/ota/url", mProtocol, mHost);
     }
 
+    private String getStopUrl() {
+        return String.format("%s://%s/ota/stop", mProtocol, mHost);
+    }
+
     @Override
     public String getAddress() {
         return mHost;
@@ -138,6 +142,34 @@ class EspOTAClientImpl2 extends EspOTAClient {
     @Override
     public synchronized void start() {
         runOta();
+    }
+
+    @Override
+    public synchronized void stop() {
+        close();
+
+        try {
+            URL url = new URL(getStopUrl());
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setFixedLengthStreamingMode(0);
+            connection.setDoOutput(true);
+            connection.setRequestMethod(EspHttpUtils.METHOD_POST);
+            connection.addRequestProperty(EspHttpUtils.CONNECTION, EspHttpUtils.CLOSE);
+
+            connection.connect();
+
+            int status = connection.getResponseCode();
+            mLog.d("Stop OTA response http code = " + status);
+            if (status == HttpURLConnection.HTTP_OK) {
+                mLog.d("Stop OTA success");
+            } else {
+                mLog.d("Stop OTA failed");
+            }
+
+            connection.disconnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -185,7 +217,9 @@ class EspOTAClientImpl2 extends EspOTAClient {
                     continue;
                 }
 
-//                otaReboot();
+                if (false) {
+                    otaReboot();
+                }
                 mLog.d("Check over");
             }
 
@@ -207,6 +241,18 @@ class EspOTAClientImpl2 extends EspOTAClient {
         mOtaThread.start();
     }
 
+    private String getMacHeaderValue() {
+        StringBuilder macsValue = new StringBuilder(13 * mMacList.size());
+        for (int i = 0; i < mMacList.size(); i++) {
+            macsValue.append(mMacList.get(i));
+            if (i < mMacList.size() - 1) {
+                macsValue.append(",");
+            }
+        }
+
+        return macsValue.toString();
+    }
+
     private boolean postBinData() {
         FileInputStream fis = null;
         try {
@@ -220,14 +266,8 @@ class EspOTAClientImpl2 extends EspOTAClient {
             mConnection.setFixedLengthStreamingMode((int)mBin.length());
             mConnection.setDoOutput(true);
             mConnection.setRequestMethod(EspHttpUtils.METHOD_POST);
-            StringBuilder macsValue = new StringBuilder();
-            for (int i = 0; i < mMacList.size(); i++) {
-                macsValue.append(mMacList.get(i));
-                if (i < mMacList.size() - 1) {
-                    macsValue.append(",");
-                }
-            }
-            mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_MAC, macsValue.toString());
+
+            mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_MAC, getMacHeaderValue());
             mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_COUNT, String.valueOf(mMacList.size()));
             mConnection.addRequestProperty(EspHttpUtils.CONTENT_TYPE, DeviceUtil.CONTENT_TYPE_BIN);
             mConnection.addRequestProperty(HEADER_BIN_NAME, name);
@@ -307,14 +347,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
             mConnection = (HttpURLConnection) url.openConnection();
             mConnection.setDoOutput(true);
             mConnection.setRequestMethod(EspHttpUtils.METHOD_POST);
-            StringBuilder macsValue = new StringBuilder();
-            for (int i = 0; i < mMacList.size(); i++) {
-                macsValue.append(mMacList.get(i));
-                if (i < mMacList.size() - 1) {
-                    macsValue.append(",");
-                }
-            }
-            mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_MAC, macsValue.toString());
+            mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_MAC, getMacHeaderValue());
             mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_COUNT, String.valueOf(mMacList.size()));
             mConnection.addRequestProperty(EspHttpUtils.CONTENT_TYPE, EspHttpUtils.HEADER_CONTENT_JSON.getValue());
             mConnection.addRequestProperty(HEADER_BIN_URL, mBinUrl);

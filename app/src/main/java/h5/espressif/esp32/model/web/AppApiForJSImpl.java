@@ -11,33 +11,38 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import blufi.espressif.params.BlufiConfigureParams;
 import blufi.espressif.params.BlufiParameter;
-import h5.espressif.esp32.action.EspActionDeviceConfigure;
+import h5.espressif.esp32.action.EspActionDeviceConfigure2;
 import h5.espressif.esp32.action.EspActionJSON;
-import h5.espressif.esp32.action.IEspActionDeviceConfigure;
+import h5.espressif.esp32.action.IEspActionDeviceConfigure2;
 import h5.espressif.esp32.main.EspWebActivity;
 import h5.espressif.esp32.main.MainDeviceNotifyHelper;
+import h5.espressif.esp32.model.other.HttpLongSocket;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -46,6 +51,7 @@ import iot.espressif.esp32.action.common.EspActionDownloadFromIotEsp;
 import iot.espressif.esp32.action.device.EspActionDeviceInfo;
 import iot.espressif.esp32.action.device.EspActionDeviceOTA;
 import iot.espressif.esp32.action.device.IEspActionDevice;
+import iot.espressif.esp32.action.device.IEspActionDeviceConfigure.EspBlufi;
 import iot.espressif.esp32.action.device.IEspActionDeviceOTA;
 import iot.espressif.esp32.action.device.IEspActionDeviceReboot;
 import iot.espressif.esp32.action.user.EspActionUserLoadLastLogged;
@@ -76,72 +82,22 @@ import iot.espressif.esp32.model.user.EspResetPasswordResult;
 import iot.espressif.esp32.model.user.EspUser;
 import iot.espressif.esp32.utils.DeviceUtil;
 import libs.espressif.app.AppUtil;
+import libs.espressif.app.SdkUtil;
 import libs.espressif.log.EspLog;
 import libs.espressif.net.EspHttpHeader;
 import libs.espressif.net.EspHttpParams;
 import libs.espressif.net.EspHttpResponse;
+import libs.espressif.net.EspHttpUtils;
+import libs.espressif.utils.TextUtils;
 
-class AppApiForJSImpl {
-    private static final String KEY_MAC = IEspActionDevice.KEY_MAC;
-    private static final String KEY_MACS = "macs";
-    private static final String KEY_SSID = "ssid";
-    private static final String KEY_BSSID = "bssid";
-    private static final String KEY_FREQ = "frequency";
-    private static final String KEY_PASSWORD = "password";
-    private static final String KEY_ROOT_RESP = "root_response";
-    private static final String KEY_ROW = "row";
-    private static final String KEY_COLUMN = "column";
-    private static final String KEY_TAG = "tag";
-    private static final String KEY_RESULT = "result";
-    private static final String KEY_STATUS = "status";
-    private static final String KEY_USERNAME = "username";
-    private static final String KEY_GROUP_ID = "id";
-    private static final String KEY_GROUP_NAME = "name";
-    private static final String KEY_GROUP_IS_USER = "is_user";
-    private static final String KEY_GROUP_IS_MESH = "is_mesh";
-    private static final String KEY_DEVICE_MACS = "device_macs";
-    private static final String KEY_TYPE = "type";
-    private static final String KEY_IDENTITY = "identity";
-    private static final String KEY_TIME = "time";
-    private static final String KEY_PROGRESS = "progress";
-    private static final String KEY_ID = "id";
-    private static final String KEY_NAME = "name";
-    private static final String KEY_ICON = "icon";
-    private static final String KEY_BACKGROUND = "background";
-    private static final String KEY_CODE = IEspActionDeviceConfigure.KEY_CODE;
-    private static final String KEY_MESSAGE = IEspActionDeviceConfigure.KEY_MESSAGE;
-    private static final String KEY_DOWNLOAD = "download";
-    private static final String KEY_VERSION = "version";
-    private static final String KEY_FILE = "file";
-    private static final String KEY_VERSION_NAME = "version_name";
-    private static final String KEY_VERSION_CODE = "version_code";
-    private static final String KEY_EVENTS = "events";
-    private static final String KEY_POSITION = "position";
-    private static final String KEY_FLOOR = "floor";
-    private static final String KEY_AREA = "area";
-    private static final String KEY_BIN = "bin";
-    private static final String KEY_ADDRESS = "address";
-    private static final String KEY_TOTAL_SIZE = "total_size";
-    private static final String KEY_DOWNLOAD_SIZE = "download_size";
-    private static final String KEY_CALLBACK = "callback";
-
-    private static final String PREF_DEVICE_TAB = "pref_device_tab";
-    private static final String PREF_TAB_DEVICES = "pref_tab_devices";
-    private static final String PREF_MESH_ID = "pref_mesh_id";
-    private static final String PREF_MESH_ID_LAST = "pref_mesh_id_last";
-    private static final String PREF_MAC = "pref_mac";
-
-    private static final String IOT_KEY = "39a073cf2be1672e272e57fff03ca744ad77abc8";
-
+class AppApiForJSImpl implements AppApiForJSConstants {
     private final EspLog mLog = new EspLog(getClass());
-
-    private ExecutorService mThreadPool;
 
     private final String mNoArgMark = new String("noargmark".getBytes());
     private final LinkedBlockingQueue<Task> mTaskQueue;
     private final Thread mTaskThread;
 
-    private EspWebActivity mActivity;
+    private volatile EspWebActivity mActivity;
     private EspApplication mApp;
 
     private AppApiForJS mOrigin;
@@ -151,10 +107,14 @@ class AppApiForJSImpl {
     private Disposable mSnifferTask;
 
     private final Object mBlufiLock = new Object();
-    private iot.espressif.esp32.action.device.IEspActionDeviceConfigure.EspBlufi mBlufi;
+    private EspBlufi mBlufi;
 
     private final Object mOtaLock = new Object();
     private Map<String, EspOTAClient> mOtaClientMap = new HashMap<>();
+
+    private final Lock mLongHttpLock = new ReentrantLock();
+    private HttpLongSocket mHttpLongSocket;
+    private Thread mHttpLongSocketReadThread;
 
     private static class Task {
         Method method;
@@ -165,7 +125,6 @@ class AppApiForJSImpl {
         mActivity = activity;
         mApp = EspApplication.getInstance();
         mOrigin = api;
-        mThreadPool = Executors.newCachedThreadPool();
         mTaskQueue = new LinkedBlockingQueue<>();
         mTaskThread = new Thread(() -> {
             while (true) {
@@ -195,24 +154,37 @@ class AppApiForJSImpl {
         mTaskThread.start();
     }
 
+    private void evaluateJavascript(String script) {
+        if (mActivity != null) {
+            mActivity.evaluateJavascript(script);
+        }
+    }
+
     void log(String msg) {
         mLog.i(msg);
     }
 
     void release() {
         mOrigin = null;
-        mThreadPool.shutdownNow();
         mTaskQueue.clear();
         mTaskThread.interrupt();
         mApp = null;
         mActivity = null;
     }
 
-    boolean addQueueTask(String methodName) {
-        return addQueueTask(methodName, mNoArgMark);
-    }
+    void addQueueTask(String request) {
+        String methodName;
+        String argument;
+        try {
+            JSONObject json = new JSONObject(request);
+            methodName = json.getString(KEY_METHOD);
+            argument = json.optString(KEY_ARGUMENT, mNoArgMark);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
 
-    boolean addQueueTask(String methodName, String argument) {
+        boolean suc;
         try {
             Method method;
             //noinspection StringEquality
@@ -228,11 +200,20 @@ class AppApiForJSImpl {
             mTaskQueue.clear();
             mTaskQueue.add(task);
 
-            return true;
+            suc = true;
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
+            suc = false;
         }
-        return false;
+
+        try {
+            JSONObject resultJSON = new JSONObject()
+                    .put(KEY_RESULT, suc);
+
+            evaluateJavascript(JSApi.onAddQueueTask(resultJSON.toString()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     void scanTopo() {
@@ -250,9 +231,7 @@ class AppApiForJSImpl {
                 .subscribe(new EspRxObserver<Object>() {
                     @Override
                     public void onNext(Object topo) {
-                        if (mActivity != null) {
-                            mActivity.notifyTopoScanned(topo.toString());
-                        }
+                        evaluateJavascript(JSApi.onTopoScanned(topo.toString()));
                     }
                 });
     }
@@ -267,22 +246,23 @@ class AppApiForJSImpl {
                 .subscribe(new EspRxObserver<Object>() {
                     @Override
                     public void onNext(Object result) {
-                        if (mActivity != null) {
-                            mActivity.notifyDevicesScanned(result.toString());
-                        }
+                        evaluateJavascript(JSApi.onDeviceScanned(result.toString()));
                     }
                 });
     }
 
-    String scanDevices() {
+    private String scanDevices() {
         LinkedBlockingQueue<Object> getInfoQueue = new LinkedBlockingQueue<>();
+        getInfoQueue.iterator().hasNext();
         AtomicInteger meshCounter = new AtomicInteger(0);
         mUser.scanStations(mesh -> {
             meshCounter.incrementAndGet();
 
             List<IEspDevice> cacheDevices = new LinkedList<>();
+            @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
             Set<Integer> cidset = new HashSet<>();
             List<IEspDevice> newDevices = new LinkedList<>();
+            newDevices.iterator().hasNext();
             Observable.fromIterable(mesh)
                     .map(ingDev -> {
                         List<EspDeviceCharacteristic> ingCharaters = ingDev.getCharacteristics();
@@ -299,29 +279,8 @@ class AppApiForJSImpl {
 
             if (!cacheDevices.isEmpty()) {
                 JSONArray ingArray = new EspActionJSON().doActionParseDevices(cacheDevices);
-                Observable.just(ingArray)
-                        .subscribeOn(AndroidSchedulers.mainThread())
-                        .doOnNext(array -> {
-                            if (mActivity != null) {
-                                mActivity.notifyDevicesScanning(array.toString());
-                            }
-                        })
-                        .subscribe();
-
+                evaluateJavascript(JSApi.onDeviceScanning(ingArray.toString()));
             }
-
-//            if (!cacheDevices.isEmpty()) {
-//                int[] cids = new int[cidset.size()];
-//                int i = 0;
-//                for (int cid : cidset) {
-//                    cids[i] = cid;
-//                    i++;
-//                }
-//                new EspActionDeviceInfo().doActionGetStatusLocal(cacheDevices, cids);
-//            }
-//            if (!newDevices.isEmpty()) {
-//                new EspActionDeviceInfo().doActionGetDevicesInfoLocal(newDevices);
-//            }
 
             Observable.create(emitter -> {
                 new EspActionDeviceInfo().doActionGetDevicesInfoLocal(mesh);
@@ -346,23 +305,24 @@ class AppApiForJSImpl {
         return array.toString();
     }
 
-    String requestDevice(String request) {
+    private String requestDevice(String request) {
         try {
             JSONObject postJSON = new JSONObject(request);
             String mac = postJSON.getString(KEY_MAC);
             postJSON.remove(KEY_MAC);
             postJSON.remove(KEY_CALLBACK);
             postJSON.remove(KEY_TAG);
+            postJSON.remove(KEY_HOST);
             IEspDevice device = mUser.getDeviceForMac(mac);
             if (device == null) {
                 return null;
             }
 
-            boolean noResp = postJSON.optBoolean(KEY_ROOT_RESP, false);
-            EspHttpHeader noRespHeader = noResp ? DeviceUtil.HEADER_ROOT_RESP : null;
+            boolean rootResp = postJSON.optBoolean(KEY_ROOT_RESP, false);
+            EspHttpHeader rootRespHeader = rootResp ? DeviceUtil.HEADER_ROOT_RESP : null;
             postJSON.remove(KEY_ROOT_RESP);
             EspHttpResponse response = DeviceUtil.httpLocalRequest(device, postJSON.toString().getBytes(),
-                    null, noRespHeader);
+                    null, rootRespHeader);
             if (response != null) {
                 return response.getContentString();
             }
@@ -402,7 +362,7 @@ class AppApiForJSImpl {
                         } catch (JSONException | NullPointerException e) {
                             json.put(KEY_RESULT, result);
                         }
-                        mActivity.evaluateJavascript(String.format("%s(\'%s\')", callback, json.toString()));
+                        evaluateJavascript(String.format("%s(\'%s\')", callback, json.toString()));
                     }
                 })
                 .subscribe();
@@ -446,13 +406,13 @@ class AppApiForJSImpl {
                         }
                         json.put(KEY_RESULT, resultObj);
 
-                        mActivity.evaluateJavascript(String.format("%s(\'%s\')", callback, json.toString()));
+                        evaluateJavascript(String.format("%s(\'%s\')", callback, json.toString()));
                     }
                 })
                 .subscribe();
     }
 
-    String requestDevicesMulticast(String request) {
+    private String requestDevicesMulticast(String request) {
         try {
             JSONObject postJSON = new JSONObject(request);
             JSONArray macArray = postJSON.getJSONArray(KEY_MAC);
@@ -468,11 +428,12 @@ class AppApiForJSImpl {
             postJSON.remove(KEY_MAC);
             postJSON.remove(KEY_CALLBACK);
             postJSON.remove(KEY_TAG);
-            boolean noResp = postJSON.optBoolean(KEY_ROOT_RESP, false);
-            EspHttpHeader noRespHeader = noResp ? DeviceUtil.HEADER_ROOT_RESP : null;
+            postJSON.remove(KEY_HOST);
+            boolean rootResp = postJSON.optBoolean(KEY_ROOT_RESP, false);
+            EspHttpHeader rootRespHeader = rootResp ? DeviceUtil.HEADER_ROOT_RESP : null;
             postJSON.remove(KEY_ROOT_RESP);
             List<EspHttpResponse> responseList = DeviceUtil.httpLocalMulticastRequest(devices,
-                    postJSON.toString().getBytes(), null, true, noRespHeader);
+                    postJSON.toString().getBytes(), null, true, rootRespHeader);
             JSONArray result = new JSONArray();
             for (EspHttpResponse response : responseList) {
                 try {
@@ -510,6 +471,9 @@ class AppApiForJSImpl {
             String ssid = json.getString("ssid");
             params.setStaSSID(ssid);
 
+            String bssid = json.optString("bssid", null);
+            params.setStaBSSID(bssid);
+
             String password = json.getString("password");
             params.setStaPassword(password);
 
@@ -525,6 +489,10 @@ class AppApiForJSImpl {
                 meshIdData[i] = (byte) meshIdArray.getInt(i);
             }
             params.setMeshID(meshIdData);
+
+            if (!json.isNull("mesh_type")) {
+                params.setMeshType(json.getInt("mesh_type"));
+            }
 
             if (!json.isNull("vote_percentage")) {
                 params.setVotePercentage(json.getInt("vote_percentage"));
@@ -600,21 +568,38 @@ class AppApiForJSImpl {
 
         synchronized (mBlufiLock) {
             String deviceMac = DeviceUtil.convertColonBssid(bleAddress).toUpperCase();
-            mBlufi = new EspActionDeviceConfigure().doActionConfigureBlufi2(
-                    deviceMac, version, params,
-                    (progress, status, message) -> {
-                        Observable.create(emitter -> {
-                            JSONObject json = new JSONObject()
-                                    .put(KEY_PROGRESS, progress)
-                                    .put(KEY_CODE, status)
-                                    .put(KEY_MESSAGE, message);
-                            mActivity.notifyConfigureProgressUpdate(json);
-                            emitter.onNext(json);
-                            emitter.onComplete();
-                        }).subscribeOn(AndroidSchedulers.mainThread())
-                                .subscribe();
-                    });
+            mBlufi = new EspActionDeviceConfigure2().doActionConfigureBlufi2(
+                    deviceMac, version, params, new ConfigureProgressCB());
         }
+
+    }
+
+    private class ConfigureProgressCB implements IEspActionDeviceConfigure2.ProgressCallback {
+        private int mStatusCode = IEspActionDeviceConfigure2.CODE_IDLE;
+
+        @Override
+        public void onUpdate(int progress, int status, String message) {
+            if (mActivity == null) {
+                return;
+            }
+            if (mStatusCode < IEspActionDeviceConfigure2.CODE_SUC
+                    || mStatusCode > IEspActionDeviceConfigure2.CODE_IDLE) {
+                return;
+            }
+
+            mStatusCode = status;
+            try {
+                JSONObject json = new JSONObject()
+                        .put(KEY_PROGRESS, progress)
+                        .put(KEY_CODE, status)
+                        .put(KEY_MESSAGE, message);
+
+                evaluateJavascript(JSApi.onConfigureProgress(json.toString()));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+    }
+
 
     }
 
@@ -726,12 +711,14 @@ class AppApiForJSImpl {
 
     }
 
-    String loadDeviceTable() {
+    void loadDeviceTable() {
         SharedPreferences sp = mApp.getSharedPreferences(PREF_DEVICE_TAB, Context.MODE_PRIVATE);
         int row = sp.getInt(KEY_ROW, -1);
         int column = sp.getInt(KEY_COLUMN, -1);
+
         if (row == -1 && column == -1) {
-            return null;
+            evaluateJavascript(JSApi.onLoadDeviceTable(""));
+            return;
         }
 
         JSONObject json = new JSONObject();
@@ -746,7 +733,7 @@ class AppApiForJSImpl {
             e.printStackTrace();
         }
 
-        return json.toString();
+        evaluateJavascript(JSApi.onLoadDeviceTable(json.toString()));
     }
 
     void saveTableDevices(String devices) {
@@ -768,7 +755,7 @@ class AppApiForJSImpl {
         }
     }
 
-    String loadTableDevices() {
+    void loadTableDevices() {
         JSONArray array = new JSONArray();
 
         SharedPreferences sp = mApp.getSharedPreferences(PREF_TAB_DEVICES, Context.MODE_PRIVATE);
@@ -784,7 +771,7 @@ class AppApiForJSImpl {
             }
         }
 
-        return array.toString();
+        evaluateJavascript(JSApi.onLoadTableDevices(array.toString()));
     }
 
     String loadTableDevices(String macs) {
@@ -845,7 +832,7 @@ class AppApiForJSImpl {
         }
     }
 
-    String loadAPs() {
+    void loadAPs() {
         List<ApDB> aps = EspDBManager.getInstance().ap().loadAps();
         JSONArray array = new JSONArray();
         for (ApDB db : aps) {
@@ -860,10 +847,25 @@ class AppApiForJSImpl {
             }
         }
 
-        return array.toString();
+        evaluateJavascript(JSApi.onLoadAPs(array.toString()));
     }
 
-    String loadSniffers(long minTime, long maxTime, boolean delDuplicate) {
+    void loadSniffers(String request) {
+        long minTime;
+        long maxTime;
+        boolean delDuplicate;
+        String callback;
+        try {
+            JSONObject json = new JSONObject(request);
+            minTime = json.getLong(KEY_MIN_TIME);
+            maxTime = json.getLong(KEY_MAX_TIME);
+            delDuplicate = json.getBoolean(KEY_DEL_DUPLICATE);
+            callback = json.getString(KEY_CALLBACK);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
         List<SnifferDB> snifferDBS = EspDBManager.getInstance()
                 .sniffer()
                 .loadSniffers(minTime, maxTime, delDuplicate);
@@ -871,21 +873,20 @@ class AppApiForJSImpl {
         for (SnifferDB sniffer : snifferDBS) {
             try {
                 JSONObject json = new JSONObject()
-                        .put("type", sniffer.getType())
-                        .put("mac", sniffer.getBssid())
-                        .put("channel", sniffer.getChannel())
-                        .put("time", sniffer.getUtc_time() + TimeZone.getDefault().getRawOffset())
-                        .put("rssi", sniffer.getRssi())
-                        .put("name", sniffer.getName())
-                        .put("org", sniffer.getOrganization());
+                        .put(KEY_TYPE, sniffer.getType())
+                        .put(KEY_MAC, sniffer.getBssid())
+                        .put(KEY_CHANNEL, sniffer.getChannel())
+                        .put(KEY_TIME, sniffer.getUtc_time() + TimeZone.getDefault().getRawOffset())
+                        .put(KEY_RSSI, sniffer.getRssi())
+                        .put(KEY_NAME, sniffer.getName())
+                        .put(KEY_ORG, sniffer.getOrganization());
                 snifferArray.put(json);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
         }
 
-        return snifferArray.toString();
+        evaluateJavascript(String.format("%s(\'%s\')", callback, snifferArray.toString()));
     }
 
     void startScanSniffer() {
@@ -928,8 +929,7 @@ class AppApiForJSImpl {
                             return;
                         }
 
-                        LinkedList<Sniffer> snifferList = new LinkedList<>();
-                        snifferList.addAll(querySnifferList);
+                        LinkedList<Sniffer> snifferList = new LinkedList<>(querySnifferList);
                         Collections.sort(snifferList, (o1, o2) -> {
                                     Long i1 = o1.getUTCTime();
                                     Long i2 = o2.getUTCTime();
@@ -945,23 +945,18 @@ class AppApiForJSImpl {
                         long timeZoneOffset = TimeZone.getDefault().getRawOffset();
                         for (Sniffer sniffer : snifferList) {
                             JSONObject json = new JSONObject()
-                                    .put("type", sniffer.getType())
-                                    .put("mac", sniffer.getBssid())
-                                    .put("channel", sniffer.getChannel())
-                                    .put("time", sniffer.getUTCTime() + timeZoneOffset)
-                                    .put("rssi", sniffer.getRssi())
-                                    .put("name", sniffer.getName())
-                                    .put("org", sniffer.getOrganization());
+                                    .put(KEY_TYPE, sniffer.getType())
+                                    .put(KEY_MAC, sniffer.getBssid())
+                                    .put(KEY_CHANNEL, sniffer.getChannel())
+                                    .put(KEY_TIME, sniffer.getUTCTime() + timeZoneOffset)
+                                    .put(KEY_RSSI, sniffer.getRssi())
+                                    .put(KEY_NAME, sniffer.getName())
+                                    .put(KEY_ORG, sniffer.getOrganization());
                             snifferArray.put(json);
                         }
                         snifferList.clear();
-                        Observable.just(snifferArray)
-                                .subscribeOn(AndroidSchedulers.mainThread())
-                                .subscribe(array -> {
-                                    if (mActivity != null) {
-                                        mActivity.notifySnifferInfo(array);
-                                    }
-                                });
+
+                        evaluateJavascript(JSApi.onSniffersDiscovered(snifferArray.toString()));
                     } // end while
                 })
                 .doOnComplete(() -> {
@@ -1054,7 +1049,7 @@ class AppApiForJSImpl {
         }
     }
 
-    String getUpgradeFiles() {
+    void getUpgradeFiles() {
         File[] files = new EspActionDeviceOTA().doActionFindUpgradeFiles();
         JSONArray array = new JSONArray();
         if (files != null) {
@@ -1063,7 +1058,7 @@ class AppApiForJSImpl {
             }
         }
 
-        return array.toString();
+        mActivity.evaluateJavascript(JSApi.onGetUpgradeFiles(array.toString()));
     }
 
     void startOTA(String request) {
@@ -1104,7 +1099,6 @@ class AppApiForJSImpl {
                 public void onOTAPrepare(EspOTAClient client) {
                     if (mActivity == null) {
                         client.close();
-                        return;
                     }
                 }
 
@@ -1128,8 +1122,7 @@ class AppApiForJSImpl {
                         }
                     }
                     mLog.i("js ota progress jarray = " + array.toString());
-                    String method = JSApi.onOTAProgressChanged(array.toString());
-                    mActivity.evaluateJavascript(method);
+                    evaluateJavascript(JSApi.onOTAProgressChanged(array.toString()));
                 }
 
                 @Override
@@ -1144,7 +1137,7 @@ class AppApiForJSImpl {
                     for (String mac : completeMacs) {
                         array.put(mac);
                     }
-                    mActivity.evaluateJavascript(JSApi.onOTAResult(array.toString()));
+                    evaluateJavascript(JSApi.onOTAResult(array.toString()));
                 }
             };
             EspOTAClient client = null;
@@ -1174,7 +1167,7 @@ class AppApiForJSImpl {
                     client = builder.setBin(file)
                             .setDevices(devices)
                             .setProtocol(firstDev.getProtocol())
-                            .setHostAddress(firstDev.getHostAddress())
+                            .setHostAddress(firstDev.getLanHostAddress())
                             .setOTACallback(otaCallback)
                             .build();
                     break;
@@ -1190,7 +1183,7 @@ class AppApiForJSImpl {
                     client = builder.setBinUrl(bin)
                             .setDevices(devices)
                             .setProtocol(firstDev.getProtocol())
-                            .setHostAddress(firstDev.getHostAddress())
+                            .setHostAddress(firstDev.getLanHostAddress())
                             .setOTACallback(otaCallback)
                             .build();
                     break;
@@ -1214,6 +1207,10 @@ class AppApiForJSImpl {
         synchronized (mOtaLock) {
             for (EspOTAClient client : mOtaClientMap.values()) {
                 client.close();
+                Observable.just(client)
+                        .subscribeOn(Schedulers.io())
+                        .doOnNext(EspOTAClient::stop)
+                        .subscribe();
             }
             mOtaClientMap.clear();
         }
@@ -1222,13 +1219,17 @@ class AppApiForJSImpl {
     void stopOTA(String request) {
         try {
             JSONObject json = new JSONObject(request);
-            JSONArray addrArray = json.getJSONArray(KEY_ADDRESS);
+            JSONArray addrArray = json.getJSONArray(KEY_HOST);
             synchronized (mOtaLock) {
                 for (int i = 0; i < addrArray.length(); i++) {
                     String address = addrArray.getString(i);
                     EspOTAClient client = mOtaClientMap.remove(address);
                     if (client != null) {
                         client.close();
+                        Observable.just(client)
+                                .subscribeOn(Schedulers.io())
+                                .doOnNext(EspOTAClient::stop)
+                                .subscribe();
                     }
                 }
             }
@@ -1237,13 +1238,14 @@ class AppApiForJSImpl {
         }
     }
 
-    void otaReboot(String macs) {
-        Observable.just(macs)
+    void otaReboot(String info) {
+        Observable.just(info)
                 .subscribeOn(Schedulers.io())
-                .doOnNext(macsStr -> {
+                .doOnNext(infoStr -> {
                     List<IEspDevice> devices = new LinkedList<>();
                     try {
-                        JSONArray macArray = new JSONArray(macsStr);
+                        JSONObject json = new JSONObject(infoStr);
+                        JSONArray macArray = json.getJSONArray(KEY_MACS);
                         for (int i = 0; i < macArray.length(); i++) {
                             String mac = macArray.getString(i);
                             IEspDevice device = mUser.getDeviceForMac(mac);
@@ -1267,13 +1269,14 @@ class AppApiForJSImpl {
                 .subscribe();
     }
 
-    void reboot(String macs) {
-        Observable.just(macs)
+    void reboot(String info) {
+        Observable.just(info)
                 .subscribeOn(Schedulers.io())
-                .doOnNext(macsStr -> {
+                .doOnNext(infoStr -> {
                     List<IEspDevice> devices = new LinkedList<>();
                     try {
-                        JSONArray macArray = new JSONArray(macsStr);
+                        JSONObject json = new JSONObject(infoStr);
+                        JSONArray macArray = json.getJSONArray(KEY_MACS);
                         for (int i = 0; i < macArray.length(); i++) {
                             String mac = macArray.getString(i);
                             IEspDevice device = mUser.getDeviceForMac(mac);
@@ -1371,7 +1374,7 @@ class AppApiForJSImpl {
         }
     }
 
-    String loadGroups() {
+    void loadGroups() {
         EspDBManager manager = EspDBManager.getInstance();
         List<GroupDB> groupDBs = manager.group().loadGroups();
         JSONArray result = new JSONArray();
@@ -1400,7 +1403,8 @@ class AppApiForJSImpl {
                 e.printStackTrace();
             }
         }
-        return result.toString();
+
+        evaluateJavascript(JSApi.onLoadGroups(result.toString()));
     }
 
     void deleteGroup(String groupId) {
@@ -1444,10 +1448,6 @@ class AppApiForJSImpl {
         manager.operation().deleteUntilLeftOperations(leftCount);
     }
 
-    boolean isBluetoothEnable() {
-        return mActivity.isBluetoothEnable();
-    }
-
     boolean isLocationEnable() {
         return mActivity.isLocationEnable();
     }
@@ -1460,8 +1460,8 @@ class AppApiForJSImpl {
         mActivity.finish();
     }
 
-    void registerWifiChange() {
-        mActivity.registerWifiChange();
+    void registerPhoneStateChange() {
+        mActivity.registerPhoneStateChange();
     }
 
     long saveScene(String name, String icon, String background) {
@@ -1517,12 +1517,12 @@ class AppApiForJSImpl {
                         int version = Integer.parseInt(queryResult.getVersion());
                         String fileName = queryResult.getFileNames().get(0);
                         return new JSONObject()
-                                .put(KEY_RESULT, true)
+                                .put(KEY_STATUS, 0)
                                 .put(KEY_NAME, fileName)
                                 .put(KEY_VERSION, version);
                     } else {
                         return new JSONObject()
-                                .put(KEY_RESULT, false);
+                                .put(KEY_STATUS, -1);
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -1534,7 +1534,7 @@ class AppApiForJSImpl {
 
                     @Override
                     public void onNext(JSONObject json) {
-                        mActivity.evaluateJavascript(JSApi.onCheckLatestApk(json.toString()));
+                        evaluateJavascript(JSApi.onCheckAppVersion(json.toString()));
                     }
                 });
     }
@@ -1568,7 +1568,7 @@ class AppApiForJSImpl {
                                     .put(KEY_TOTAL_SIZE, totalSize)
                                     .put(KEY_DOWNLOAD_SIZE, downloadSize);
 
-                            mActivity.evaluateJavascript(JSApi.onApkDownloading(dlJSON.toString()));
+                            evaluateJavascript(JSApi.onApkDownloading(dlJSON.toString()));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -1586,7 +1586,7 @@ class AppApiForJSImpl {
                     public void onNext(Boolean suc) {
                         try {
                             JSONObject json = new JSONObject().put(KEY_RESULT, suc);
-                            mActivity.evaluateJavascript(JSApi.onApkDownloadResult(json.toString()));
+                            evaluateJavascript(JSApi.onApkDownloadResult(json.toString()));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -1597,7 +1597,7 @@ class AppApiForJSImpl {
                 });
     }
 
-    String downloadLatestRom() {
+    void downloadLatestRom() {
         EspActionDeviceOTA action = new EspActionDeviceOTA();
         EspDownloadResult romVersion = action.doActionDownloadLastestRomVersionCloud();
         try {
@@ -1614,15 +1614,13 @@ class AppApiForJSImpl {
                 }
             }
 
-            return json.toString();
+            evaluateJavascript(JSApi.onDownloadLatestRom(json.toString()));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-        return null;
     }
 
-    String getAppInfo() {
+    void getAppInfo() {
         String versionName;
         int versionCode;
 
@@ -1638,55 +1636,103 @@ class AppApiForJSImpl {
 
         try {
             JSONObject json = new JSONObject()
+                    .put("os", "Android")
                     .put(KEY_VERSION_NAME, versionName)
                     .put(KEY_VERSION_CODE, versionCode);
-            return json.toString();
+
+            evaluateJavascript(JSApi.onGetAppInfo(json.toString()));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
-    void saveDeviceEventsPosition(String mac, String events, String position) {
+    void saveDeviceEventsPosition(String request) {
+        String mac;
+        String events;
+        String position;
+        try {
+            JSONObject json = new JSONObject(request);
+            mac = json.getString(KEY_MAC);
+            events = json.getString(KEY_EVENTS);
+            position = json.getString(KEY_POSITION);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
         EspDBManager manager = EspDBManager.getInstance();
         manager.device().saveDeviceOther(mac, events, position);
     }
 
-    String loadDeviceEventsPositioin(String mac) {
+    void loadDeviceEventsPositioin(String request) {
+        String mac;
+        String callback;
+        String tag;
+        try {
+            JSONObject json = new JSONObject(request);
+            mac = json.getString(KEY_MAC);
+            callback = json.getString(KEY_CALLBACK);
+            tag = json.getString(KEY_TAG);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
         EspDBManager manager = EspDBManager.getInstance();
         DeviceOtherDB db = manager.device().loadDeviceOther(mac);
         if (db == null) {
-            return null;
+            return;
         }
         try {
             JSONObject json = new JSONObject()
                     .put(KEY_MAC, db.getMac())
+                    .put(KEY_TAG, tag)
                     .put(KEY_EVENTS, db.getEvents())
                     .put(KEY_POSITION, db.getPosition() == null ? JSONObject.NULL : db.getPosition());
-            return json.toString();
-        } catch (JSONException e) {
+            String string = URLEncoder.encode(json.toString(), "UTF-8");
+            evaluateJavascript(String.format("%s(\'%s\')", callback, string));
+        } catch (JSONException | UnsupportedEncodingException e) {
             e.printStackTrace();
-            return null;
         }
     }
 
-    String loadAllDeviceEventsPosition() {
+    void loadAllDeviceEventsPosition(String request) {
+        String callback;
+        String tag;
+
+        try {
+            JSONObject json = new JSONObject(request);
+            callback = json.getString(KEY_CALLBACK);
+            tag = json.getString(KEY_TAG);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
         EspDBManager manager = EspDBManager.getInstance();
         List<DeviceOtherDB> dbs = manager.device().loadDeviceOtherList();
-        JSONArray result = new JSONArray();
+        JSONArray array = new JSONArray();
         for (DeviceOtherDB db : dbs) {
             try {
                 JSONObject json = new JSONObject()
                         .put(KEY_MAC, db.getMac())
                         .put(KEY_EVENTS, db.getEvents())
                         .put(KEY_POSITION, db.getPosition() == null ? JSONObject.NULL : db.getPosition());
-                result.put(json);
+                array.put(json);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
 
-        return result.toString();
+        try {
+            JSONObject result = new JSONObject()
+                    .put(KEY_TAG, tag)
+                    .put(KEY_CONTENT, URLEncoder.encode(array.toString(), "UTF-8"));
+
+            evaluateJavascript(String.format("%s(\'%s\')", callback, result.toString()));
+        } catch (JSONException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
     void deleteDeviceEventsPosition(String mac) {
@@ -1715,7 +1761,9 @@ class AppApiForJSImpl {
     }
 
     void clearBleCache() {
-        mActivity.clearBle();
+        if (mActivity != null) {
+            mActivity.clearBle();
+        }
     }
 
     String getBleMacsForStaMacs(String staMacs) {
@@ -1757,11 +1805,29 @@ class AppApiForJSImpl {
     }
 
     void getLocale() {
-        JSONObject json = mActivity.getLocaleJSON();
-        mActivity.evaluateJavascript(JSApi.onLocaleGot(json.toString()));
+        Locale locale;
+        if (SdkUtil.isAtLeastN_24()) {
+            locale = mActivity.getResources().getConfiguration().getLocales().get(0);
+        } else {
+            locale = mActivity.getResources().getConfiguration().locale;
+        }
+
+        String language = locale.getLanguage();
+        String country = locale.getCountry();
+        try {
+            JSONObject json = new JSONObject()
+                    .put("language", language)
+                    .put("country", country)
+                    .put("os", "Android");
+
+            evaluateJavascript(JSApi.onLocaleGot(json.toString()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
-    String loadHWDevices() {
+    void loadHWDevices() {
         EspDBManager manager = EspDBManager.getInstance();
         List<HWDeviceDB> dbs = manager.device().loadHWDevicesList();
         JSONArray array = new JSONArray();
@@ -1780,16 +1846,14 @@ class AppApiForJSImpl {
             }
         }
 
-        return array.toString();
+        evaluateJavascript(JSApi.onLoadHWDevices(array.toString()));
     }
 
-    void saveHWDevice(String mac, String code, String floor, String area) {
-        EspDBManager.getInstance().device().saveHWDevice(mac, code, floor, area, System.currentTimeMillis());
-    }
-
-    void saveHWDevices(String arrayStr) {
+    void saveHWDevices(String request) {
         try {
-            JSONArray array = new JSONArray(arrayStr);
+            JSONArray array = new JSONArray(request);
+
+            EspDBManager dbManager = EspDBManager.getInstance();
             for (int i = 0; i < array.length(); i++) {
                 JSONObject json = array.getJSONObject(i);
                 String code = json.getString(KEY_CODE);
@@ -1797,23 +1861,21 @@ class AppApiForJSImpl {
                 String floor = json.getString(KEY_FLOOR);
                 String area = json.getString(KEY_AREA);
 
-                saveHWDevice(mac, code, floor, area);
+                dbManager.device().saveHWDevice(mac, code, floor, area, System.currentTimeMillis());
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    void deleteHWDevice(String mac) {
-        EspDBManager.getInstance().device().deleteHWDevice(mac);
-    }
-
     void deleteHWDevices(String macArray) {
         try {
             JSONArray array = new JSONArray(macArray);
+
+            EspDBManager dbManager = EspDBManager.getInstance();
             for (int i = 0; i < array.length(); i++) {
                 String mac = array.getString(i);
-                deleteHWDevice(mac);
+                dbManager.device().deleteHWDevice(mac);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1821,18 +1883,26 @@ class AppApiForJSImpl {
     }
 
     void scanQRCode() {
-        mActivity.requestCameraPermission();
+        if (mActivity != null) {
+            mActivity.requestCameraPermission();
+        }
     }
 
-    String loadMeshIds() {
+    void loadMeshIds() {
         SharedPreferences sp = mActivity.getSharedPreferences(PREF_MESH_ID, Context.MODE_PRIVATE);
         Set<String> meshIdSet = sp.getAll().keySet();
+        String lastMeshId = loadLastMeshId();
+
         JSONArray array = new JSONArray();
+        if (!TextUtils.isEmpty(lastMeshId)) {
+            meshIdSet.remove(lastMeshId);
+            array.put(lastMeshId);
+        }
         for (String meshId : meshIdSet) {
             array.put(meshId);
         }
 
-        return array.toString();
+        evaluateJavascript(JSApi.onLoadMeshIds(array.toString()));
     }
 
     void saveMeshId(String meshId) {
@@ -1847,12 +1917,12 @@ class AppApiForJSImpl {
         sp.edit().remove(meshId).apply();
     }
 
-    void saveLastMeshId(String meshId) {
+    private void saveLastMeshId(String meshId) {
         SharedPreferences sp = mActivity.getSharedPreferences(PREF_MESH_ID_LAST, Context.MODE_PRIVATE);
         sp.edit().putString("last", meshId).apply();
     }
 
-    String loadLastMeshId() {
+    private String loadLastMeshId() {
         SharedPreferences sp = mActivity.getSharedPreferences(PREF_MESH_ID_LAST, Context.MODE_PRIVATE);
         return sp.getString("last", "");
     }
@@ -1881,53 +1951,68 @@ class AppApiForJSImpl {
         }
     }
 
-    String loadMacs() {
+    void loadMacs() {
         SharedPreferences sp = mActivity.getSharedPreferences(PREF_MAC, Context.MODE_PRIVATE);
         Map<String, ?> map = sp.getAll();
         JSONArray array = new JSONArray();
         for (String mac : map.keySet()) {
             array.put(mac);
         }
-        return array.toString();
+        evaluateJavascript(JSApi.onLoadMacs(array.toString()));
     }
 
-    void savePrefKV(String fileName, String key, String value) {
-        SharedPreferences sp = mActivity.getSharedPreferences(fileName, Context.MODE_PRIVATE);
-        sp.edit().putString(key, value).apply();
-    }
+    void saveValuesForKeysInFile(String request) {
+        String fileName;
+        JSONArray contentArray;
+        try {
+            JSONObject json = new JSONObject(request);
+            fileName = json.getString(KEY_NAME);
+            contentArray = json.getJSONArray(KEY_CONTENT);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
 
-    void savePrefKVMap(String fileName, String kvMap) {
         SharedPreferences sp = mActivity.getSharedPreferences(fileName, Context.MODE_PRIVATE);
         try {
             SharedPreferences.Editor editor = sp.edit();
 
-            JSONObject json = new JSONObject(kvMap);
-            Iterator<String> iterator = json.keys();
-            while (iterator.hasNext()) {
-                String key = iterator.next();
-                String value = json.getString(key);
+            SharedPreferences.Editor lastSaveEditor = mActivity
+                    .getSharedPreferences(PREF_FILE_LAST_SAVE, Context.MODE_PRIVATE)
+                    .edit();
+            for (int i = 0; i < contentArray.length(); i++) {
+                JSONObject kvJSON = contentArray.getJSONObject(i);
+                String key = kvJSON.getString(KEY_KEY);
+                String value = kvJSON.getString(KEY_VALUE);
                 editor.putString(key, value);
+
+                lastSaveEditor.putString(fileName, key);
             }
 
             editor.apply();
+            lastSaveEditor.apply();
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    void removePrefK(String fileName, String key) {
-        SharedPreferences sp = mActivity.getSharedPreferences(fileName, Context.MODE_PRIVATE);
-        sp.edit().remove(key).apply();
-    }
-
-    void removePrefKArray(String fileName, String kArray) {
+    void removeValuesForKeysInFile(String request) {
+        String fileName;
+        JSONArray keyArray;
+        try {
+            JSONObject json = new JSONObject(request);
+            fileName = json.getString(KEY_NAME);
+            keyArray = json.getJSONArray(KEY_KEYS);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
         SharedPreferences sp = mActivity.getSharedPreferences(fileName, Context.MODE_PRIVATE);
         try {
             SharedPreferences.Editor editor = sp.edit();
-
-            JSONArray array = new JSONArray(kArray);
-            for (int i = 0; i < array.length(); i++) {
-                editor.remove(array.getString(i));
+            for (int i = 0; i < keyArray.length(); i++) {
+                String key = keyArray.getString(i);
+                editor.remove(key);
             }
 
             editor.apply();
@@ -1936,15 +2021,156 @@ class AppApiForJSImpl {
         }
     }
 
-    String loadPrefV(String fileName, String key) {
+    void loadValueForKeyInFile(String request) {
+        String fileName;
+        String key;
+
+        try {
+            JSONObject json = new JSONObject(request);
+            fileName = json.getString(KEY_NAME);
+            key = json.getString(KEY_KEY);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
         SharedPreferences sp = mActivity.getSharedPreferences(fileName, Context.MODE_PRIVATE);
-        return sp.getString(key, null);
+        String value = sp.getString(key, null);
+        try {
+            JSONObject contentJSON = new JSONObject()
+                    .put(key, value != null ? value : JSONObject.NULL);
+            JSONObject resultJSON = new JSONObject()
+                    .put(KEY_NAME, fileName)
+                    .put(KEY_CONTENT, contentJSON);
+
+            evaluateJavascript(JSApi.onLoadValueForKeyInFile(resultJSON.toString()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
-    String loadPrefAllV(String fileName) {
+    void loadAllValuesInFile(String fileName) {
         SharedPreferences sp = mActivity.getSharedPreferences(fileName, Context.MODE_PRIVATE);
         Map<String, ?> map = sp.getAll();
-        JSONObject json = new JSONObject(map);
-        return json.toString();
+        JSONObject contentJSON = new JSONObject(map);
+        SharedPreferences lastSavePref = mActivity
+                .getSharedPreferences(PREF_FILE_LAST_SAVE, Context.MODE_PRIVATE);
+        String latestKey = lastSavePref.getString(fileName, null);
+        try {
+            JSONObject resultJSON = new JSONObject()
+                    .put(KEY_NAME, fileName)
+                    .put(KEY_LATEST_KEY, latestKey != null ? latestKey : JSONObject.NULL)
+                    .put(KEY_CONTENT, contentJSON);
+
+            evaluateJavascript(JSApi.onLoadAllValuesInFile(resultJSON.toString()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void closeDeviceLongSocket(String host) {
+        if (mHttpLongSocketReadThread != null) {
+            mHttpLongSocketReadThread.interrupt();
+            mHttpLongSocketReadThread = null;
+        }
+        if (mHttpLongSocket != null) {
+            mHttpLongSocket.close();
+            mHttpLongSocket = null;
+        }
+    }
+
+    void requestDeviceLongSocket(String request) {
+        Observable.create(emitter -> {
+            __requestDeviceLongSocket(request);
+            emitter.onComplete();
+        }).subscribeOn(Schedulers.io())
+                .subscribe();
+    }
+
+    private void __requestDeviceLongSocket(String request) {
+        String host;
+        List<String> macList;
+        JSONObject json;
+        try {
+            json = new JSONObject(request);
+            host = json.getString(KEY_HOST);
+            json.remove(KEY_HOST);
+            JSONArray macArray = json.getJSONArray(KEY_MACS);
+            macList = new ArrayList<>(macArray.length());
+            for (int i = 0; i < macArray.length(); i++) {
+                macList.add(macArray.getString(i));
+            }
+            json.remove(KEY_MACS);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        mLongHttpLock.lock();
+        if (mHttpLongSocket != null) {
+            if (!Objects.equals(mHttpLongSocket.getHost(), host)) {
+                mHttpLongSocket.close();
+                mHttpLongSocket = null;
+
+                mHttpLongSocketReadThread.interrupt();
+                try {
+                    mHttpLongSocketReadThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    return;
+                } finally {
+                    mHttpLongSocketReadThread = null;
+                }
+            }
+        }
+        if (mHttpLongSocket == null) {
+            mHttpLongSocket = new HttpLongSocket(host);
+            try {
+                mHttpLongSocket.connect();
+            } catch (IOException e) {
+                e.printStackTrace();
+                mHttpLongSocket.close();
+                mHttpLongSocket = null;
+                return;
+            }
+
+            mHttpLongSocketReadThread = new Thread(() -> {
+                while (mHttpLongSocket != null
+                        && !mHttpLongSocket.isClosed()
+                        && Thread.currentThread().isInterrupted()) {
+                    try {
+                        mHttpLongSocket.read();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                }
+            });
+            mHttpLongSocketReadThread.start();
+        }
+        mLongHttpLock.unlock();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(IEspActionDevice.HEADER_NODE_COUNT, String.valueOf(macList.size()));
+        StringBuilder macBuilder = new StringBuilder();
+        for (String mac : macList) {
+            macBuilder.append(mac).append(',');
+        }
+        macBuilder.deleteCharAt(macBuilder.length() - 1);
+        headers.put(IEspActionDevice.HEADER_NODE_MAC, macBuilder.toString());
+        headers.put(DeviceUtil.HEADER_ROOT_RESP.getName(), DeviceUtil.HEADER_ROOT_RESP.getValue());
+        headers.put(EspHttpUtils.CONTENT_TYPE, EspHttpUtils.APPLICATION_JSON);
+
+        try {
+            mHttpLongSocket.httpPost(DeviceUtil.FILE_REQUEST, headers, request.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+            mLongHttpLock.lock();
+            mHttpLongSocketReadThread.interrupt();
+            mHttpLongSocketReadThread = null;
+            mHttpLongSocket.close();
+            mHttpLongSocket = null;
+            mLongHttpLock.unlock();
+        }
     }
 }

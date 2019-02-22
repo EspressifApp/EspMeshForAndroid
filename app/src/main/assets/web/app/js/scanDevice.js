@@ -18,6 +18,17 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanDevice.html"],
                 var self = this;
                 var conDevices = self.$store.state.scanDeviceList;
                 return conDevices.length;
+            },
+            imageShow: function() {
+                var flag = true;
+                var conDevices = this.$store.state.scanDeviceList;
+                $.each(conDevices, function(i, item) {
+                    if (item.tid != BUTTON_SWITCH) {
+                        flag = false;
+                        return false;
+                    }
+                })
+                return flag;
             }
         },
         methods:{

@@ -53,9 +53,7 @@ define(["vue", "MINT", "txt!../../pages/addEvent.html"],
                 self.eventOperate();
                 self.deviceInfo = self.$store.state.deviceInfo;
                 self.deviceList = self.$store.state.deviceList;
-                var res = espmesh.loadDeviceEventsPositioin(self.deviceInfo.mac);
-                self.deviceEvent = JSON.parse(res);
-                self.eventList = JSON.parse(self.deviceEvent.events);
+                self.getDeviceEvents();
                 self.desc = "";
                 self.text = "";
                 self.type = "";
@@ -86,6 +84,19 @@ define(["vue", "MINT", "txt!../../pages/addEvent.html"],
             hide: function () {
                 this.flag = false;
                 this.$emit("addEventShow");
+            },
+            getDeviceEvents: function() {
+                var self = this;
+                var eventsPositions = self.$store.state.eventsPositions;
+                if (eventsPositions.length > 0) {
+                    $.each(eventsPositions, function(i, item) {
+                        if (item.mac == self.deviceInfo.mac) {
+                            self.deviceEvent = item;
+                            self.eventList = JSON.parse(self.deviceEvent.events);
+                            return false;
+                        }
+                    });
+                }
             },
             eventOperate: function() {
                 var self = this;
@@ -410,9 +421,17 @@ define(["vue", "MINT", "txt!../../pages/addEvent.html"],
                 MINT.Indicator.close();
             },
             editSession: function (mac, position, events) {
-                var self = this,
-                    res = espmesh.loadDeviceEventsPositioin(mac),
+                var self = this, res = "",
                     deviceEvents = [], editEvents = [];
+                var eventsPositions = self.$store.state.eventsPositions;
+                if (eventsPositions.length > 0) {
+                    $.each(eventsPositions, function(i, item) {
+                        if (item.mac == self.deviceInfo.mac) {
+                            res = item;
+                            return false;
+                        }
+                    });
+                }
                 if (self._isEmpty(res)) {
                     deviceEvents = events;
                     espmesh.saveDeviceEventsPosition(mac, JSON.stringify(events), JSON.stringify(position));

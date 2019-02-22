@@ -52,6 +52,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
             show: function() {
                 var self = this;
                 window.onBackPressed = self.hide;
+                window.onGetUpgradeFiles = self.onGetUpgradeFiles;
+                window.onDownloadLatestRom = self.onDownloadLatestRom;
                 self.otaList = [];
                 self.successMacs = [];
                 self.upgradeSuccess = false;
@@ -68,6 +70,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                 self.otaType = 1;
                 self.upgradeValue = 0;
                 self.scheduleList = [];
+                self.bin = "";
                 self.binUrl = BIN_URL;
                 $("span.upgrade-progress-value").text(self.upgradeValue+"%");
                 $("div.upgradeProgress").css("width", self.upgradeValue+"%");
@@ -106,24 +109,28 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                 this.addFlag = false;
                 this.hideSuccess();
                 this.stopTime();
+                this.stopOTA();
                 this.$store.commit("setShowScanBle", true);
                 this.$emit("otaShow");
             },
             otaReboot: function() {
-                var self = this,
-                    macs = JSON.stringify(self.successMacs);
+                var self = this;
                 self.stopTime();
+                var data = JSON.stringify({"host": self.$store.state.deviceIp, "macs": self.successMacs});
                 if (self.otaType == 1) {
-                    espmesh.otaReboot(macs);
+                    espmesh.otaReboot(data);
                 } else {
-                    espmesh.reboot(macs)
+                    espmesh.reboot(data)
                 }
                 self.hide();
             },
             stopUpgrade: function() {
                 this.stopTime();
                 this.hideSuccess();
-                espmesh.stopOTA();
+                this.stopOTA();
+            },
+            stopOTA: function() {
+                espmesh.stopOTA(JSON.stringify({"host": [this.$store.state.deviceIp]}));
             },
             getList: function() {
                 var self = this,
@@ -146,9 +153,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                 return name;
             },
             getFiles: function() {
+                espmesh.getUpgradeFiles();
+            },
+            onGetUpgradeFiles: function(res) {
                 var self = this;
                 self.otaList = [];
-                var res = espmesh.getUpgradeFiles();
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
                     $.each(res, function (i, item) {
@@ -170,14 +179,21 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                 self.showDetails = false;
                 $("span.upgrade-progress-value").text("0%");
                 $("div.upgradeProgress").css("width", "0%");
-                espmesh.stopOTA();
+                self.stopOTA();
                 window.onBackPressed = self.hide;
             },
             downloadBin: function () {
                 var self= this;
                 MINT.Indicator.open();
                 setTimeout(function() {
-                    var res = espmesh.downloadLatestRom();
+                    espmesh.downloadLatestRom();
+                }, 1000);
+
+            },
+            onDownloadLatestRom: function(res) {
+                var self = this;
+                console.log(res);
+                if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
                     MINT.Indicator.close();
                     if (res.download) {
@@ -191,7 +207,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                             self.bin = res.file;
                             self.initType();
                             setTimeout(function() {
-                                espmesh.startOTA(JSON.stringify({"bin": self.bin, "macs": self.macs, "type": self.otaType}));
+                                espmesh.startOTA(JSON.stringify({"bin": self.bin, "host": self.$store.state.deviceIp,
+                                    "macs": self.macs, "type": self.otaType}));
                                 self.getTime();
                             }, 100);
                         });
@@ -203,7 +220,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                             }, 10);
                         });
                     }
-                }, 1000);
+                }
 
             },
             enterBinUrl: function() {
@@ -221,7 +238,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                 setTimeout(function() {
                     self.otaType = 3;
                     console.log(JSON.stringify({"bin": self.binUrl, "macs": self.macs, "type": self.otaType}));
-                    espmesh.startOTA(JSON.stringify({"bin": self.binUrl, "macs": self.macs, "type": self.otaType}));
+                    espmesh.startOTA(JSON.stringify({"bin": self.binUrl, "host": self.$store.state.deviceIp,
+                        "macs": self.macs, "type": self.otaType}));
                     self.getTime();
                     console.log(self.upgradeValue);
                     self.setSchedule();
@@ -291,11 +309,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                 self.successMacs = [];
                 self.failMacs = [];
                 window.onBackPressed = "";
-                var docs = $("#"+ self.otaId+ " span.span-radio.active"),
-                    bin = $(docs[0]).attr("data-value");
-                self.bin = bin;
                 var existMacs = [];
                 self.initType();
+                var bin = self.bin;
                 $.each(deviceList, function(i, item) {
                     if (self.macs.indexOf(item.mac) != -1) {
                         existMacs.push(item.mac);
@@ -315,7 +331,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                     self.initType();
                     setTimeout(function() {
                         console.log(JSON.stringify({"bin": bin, "macs": self.macs, "type": self.otaType}));
-                        espmesh.startOTA(JSON.stringify({"bin": bin, "macs": self.macs, "type": self.otaType}));
+                        espmesh.startOTA(JSON.stringify({"bin": bin, "host": self.$store.state.deviceIp,
+                            "macs": self.macs, "type": self.otaType}));
                         self.getTime();
                     }, 100);
                 }
@@ -354,7 +371,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                     }
                     setTimeout(function() {
                         console.log(JSON.stringify({"bin": self.bin, "macs": self.failMacs, "type": self.otaType}));
-                        espmesh.startOTA(JSON.stringify({"bin": self.bin, "macs": self.failMacs, "type": self.otaType}));
+                        espmesh.startOTA(JSON.stringify({"bin": self.bin, "host": self.$store.state.deviceIp,
+                            "macs": self.failMacs, "type": self.otaType}));
                     }, 100);
                 }
             },
@@ -482,13 +500,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                 });
                 self.failMacs = failMacs;
             },
-            selectDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
+            selectDevice: function (bin) {
+                if (this.bin == bin) {
+                    this.bin = "";
                 } else {
-                    $("#"+ this.otaId+ " span.span-radio").removeClass("active");
-                    doc.addClass("active");
+                    this.bin = bin;
                 }
             }
         },

@@ -106,6 +106,20 @@ define(function(){
             }
             return arr;
         },
+        isExistGroup: function(groupList, name) {
+            var groupNames = [], flag = false;
+            $.each(groupList, function(i, item) {
+                var name = item.name;
+                if (groupNames.indexOf(name) == -1) {
+                    groupNames.push(name);
+                }
+            })
+            if (groupNames.indexOf(name) == -1) {
+                flag = true;
+            }
+            return flag;
+
+        },
         isJSON: function (str) {
             if (typeof str == 'string') {
                 try {
@@ -158,7 +172,7 @@ define(function(){
         },
         isMesh: function(name, version) {
             var flag = false;
-            if (version == 0 || (version == -1 && name.indexOf("MESH_") != -1)) {
+            if (version == 0 || (version == -1 && !this._isEmpty(name) && name.indexOf("MESH_") != -1)) {
                 flag = true;
             }
             return flag;

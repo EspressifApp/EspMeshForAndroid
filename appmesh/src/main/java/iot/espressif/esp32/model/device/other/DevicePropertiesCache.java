@@ -43,7 +43,7 @@ public class DevicePropertiesCache {
         if (db != null) {
             device.setName(db.getName());
             device.setDeviceTypeId(db.getTid());
-            device.setCurrentRomVersion(db.getVersion());
+            device.setRomVersion(db.getVersion());
             device.setProtocol(db.getProtocol());
             device.setProtocolPort(db.getProtocol_port());
 

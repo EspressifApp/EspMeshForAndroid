@@ -10,18 +10,20 @@
                 <span @click="save" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
             </div>
             <div class="content-info ota-device" :id="otaId">
-                <div v-for="item in otaList" class="item">
-                    <div class="item-icon-circle">
-                        <i class="icon-easel"></i>
-                    </div>
-                    <div class="item-name up-date padding-left-10">
-                        <span>{{item.name}}</span>
-                    </div>
-                    <div class="item-power-small">
-                        <span :data-value="item.id" @click="selectDevice($event)"
-                              class="span-radio"><span></span></span>
+                <div class="overflow-touch">
+                    <div @click="selectDevice(item.id)" v-for="item in otaList" class="item">
+                        <div class="item-icon-circle">
+                            <i class="icon-easel"></i>
+                        </div>
+                        <div class="item-name up-date padding-left-10">
+                            <span>{{item.name}}</span>
+                        </div>
+                        <div class="item-power-small">
+                            <span class="span-radio" :class="{'active': bin == item.id}"><span></span></span>
+                        </div>
                     </div>
                 </div>
+
             </div>
             <div v-show="showFooterInfo" class="position-absolute btn-register-wrapper ota-flex">
                 <a @click="downloadBin" class="ota-flex-1">{{$t('downloadBinTitle')}}</a>

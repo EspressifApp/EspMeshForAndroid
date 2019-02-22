@@ -40,11 +40,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
-import blufi.espressif.mesh.MeshUtils;
 import h5.espressif.esp32.R;
 import h5.espressif.esp32.model.web.AppApiForJS;
 import h5.espressif.esp32.model.web.JSApi;
@@ -54,7 +53,7 @@ import io.reactivex.schedulers.Schedulers;
 import iot.espressif.esp32.model.user.EspUser;
 import libs.espressif.app.AppUtil;
 import libs.espressif.app.PermissionHelper;
-import libs.espressif.app.SdkUtil;
+import libs.espressif.ble.BleAdvData;
 import libs.espressif.ble.EspBleUtils;
 import libs.espressif.ble.ScanListener;
 import libs.espressif.log.EspLog;
@@ -71,6 +70,9 @@ public class EspWebActivity extends AppCompatActivity {
     private static final int REQUEST_QRCODE = 0x02;
 
     private static final int BLE_NOTIFY_INTERVAL = 1500;
+
+    private static final int BLE_MANUFACTURER_ADV_TYPE = 0xff;
+    private static final int ESP_MANUFACTURER_ID = 0x02E5;
 
     private final EspLog mLog = new EspLog(getClass());
 
@@ -120,7 +122,7 @@ public class EspWebActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 Uri uri = Uri.parse(url);
-                if (uri.getHost().equals("www.espressif.com")) {
+                if (Objects.equals(uri.getHost(), "www.espressif.com")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                     startActivity(intent);
                 } else {
@@ -141,6 +143,7 @@ public class EspWebActivity extends AppCompatActivity {
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowFileAccessFromFileURLs(true);
         webSettings.setAllowUniversalAccessFromFileURLs(true);
+        webSettings.setTextZoom(100);
 
         setCoverAndUrl();
 
@@ -185,8 +188,8 @@ public class EspWebActivity extends AppCompatActivity {
         if (requestCode == REQUEST_QRCODE) {
             if (resultCode == RESULT_OK) {
                 String message = data.getStringExtra(Intents.Scan.RESULT);
-                mLog.w("QR code = " + message);
-                mWebView.evaluateJavascript(JSApi.onQRCodeScanned(message), null);
+                mLog.d("QR code = " + message);
+                evaluateJavascript(JSApi.onQRCodeScanned(message));
             }
             return;
         }
@@ -195,16 +198,15 @@ public class EspWebActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        mWebView.evaluateJavascript(JSApi.onBackPressed(), null);
+        evaluateJavascript(JSApi.onBackPressed());
     }
 
     private void setCoverAndUrl() {
         Observable.just("image/welcome.png")
                 .subscribeOn(Schedulers.io())
                 .doOnNext(path -> {
-                    InputStream is = getAssets().open("image/welcome.png");
+                    InputStream is = getAssets().open(path);
                     mCoverBmp = BitmapFactory.decodeStream(is);
-                    mLog.e("BMP null = " + (mCoverBmp == null));
                     is.close();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -237,12 +239,14 @@ public class EspWebActivity extends AppCompatActivity {
         return mDeviceNotifyHelper;
     }
 
-    public void registerWifiChange() {
+    public void registerPhoneStateChange() {
         if (!mRegisteredCast) {
             mRegisteredCast = true;
             IntentFilter filter = new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION);
             filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
             registerReceiver(mReceiver, filter);
+
+            notifyBluetoothChanged(BluetoothAdapter.getDefaultAdapter().getState());
         }
     }
 
@@ -257,10 +261,6 @@ public class EspWebActivity extends AppCompatActivity {
         });
     }
 
-    public boolean isBluetoothEnable() {
-        return BluetoothAdapter.getDefaultAdapter().isEnabled();
-    }
-
     public boolean isLocationEnable() {
         LocationManager manager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (manager == null) {
@@ -269,27 +269,6 @@ public class EspWebActivity extends AppCompatActivity {
         boolean gpsEnable = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         boolean networkEnable = manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
         return gpsEnable || networkEnable;
-    }
-
-    public JSONObject getLocaleJSON() {
-        Locale locale;
-        if (SdkUtil.isAtLeastN_24()) {
-            locale = getResources().getConfiguration().getLocales().get(0);
-        } else {
-            locale = getResources().getConfiguration().locale;
-        }
-
-        String language = locale.getLanguage();
-        String country = locale.getCountry();
-        try {
-            JSONObject json = new JSONObject()
-                    .put("language", language)
-                    .put("country", country);
-            return json;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public void evaluateJavascript(String script) {
@@ -318,8 +297,7 @@ public class EspWebActivity extends AppCompatActivity {
             return;
         }
 
-        String method = JSApi.onWifiStateChanged(json.toString());
-        mWebView.evaluateJavascript(method, null);
+        evaluateJavascript(JSApi.onWifiStateChanged(json.toString()));
     }
 
     private String encodeSSID(String ssid) throws UnsupportedEncodingException {
@@ -365,51 +343,10 @@ public class EspWebActivity extends AppCompatActivity {
         try {
             JSONObject json = new JSONObject()
                     .put("enable", enable);
-            String method = JSApi.onBluetoothChanged(json.toString());
-            mWebView.evaluateJavascript(method, null);
+            evaluateJavascript(JSApi.onBluetoothChanged(json.toString()));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    public void notifySnifferInfo(JSONArray array) {
-        String method = JSApi.onSniffersDiscovered(array.toString());
-        mWebView.evaluateJavascript(method, null);
-    }
-
-    public void notifyDevicesScanned(String devices) {
-        String method = JSApi.onDeviceScanned(devices);
-        mWebView.evaluateJavascript(method, null);
-    }
-
-    public void notifyDevicesScanning(String devices) {
-        String method = JSApi.onDeviceScanning(devices);
-        mWebView.evaluateJavascript(method, null);
-    }
-
-    public void notifyTopoScanned(String topo) {
-        String method = JSApi.onTopoScanned(topo);
-        mWebView.evaluateJavascript(method, null);
-    }
-
-    void notifyDeviceStatusChanged(JSONObject json) {
-        String method = JSApi.onDeviceStatusChanged(json.toString());
-        mWebView.evaluateJavascript(method, null);
-    }
-
-    void notifyDeviceLost(String mac) {
-        String method = JSApi.onDeviceLost(mac);
-        mWebView.evaluateJavascript(method, null);
-    }
-
-    void notifyDeviceFound(JSONObject json) {
-        String method = JSApi.onDeviceFound(json.toString());
-        mWebView.evaluateJavascript(method, null);
-    }
-
-    void notifyScanBle(JSONArray array) {
-        String method = JSApi.onScanBLE(array.toString());
-        mWebView.evaluateJavascript(method, null);
     }
 
     public void startBleScan() {
@@ -432,11 +369,6 @@ public class EspWebActivity extends AppCompatActivity {
             mBleInfoMap.clear();
             mBleSet.clear();
         }
-    }
-
-    public void notifyConfigureProgressUpdate(JSONObject json) {
-        String method = JSApi.onConfigureProgress(json.toString());
-        mWebView.evaluateJavascript(method, null);
     }
 
     public void requestCameraPermission() {
@@ -509,6 +441,7 @@ public class EspWebActivity extends AppCompatActivity {
 
             synchronized (mBleSet) {
                 BleInfo info = new BleInfo();
+                info.manufacturerId = ESP_MANUFACTURER_ID;
                 info.rssi = rssi;
                 info.scanRecord = scanRecord;
                 mBleInfoMap.put(device, info);
@@ -552,14 +485,15 @@ public class EspWebActivity extends AppCompatActivity {
                                         .put("rssi", info.rssi)
                                         .put("version", info.version)
                                         .put("bssid", info.staBssid == null ? mac : info.staBssid)
-                                        .put("tid", info.tid);
+                                        .put("tid", info.tid)
+                                        .put("only_beacon", info.onlyBeacon);
                                 array.put(bleJSON);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }
 
-                        runOnUiThread(() -> notifyScanBle(array));
+                        evaluateJavascript(JSApi.onScanBLE(array.toString()));
                     }
 
                     // Keep cache ble 3 minutes
@@ -573,62 +507,66 @@ public class EspWebActivity extends AppCompatActivity {
     }
 
     private class BleInfo {
-        int manufactureId;
+        int manufacturerId;
 
         int rssi;
         byte[] scanRecord;
         String staBssid;
         int version;
+        boolean onlyBeacon;
         int tid;
+
+        void initVars() {
+            version = -1;
+            onlyBeacon = false;
+            staBssid = null;
+            tid = -1;
+        }
 
         void parseMesh() {
             try {
                 _parseMeshVersion();
             } catch (Exception e) {
                 e.printStackTrace();
-                version =  -1;
-                staBssid = null;
-                tid = -1;
+                initVars();
             }
         }
 
         void _parseMeshVersion() {
-            if (scanRecord == null) {
-                version =  -1;
-                staBssid = null;
+            List<BleAdvData> dataList = EspBleUtils.resolveScanRecord(scanRecord);
+            for (BleAdvData advData : dataList) {
+                // Check manufacturer adv type(0xff)
+                if (advData.getType() != BLE_MANUFACTURER_ADV_TYPE) {
+                    continue;
+                }
+
+                byte[] manuData = advData.getData();
+                // Check data length
+                if (manuData.length < 14) {
+                    continue;
+                }
+                // Check manufacturer id
+                int advManuId = (manuData[0] & 0xff) | ((manuData[1] & 0xff) << 8);
+                if (advManuId != manufacturerId) {
+                    mLog.d(String.format("BLE ADV ManufacturerID = %04x", advManuId));
+//                    continue;
+                }
+                // Check (MDF)
+                if ((manuData[2] & 0xff) != 0x4d
+                        || (manuData[3] & 0xff) != 0x44
+                        || (manuData[4] & 0xff) != 0x46) {
+                    continue;
+                }
+
+                version = manuData[5] & 3;
+                onlyBeacon = ((manuData[5] >> 4) & 1) == 1;
+                staBssid = String.format("%02x%02x%02x%02x%02x%02x",
+                        manuData[6], manuData[7], manuData[8], manuData[9], manuData[10], manuData[11]);
+                tid = (manuData[12] & 0xff) | ((manuData[13] & 0xff) << 8);
                 return;
             }
 
-            int offset = 0;
-            do {
-                int len = scanRecord[offset] & 0xff;
-                if (len == 0) {
-                    break;
-                }
-                int type = scanRecord[offset + 1] & 0xff;
-
-                if (type == 0xff) {
-                    byte[] manuData = DataUtil.subBytes(scanRecord, offset + 2, len);
-                    if (manuData.length > 13
-//                            && (manuData[0] & 0xff) == (manufactureId & 0xff)
-//                            && (manuData[1] & 0xff) == ((manufactureId >> 8) & 0xff)
-                            && (manuData[2] & 0xff) == 0x4d
-                            && (manuData[3] & 0xff) == 0x44
-                            && (manuData[4] & 0xff) == 0x46) {
-                        version = manuData[5] & 3;
-                        staBssid = String.format("%02x%02x%02x%02x%02x%02x",
-                                manuData[6], manuData[7], manuData[8], manuData[9], manuData[10], manuData[11]);
-                        tid = (manuData[12] & 0xff) | ((manuData[13] & 0xff) << 8);
-                        return;
-                    }
-                }
-
-                offset += (len + 1);
-            } while (offset < scanRecord.length);
-
-            version = -1;
-            staBssid = null;
-            tid = -1;
+            initVars();
         }
     }
 }

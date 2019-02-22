@@ -44,6 +44,8 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
             show: function() {
                 var self = this;
                 self.deviceList = self.$store.state.deviceList;
+                window.onLoadDeviceTable = self.onLoadDeviceTable;
+                window.onLoadTableDevices = self.onLoadTableDevices;
                 self.selectAllShow = true;
                 self.initTableScroll();
                 self.getTable();
@@ -174,7 +176,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                             col = $this.attr("data-id");
                             row = $this.parent().attr("data-id");
                         var id = $this.find("div").attr("data-id");
-                        if (self._isEmpty(id)) {
+                        if (Util._isEmpty(id)) {
                             self.disabledTableDevice(uid);
                             $this.append(str);
                             setTimeout(function() {
@@ -187,65 +189,77 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                 });
             },
             getTable: function () {
+                espmesh.loadDeviceTable();
+            },
+            getTableDevices: function() {
+                espmesh.loadTableDevices();
+            },
+            onLoadDeviceTable: function(res){
+                console.log(res);
                 var self = this;
-                var res = espmesh.loadDeviceTable();
-
-                if (!self._isEmpty(res)) {
+                if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
-                    var devices = espmesh.loadTableDevices();
+                    self.getTableDevices();
                     COL_NUM = res.column;
                     ROW_NUM = res.row;
                     self.init(COL_NUM, ROW_NUM, "table-drop");
-                    if (!self._isEmpty(devices)) {
-                        devices = JSON.parse(devices);
-                        $.each(devices, function(i, item) {
-                            var mac = item.mac,
-                                characteristics = [],
-                                hueValue = 0,
-                                saturation = 0,
-                                luminance = 0,
-                                status,
-                                color = "#999",
-                                name;
-                            $.each(self.deviceList, function(j, itemSub){
-                                if (itemSub.mac == mac) {
-                                    characteristics = itemSub.characteristics;
-                                    name = itemSub.name;
-                                    return false;
-                                }
-                            })
-                            if (characteristics.length > 0) {
-                                $.each(characteristics, function(j, itemSub) {
-                                    if (itemSub.cid == HUE_CID) {
-                                        hueValue = itemSub.value;
-                                    }else if (itemSub.cid == SATURATION_CID) {
-                                        saturation = itemSub.value;
-                                    }else if (itemSub.cid == VALUE_CID) {
-                                        luminance = itemSub.value;
-                                    } else if (itemSub.cid == STATUS_CID) {
-                                        status = itemSub.value;
-                                    }
-                                });
-
-                                var hsb = "hsb("+ (hueValue / 360) +","+ (saturation / 100) +","+(luminance / 100) +")";
-                                if (status === STATUS_ON) {
-                                    color = Raphael.getRGB(hsb).hex;
-                                }
-                                var str = self.addTableHtml(mac, name, color);
-                                var doc = $("#table-wrapper tr[data-id='" + item.row + "']").find("td[data-id='" + item.column + "']");
-                                doc.empty().append(str);
-                                setTimeout(function(){
-                                    self.disabledTableDevice(mac);
-                                }, 100)
-
-                            }
-
-                        })
-                    }
-
                 } else {
                     self.init(self.colNum, self.rowNum, "table-drop");
                     espmesh.saveDeviceTable("{column: "+self.colNum+", row: "+self.rowNum+"}");
+                    setTimeout(function() {
+                        self.droppableTable();
+                    }, 100);
+                }
+
+            },
+            onLoadTableDevices: function(res) {
+                console.log(res);
+                var self = this;
+                if (!Util._isEmpty(res)) {
+                    res = JSON.parse(res);
+                    $.each(res, function(i, item) {
+                        var mac = item.mac,
+                            characteristics = [],
+                            hueValue = 0,
+                            saturation = 0,
+                            luminance = 0,
+                            status,
+                            color = "#999",
+                            name = "";
+                        $.each(self.deviceList, function(j, itemSub){
+                            if (itemSub.mac == mac) {
+                                characteristics = itemSub.characteristics;
+                                name = itemSub.name;
+                                return false;
+                            }
+                        })
+                        if (characteristics.length > 0) {
+                            $.each(characteristics, function(j, itemSub) {
+                                if (itemSub.cid == HUE_CID) {
+                                    hueValue = itemSub.value;
+                                }else if (itemSub.cid == SATURATION_CID) {
+                                    saturation = itemSub.value;
+                                }else if (itemSub.cid == VALUE_CID) {
+                                    luminance = itemSub.value;
+                                } else if (itemSub.cid == STATUS_CID) {
+                                    status = itemSub.value;
+                                }
+                            });
+
+                            var hsb = "hsb("+ (hueValue / 360) +","+ (saturation / 100) +","+(luminance / 100) +")";
+                            if (status === STATUS_ON) {
+                                color = Raphael.getRGB(hsb).hex;
+                            }
+                            var str = self.addTableHtml(mac, name, color);
+                            var doc = $("#table-wrapper tr[data-id='" + item.row + "']").find("td[data-id='" + item.column + "']");
+                            doc.empty().append(str);
+                            setTimeout(function(){
+                                self.disabledTableDevice(mac);
+                            }, 100)
+
+                        }
+
+                    })
                 }
                 setTimeout(function() {
                     self.droppableTable();
@@ -373,7 +387,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                     touchstart: function() {
                         selectTag = $(this).find("div.td-modal").attr("id");
                         if (docWrapper.hasClass("active")) {
-                            if (!self._isEmpty(selectTag)) {
+                            if (!Util._isEmpty(selectTag)) {
                                 var doc = $(this);
                                 if (doc.hasClass("active")) {
                                     doc.removeClass("active");
@@ -391,7 +405,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                         var ele = document.elementFromPoint(touch.pageX, touch.pageY);
                         if (docWrapper.hasClass("active")) {
                             var selectSubTag = $(ele).attr("id");
-                            if (selectTag != selectSubTag && !self._isEmpty(selectSubTag)) {
+                            if (selectTag != selectSubTag && !Util._isEmpty(selectSubTag)) {
                                 selectTag = selectSubTag;
                                 var doc = $(ele).parent().parent();
                                 if (doc.hasClass("active")) {
@@ -402,7 +416,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                             }
                         } else {
                              var selectSubTag = $(ele).attr("data-mac");
-                             if (selectTag != selectSubTag && !self._isEmpty(selectSubTag)) {
+                             if (selectTag != selectSubTag && !Util._isEmpty(selectSubTag)) {
                                  selectTag = selectSubTag;
                                  self.editLightStatus(ele);
                              }
@@ -418,7 +432,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                         selectTag = $(this).attr("data-mac");
                         console.log(selectTag);
                         flag = true;
-                        if (!docWrapper.hasClass("active") && !self._isEmpty(selectTag)) {
+                        if (!docWrapper.hasClass("active") && !Util._isEmpty(selectTag)) {
                             TIMER_ID = setTimeout(function(){
                                 self.editTableBtn();
                                 $(that).parent().parent().addClass("active");
@@ -429,7 +443,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                     touchmove: function(e) {
                         clearTimeout(TIMER_ID);
                         if (!docWrapper.hasClass("active")) {
-                            if (flag && !self._isEmpty(selectTag)) {
+                            if (flag && !Util._isEmpty(selectTag)) {
                                 self.editLightStatus(this);
                                 flag = false;
                             }
@@ -438,7 +452,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                             var touch = e.originalEvent.targetTouches[0];
                             var ele = document.elementFromPoint(touch.pageX, touch.pageY);
                             var selectSubTag = $(ele).attr("data-mac");
-                            if (selectTag != selectSubTag && !self._isEmpty(selectSubTag)) {
+                            if (selectTag != selectSubTag && !Util._isEmpty(selectSubTag)) {
                                 selectTag = selectSubTag;
                                 self.editLightStatus(ele);
                             }
@@ -447,7 +461,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                     },
                     touchend: function(e) {
                         clearTimeout(TIMER_ID);
-                        if (flag && !self._isEmpty(selectTag) && !docWrapper.hasClass("active")) {
+                        if (flag && !Util._isEmpty(selectTag) && !docWrapper.hasClass("active")) {
                             self.editLightStatus(this);
                             flag = false;
                         }
@@ -458,7 +472,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
             editLightStatus: function (obj) {
                 var self = this,
                     mac = $(obj).attr("data-mac");
-                if (!self._isEmpty(self.deviceList)) {
+                if (!Util._isEmpty(self.deviceList)) {
                     var meshs = [],
                         device,
                         status,
@@ -507,7 +521,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                     var data = '{"' + MESH_MAC + '": "' + mac +
                         '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' +MESH_REQUEST + '": "' + SET_STATUS + '",' +
                         '"characteristics":' + JSON.stringify(meshs) + '}';
-                    espmesh.addQueueTask("requestDeviceAsync", data);
+                    espmesh.addQueueTask(JSON.stringify({"method":"requestDeviceAsync","argument": data}));
                 }
 
             },
@@ -542,13 +556,6 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                 $("#table-wrapper").find("table").addClass("unactive");
                 $("#table-wrapper table td.active").find(".td-content").parent().removeClass("active");
                 window.onBackPressed = this.hideTable;
-            },
-            _isEmpty: function (str) {
-                if (str === "" || str === null || str === undefined ) {
-                    return true;
-                } else {
-                    return false;
-                }
             },
         },
         created: function () {

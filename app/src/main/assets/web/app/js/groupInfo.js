@@ -19,6 +19,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupInfo.html", "../js/operateD
                 total: 0,
                 selected: 0,
                 searchName: "",
+                isSelectedMacs: [],
             }
         },
         computed: {
@@ -42,15 +43,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupInfo.html", "../js/operateD
         },
         methods:{
             show: function() {
-                window.onBackPressed = this.hide;
-                $("#"+ this.editDeviceId+" span.span-radio").removeClass("active");
-                this.deviceList = this.$store.state.deviceList;
-                var macsSelects = this.getDevicesByGroup(this.group.device_macs);
-                this.selected = macsSelects.length;
-                for (var i in macsSelects) {
-                    $("#"+ this.editDeviceId+ " span.span-radio[data-value='"+macsSelects[i]+"']").addClass("active");
-                }
-                this.addFlag = true;
+                var self = this;
+                window.onBackPressed = self.hide;
+                self.deviceList = self.$store.state.deviceList;
+                self.addFlag = true;
+                setTimeout(function() {
+                    self.isSelectedMacs = self.getDevicesByGroup(self.group.device_macs);
+                    self.selected = self.isSelectedMacs.length;
+                })
             },
             hide: function () {
                 this.addFlag = false;
@@ -78,20 +78,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupInfo.html", "../js/operateD
                     macs.push($(docs[i]).attr("data-value"));
                 };
                 self.group.device_macs = macs;
-                var res = espmesh.saveGroup(JSON.stringify(self.group));
-                if (res) {
-                    var groupList = self.$store.state.groupList;
-                    if (groupList.length > 0) {
-                        $.each(groupList, function(i, item) {
-                            if (item.id == res) {
-                                groupList.splice(i, 1, self.group);
-                                return false;
-                            }
-                        })
-                    }
-                    self.$store.commit("setGroupList", groupList);
-                    self.hide();
-                }
+                espmesh.saveGroups(JSON.stringify([self.group]));
+                espmesh.loadGroups();
+                self.hide();
             },
             showDesc: function(position) {
                 var flag = false;
@@ -104,32 +93,43 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupInfo.html", "../js/operateD
                 return Util.getPosition(position);
             },
             selectAllDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    $("span.span-radio").removeClass("active");
+                var doc = $(e.currentTarget).find("span.span-radio")[0];
+                if ($(doc).hasClass("active")) {
+                    $(doc).removeClass("active");
                     this.selected = 0;
+                    this.isSelectedMacs = [];
                 } else {
-                    doc.addClass("active");
-                    $("span.span-radio").addClass("active");
+                    $(doc).addClass("active");
                     this.selected = this.total;
+                    var allMacs = [];
+                    $.each(this.deviceList, function(i, item) {
+                        allMacs.push(item.mac);
+                    })
+                    this.isSelectedMacs = allMacs;
                 }
 
             },
-            selectDevice: function (e) {
-                var doc = $(e.currentTarget);
-                if (doc.hasClass("active")) {
-                    doc.removeClass("active");
-                    this.selected -= 1;
+            selectMac: function(mac) {
+                var num = this.isSelectedMacs.indexOf(mac);
+                if (num == -1) {
+                    this.isSelectedMacs.push(mac);
                 } else {
-                    doc.addClass("active");
-                    this.selected += 1;
+                    this.isSelectedMacs.splice(num, 1);
                 }
+                this.selected = this.isSelectedMacs.length;
+            },
+            isSelected: function(mac) {
+                var self = this,
+                    flag = false;
+                if (self.isSelectedMacs.indexOf(mac) != -1) {
+                    flag = true;
+                }
+                return flag;
             },
             getDevicesByGroup: function (macs) {
                 var self = this, selectMacs = [];
                 $.each(self.deviceList, function(i, item) {
-                    if (macs.indexOf(item.mac) > -1) {
+                    if (macs.indexOf(item.mac) != -1) {
                         selectMacs.push(item.mac);
                     }
                 });

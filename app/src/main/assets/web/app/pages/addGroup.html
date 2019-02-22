@@ -11,15 +11,17 @@
             </div>
             <div class="selected-radio">
                 <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
-                <div><span @click="selectAllDevice($event)" class="span-radio"
-                           :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
+                <div @click="selectAllDevice($event)" class="select-all-radio flex flex-ac flex-jce">
+                    <span class="span-radio"
+                           :class="{'active': (selected == total && selected != 0)}"><span></span></span>
+                </div>
             </div>
             <div class="content-info flex-wrapper" :id="addGroupId">
                 <div class="input-info">
                     <i class="icon-search"></i>
                     <input v-model="searchName" type="search" class="form-control" :placeholder="$t('search')">
                 </div>
-                <div v-for="item in list" class="item">
+                <div  @click="selectMac(item.mac)" v-for="item in list" class="item">
                     <div class="item-icon-circle">
                         <i class="icon-light"></i>
                     </div>
@@ -30,8 +32,7 @@
                         <span :data-value="item.mac" class="desc" v-show="!showDesc(item.position)">{{item.version}}</span>
                     </div>
                     <div class="item-power-small">
-                        <span :data-value="item.mac" @click="selectDevice($event)"
-                              class="span-radio"><span></span></span>
+                        <span :data-value="item.mac" class="span-radio" :class="{'active': isSelected(item.mac)}"><span></span></span>
                     </div>
                 </div>
             </div>
