@@ -6,8 +6,9 @@
             <div class="register-wraaper add-device">
                 <div class="content">
                     <div class="position-relative">
+                        {{currentWifi}}
                         <span class="add-wifi-desc">{{$t('currentWIFI')}}:</span>
-                        <input disabled :value="currentWifi" type="text" class="form-control add-wifi" >
+                        <input v-model="wifiName" type="text" class="form-control add-wifi" >
                     </div>
                     <div class="position-relative">
                         <span class="add-wifi-desc">Mesh ID:</span>

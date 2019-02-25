@@ -83,7 +83,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                     };
                     //self.getMeshId();
                     self.configWifi();
-                    return self.wifiName;
+//                    return self.wifiName;
                 }
 
             },
