@@ -664,6 +664,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                 JSPLUMB_INSTANCE.deleteEveryEndpoint();
                 $("#topocontent").find("div.elebox").remove();
                 this.stopBleScan();
+                this.$store.commit("setShowLoading", true);
                 this.reload();
             },
             resetBtn: function() {

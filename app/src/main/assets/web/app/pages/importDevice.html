@@ -18,7 +18,7 @@
                 <i class="icon-search"></i>
                 <input v-model="searchName" type="search" class="form-control" :placeholder="$t('searchMAC')">
             </div>
-            <div class="content-info flex-wrapper no-padding-bottom" :id="importId">
+            <div class="content-info flex-wrapper" :id="importId">
                 <div class="overflow-touch">
                     <div @click="selectDevice(item.mac)" v-for="item in importList" class="item">
                         <div :data-mac="item.mac" class="item-icon-circle">

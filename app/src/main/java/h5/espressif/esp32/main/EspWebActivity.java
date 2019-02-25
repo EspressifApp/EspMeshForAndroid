@@ -58,7 +58,6 @@ import libs.espressif.ble.EspBleUtils;
 import libs.espressif.ble.ScanListener;
 import libs.espressif.log.EspLog;
 import libs.espressif.net.NetUtil;
-import libs.espressif.utils.DataUtil;
 import libs.espressif.utils.TextUtils;
 
 @SuppressLint("SetJavaScriptEnabled")

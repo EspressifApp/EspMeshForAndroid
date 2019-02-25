@@ -116,7 +116,7 @@ define(["vue", "MINT", "txt!../../pages/eventInfo.html", "../js/addEvent"],
                     res = JSON.parse(res);
                     var result = res.result;
                     var tag = res.tag;
-                    if (result.status_code == 0) {
+                    if (!self._isEmpty(result.status_code) && result.status_code == 0) {
                         $.each(self.eventList, function(i, item) {
                             if (item.name == tag.name) {
                                 self.eventList.splice(i, 1);
@@ -128,7 +128,8 @@ define(["vue", "MINT", "txt!../../pages/eventInfo.html", "../js/addEvent"],
                             self.hide();
                             $("#" + tag.mac).removeClass("active");
                         }
-                        espmesh.saveDeviceEventsPosition(mac, JSON.stringify(self.eventList), self.deviceEvent.position);
+                         espmesh.saveDeviceEventsPosition(JSON.stringify({"mac": tag.mac, "events": JSON.stringify(self.eventList),
+                                                "position": self.deviceEvent.position}));
                     }
                 }
                 MINT.Indicator.close();

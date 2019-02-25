@@ -74,18 +74,20 @@ define(["vue", "Util", "txt!../../pages/importDevice.html"], function(v, Util, i
             },
             getDevices: function() {
                 var self = this;
-                var list = self.$store.state.siteList, macs = [], deviceMacs = [];
+                var list = self.$store.state.siteList, macs = [], deviceMacs = [], bssids = [];
                 self.pairList = [];
                 self.scanDeviceList = self.$store.state.scanDeviceList;
                 $.each(self.scanDeviceList, function(i, item) {
                     macs.push(item.mac);
+                    bssids.push(item.bssid);
                 })
                 $.each(self.deviceList, function(i, item) {
                     deviceMacs.push(item.mac);
                 })
                 var staMac = Util.staMacForBleMacs(macs);
                 $.each(list, function(i, item) {
-                    if (staMac.indexOf(item.mac) == -1 && deviceMacs.indexOf(item.mac) == -1) {
+                    if (staMac.indexOf(item.mac) == -1 && deviceMacs.indexOf(item.mac) == -1 &&
+                        macs.indexOf(item.mac) == -1 && bssids.indexOf(item.mac) == -1) {
                         self.pairList.push(item);
                     }
                 });
