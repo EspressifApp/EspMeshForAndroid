@@ -217,7 +217,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
                     continue;
                 }
 
-                if (false) {
+                if (willRebootAfterOTA()) {
                     otaReboot();
                 }
                 mLog.d("Check over");

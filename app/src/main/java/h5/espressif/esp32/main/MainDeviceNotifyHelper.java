@@ -103,7 +103,7 @@ public class MainDeviceNotifyHelper {
                 try {
                     address = mTaskQueue.take();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    mLog.w("DeviceNotifyHelper task queue interrupted");
                     Thread.currentThread().interrupt();
                     break;
                 }

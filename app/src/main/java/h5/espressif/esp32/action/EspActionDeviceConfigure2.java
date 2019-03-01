@@ -14,11 +14,13 @@ import blufi.espressif.params.BlufiConfigureParams;
 import blufi.espressif.response.BlufiStatusResponse;
 import iot.espressif.esp32.action.device.EspActionDeviceConfigure;
 import iot.espressif.esp32.db.manager.EspDBManager;
+import iot.espressif.esp32.model.device.ble.MeshBlufiCallback;
+import iot.espressif.esp32.model.device.ble.MeshBlufiClient;
 
 public class EspActionDeviceConfigure2 implements IEspActionDeviceConfigure2 {
 
-    public EspBlufi doActionConfigureBlufi2(String deviceMac, int deviceVersion, BlufiConfigureParams params,
-                                            ProgressCallback callback) {
+    public MeshBlufiClient doActionConfigureBlufi2(String deviceMac, int deviceVersion, BlufiConfigureParams params,
+                                                   ProgressCallback callback) {
         EspActionDeviceConfigure actionConf = new EspActionDeviceConfigure();
 
         if (callback != null) {
@@ -39,7 +41,8 @@ public class EspActionDeviceConfigure2 implements IEspActionDeviceConfigure2 {
             callback.onUpdate(PROGRESS_START, CODE_PROGRESS_START, "Start configure");
         }
         AtomicBoolean suc = new AtomicBoolean(false);
-        EspBlufi blufi = actionConf.doActionConfigureBlufi(device, deviceVersion, params, new EspBlufiCallback(){
+        MeshBlufiClient blufi = actionConf.doActionConfigureBlufi(device, deviceVersion, params,
+                new MeshBlufiCallback(){
             @Override
             public void onGattConnectionChange(BluetoothGatt gatt, int status, boolean connected) {
                 super.onGattConnectionChange(gatt, status, connected);

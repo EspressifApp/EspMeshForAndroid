@@ -668,4 +668,24 @@ public class DeviceUtil {
             }
         }
     }
+
+    public static String getBleMacForStaMac(String staMac) {
+        long staMacValue = Long.parseLong(staMac, 16);
+        long bleMacValue = staMacValue + 2;
+        StringBuilder bleMac = new StringBuilder(Long.toHexString(bleMacValue).toLowerCase());
+        while (bleMac.length() < 12) {
+            bleMac.insert(0, "0");
+        }
+        return bleMac.toString();
+    }
+
+    public static String getStaMacForBleMac(String bleMac) {
+        long bleMacValue = Long.parseLong(bleMac, 16);
+        long staMacValue = bleMacValue - 2;
+        StringBuilder staMac = new StringBuilder(Long.toHexString(staMacValue).toLowerCase());
+        while (staMac.length() < 12) {
+            staMac.insert(0, "0");
+        }
+        return staMac.toString();
+    }
 }

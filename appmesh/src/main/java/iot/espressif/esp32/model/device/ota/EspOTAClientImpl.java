@@ -404,7 +404,9 @@ class EspOTAClientImpl extends EspOTAClient {
             }
 
             closeSocket();
-            otaReboot();
+            if (willRebootAfterOTA()) {
+                otaReboot();
+            }
             mLog.e("OTA RETURN 6");
         } // end runOta()
 

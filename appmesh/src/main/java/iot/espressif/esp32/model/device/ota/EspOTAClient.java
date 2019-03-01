@@ -47,6 +47,16 @@ public abstract class EspOTAClient {
 
     private OTACallback mOTACallback;
 
+    private boolean mWillReboot = false;
+
+    public void setRebootAfterOTA(boolean willReboot) {
+        mWillReboot = willReboot;
+    }
+
+    public boolean willRebootAfterOTA() {
+        return mWillReboot;
+    }
+
     public void setOTACallback(OTACallback OTACallback) {
         mOTACallback = OTACallback;
     }
@@ -108,6 +118,8 @@ public abstract class EspOTAClient {
 
         private String mBinUrl;
 
+        private boolean mReboot = false;
+
         public Builder(int otaType) {
             mOtaType = otaType;
         }
@@ -147,14 +159,21 @@ public abstract class EspOTAClient {
             return this;
         }
 
+        public Builder setRebootAfterOTA(boolean willReboot) {
+            mReboot = willReboot;
+            return this;
+        }
+
         public EspOTAClient build() {
+            EspOTAClient client;
             switch (mOtaType) {
                 case OTA_TYPE_PIECES: {
                     if (mDevices == null || mDevices.isEmpty()) {
                         throw new IllegalArgumentException("Devices can't be null or empty");
                     }
 
-                    return new EspOTAClientImpl(mBin, mDevices, mCallback);
+                    client = new EspOTAClientImpl(mBin, mDevices, mCallback);
+                    break;
                 }
                 case OTA_TYPE_HTTP_POST: {
                     if (mProtocol == null) {
@@ -176,7 +195,8 @@ public abstract class EspOTAClient {
                         throw new IllegalArgumentException("Require to set devices or deviceMacs");
                     }
 
-                    return new EspOTAClientImpl2(mBin, mProtocol, mHostAddress, macs, mCallback);
+                    client = new EspOTAClientImpl2(mBin, mProtocol, mHostAddress, macs, mCallback);
+                    break;
                 }
                 case OTA_TYPE_DOWNLOAD: {
                     if (mBinUrl == null) {
@@ -206,11 +226,15 @@ public abstract class EspOTAClient {
                     if (macs == null) {
                         throw new IllegalArgumentException("Require to set devices or deviceMacs");
                     }
-                    return new EspOTAClientImpl2(mBinUrl, mProtocol, mHostAddress, macs, mCallback);
+                    client = new EspOTAClientImpl2(mBinUrl, mProtocol, mHostAddress, macs, mCallback);
+                    break;
                 }
                 default:
                     throw new IllegalArgumentException("Unsupported ota type");
             }
+
+            client.setRebootAfterOTA(mReboot);
+            return client;
         }
     }
 }

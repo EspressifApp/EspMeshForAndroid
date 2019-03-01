@@ -15,21 +15,23 @@ import blufi.espressif.BlufiClient;
 import blufi.espressif.params.BlufiConfigureParams;
 import blufi.espressif.response.BlufiStatusResponse;
 import iot.espressif.esp32.app.EspApplication;
+import iot.espressif.esp32.model.device.ble.MeshBlufiCallback;
+import iot.espressif.esp32.model.device.ble.MeshBlufiClient;
 import libs.espressif.app.SdkUtil;
 import libs.espressif.log.EspLog;
 
 public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
     private final EspLog mLog = new EspLog(getClass());
 
-    public EspBlufi doActionConfigureBlufi(BluetoothDevice device, BlufiConfigureParams params,
-                                           EspBlufiCallback userCallback) {
+    public MeshBlufiClient doActionConfigureBlufi(BluetoothDevice device, BlufiConfigureParams params,
+                                                  MeshBlufiCallback userCallback) {
         return doActionConfigureBlufi(device, -1, params, userCallback);
     }
 
-    public EspBlufi doActionConfigureBlufi(BluetoothDevice device, int meshVersion, BlufiConfigureParams params,
-                                           EspBlufiCallback userCallback) {
-        EspBlufi blufi = new EspBlufi();
-        blufi.meshVersion = meshVersion;
+    public MeshBlufiClient doActionConfigureBlufi(BluetoothDevice device, int meshVersion, BlufiConfigureParams params,
+                                           MeshBlufiCallback userCallback) {
+        MeshBlufiClient blufi = new MeshBlufiClient();
+        blufi.setMeshVersion(meshVersion);
 
         Context context = EspApplication.getInstance().getApplicationContext();
         BleCallback bleCallback = new BleCallback(blufi, params, userCallback);
@@ -39,19 +41,19 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
         } else {
             gatt = device.connectGatt(context, false, bleCallback);
         }
-        blufi.bluetoothGatt = gatt;
+        blufi.setBluetoothGatt(gatt);
 
         return blufi;
     }
 
     private class BleCallback extends BluetoothGattCallback {
-        private EspBlufi mBlufi;
+        private MeshBlufiClient mBlufi;
 
         private BlufiConfigureParams mConfParams;
         private BlufiCallbackImpl mActionCallback;
-        private EspBlufiCallback mUserCallback;
+        private MeshBlufiCallback mUserCallback;
 
-        BleCallback(EspBlufi blufi, BlufiConfigureParams params, EspBlufiCallback userCallback) {
+        BleCallback(MeshBlufiClient blufi, BlufiConfigureParams params, MeshBlufiCallback userCallback) {
             mBlufi = blufi;
             mConfParams = params;
             mActionCallback = new BlufiCallbackImpl();
@@ -70,13 +72,13 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
                     case BluetoothProfile.STATE_DISCONNECTED:
                         mUserCallback.onGattConnectionChange(gatt, BlufiCallback.STATUS_SUCCESS, false);
                         gatt.close();
-                        mActionCallback.onGattClose(mBlufi.blufiClient);
+                        mActionCallback.onGattClose(mBlufi.getBlufiClient());
                         break;
                 }
             } else {
                 mUserCallback.onGattConnectionChange(gatt, status, false);
                 gatt.close();
-                mActionCallback.onGattClose(mBlufi.blufiClient);
+                mActionCallback.onGattClose(mBlufi.getBlufiClient());
             }
         }
 
@@ -112,8 +114,9 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
                 mUserCallback.onGattCharacteristicDiscover(gatt, BlufiCallback.STATUS_SUCCESS,
                         UUID_NOTIFICATION_CHARACTERISTIC);
 
-                mBlufi.blufiClient = new BlufiClient(gatt, writeCharact, notifyCharact, mActionCallback);
-                mBlufi.blufiClient.setDeviceVersion(mBlufi.meshVersion);
+                BlufiClient blufiClient = new BlufiClient(gatt, writeCharact, notifyCharact, mActionCallback);
+                blufiClient.setDeviceVersion(mBlufi.getMeshVersion());
+                mBlufi.setBlufiClient(blufiClient);
 
                 gatt.setCharacteristicNotification(notifyCharact, true);
 
@@ -122,10 +125,10 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
                     boolean requestMtu = gatt.requestMtu(DEFAULT_MTU_LENGTH);
                     if (!requestMtu) {
                         mLog.w("Request mtu failed");
-                        mBlufi.blufiClient.negotiateSecurity();
+                        mBlufi.getBlufiClient().negotiateSecurity();
                     }
                 } else {
-                    mBlufi.blufiClient.negotiateSecurity();
+                    mBlufi.getBlufiClient().negotiateSecurity();
                 }
 
             } else {
@@ -137,20 +140,20 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
             mLog.d(String.format(Locale.ENGLISH, "onMtuChanged status=%d, mtu=%d", status, mtu));
             mUserCallback.onMtuChanged(gatt, status);
-            mBlufi.blufiClient.negotiateSecurity();
+            mBlufi.getBlufiClient().negotiateSecurity();
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             mLog.d("onCharacteristicChanged");
-            mBlufi.blufiClient.onCharacteristicChanged(gatt, characteristic);
+            mBlufi.getBlufiClient().onCharacteristicChanged(gatt, characteristic);
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             mLog.d(String.format(Locale.ENGLISH, "onCharacteristicWrite status=%d", status));
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                mBlufi.blufiClient.onCharacteristicWrite(gatt, characteristic, status);
+                mBlufi.getBlufiClient().onCharacteristicWrite(gatt, characteristic, status);
             } else {
                 gatt.disconnect();
             }
@@ -172,7 +175,7 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
             @Override
             public void onError(BlufiClient client, int errCode) {
                 mLog.w(String.format(Locale.ENGLISH, "onError errCode=%d", errCode));
-                mBlufi.bluetoothGatt.disconnect();
+                mBlufi.getBluetoothGatt().disconnect();
 
                 mUserCallback.onError(client, errCode);
             }
@@ -181,9 +184,9 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
             public void onNegotiateSecurityResult(BlufiClient client, int status) {
                 mLog.d(String.format(Locale.ENGLISH, "onNegotiateSecurityResult status=%d", status));
                 if (status == STATUS_SUCCESS) {
-                    mBlufi.blufiClient.configure(mConfParams);
+                    mBlufi.getBlufiClient().configure(mConfParams);
                 } else {
-                    mBlufi.bluetoothGatt.disconnect();
+                    mBlufi.getBluetoothGatt().disconnect();
                 }
 
                 mUserCallback.onNegotiateSecurityResult(client, status);
@@ -193,7 +196,7 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
             public void onConfigureResult(BlufiClient client, int status) {
                 mLog.d(String.format(Locale.ENGLISH, "onConfigureResult status=%d", status));
                 if (status != STATUS_SUCCESS) {
-                    mBlufi.bluetoothGatt.disconnect();
+                    mBlufi.getBluetoothGatt().disconnect();
                 }
 
                 mUserCallback.onConfigureResult(client, status);

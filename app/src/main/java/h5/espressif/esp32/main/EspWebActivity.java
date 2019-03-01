@@ -50,10 +50,10 @@ import h5.espressif.esp32.model.web.JSApi;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+import iot.espressif.esp32.model.device.ble.MeshBleDevice;
 import iot.espressif.esp32.model.user.EspUser;
 import libs.espressif.app.AppUtil;
 import libs.espressif.app.PermissionHelper;
-import libs.espressif.ble.BleAdvData;
 import libs.espressif.ble.EspBleUtils;
 import libs.espressif.ble.ScanListener;
 import libs.espressif.log.EspLog;
@@ -70,7 +70,6 @@ public class EspWebActivity extends AppCompatActivity {
 
     private static final int BLE_NOTIFY_INTERVAL = 1500;
 
-    private static final int BLE_MANUFACTURER_ADV_TYPE = 0xff;
     private static final int ESP_MANUFACTURER_ID = 0x02E5;
 
     private final EspLog mLog = new EspLog(getClass());
@@ -440,13 +439,17 @@ public class EspWebActivity extends AppCompatActivity {
 
             synchronized (mBleSet) {
                 BleInfo info = new BleInfo();
-                info.manufacturerId = ESP_MANUFACTURER_ID;
                 info.rssi = rssi;
                 info.scanRecord = scanRecord;
                 mBleInfoMap.put(device, info);
                 mBleSet.add(device);
             }
         }
+    }
+
+    private class BleInfo {
+        int rssi;
+        byte[] scanRecord;
     }
 
     private class BleNotifyThread extends Thread {
@@ -457,7 +460,7 @@ public class EspWebActivity extends AppCompatActivity {
                 try {
                     Thread.sleep(BLE_NOTIFY_INTERVAL);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    mLog.w("Web BLE notify thread interrupted");
                     break;
                 }
 
@@ -476,16 +479,16 @@ public class EspWebActivity extends AppCompatActivity {
                                     address.append(str.toLowerCase());
                                 }
                                 BleInfo info = mBleInfoMap.get(ble);
-                                info.parseMesh();
+                                MeshBleDevice meshBle = new MeshBleDevice(ble, info.rssi, info.scanRecord);
                                 String mac = address.toString();
                                 JSONObject bleJSON = new JSONObject()
                                         .put("mac", mac)
                                         .put("name", ble.getName() == null ? JSONObject.NULL : ble.getName())
-                                        .put("rssi", info.rssi)
-                                        .put("version", info.version)
-                                        .put("bssid", info.staBssid == null ? mac : info.staBssid)
-                                        .put("tid", info.tid)
-                                        .put("only_beacon", info.onlyBeacon);
+                                        .put("rssi", meshBle.getRssi())
+                                        .put("version", meshBle.getMeshVersion())
+                                        .put("bssid", meshBle.getStaBssid() == null ? mac : meshBle.getStaBssid())
+                                        .put("tid", meshBle.getTid())
+                                        .put("only_beacon", meshBle.isOnlyBeacon());
                                 array.put(bleJSON);
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -505,67 +508,4 @@ public class EspWebActivity extends AppCompatActivity {
         }
     }
 
-    private class BleInfo {
-        int manufacturerId;
-
-        int rssi;
-        byte[] scanRecord;
-        String staBssid;
-        int version;
-        boolean onlyBeacon;
-        int tid;
-
-        void initVars() {
-            version = -1;
-            onlyBeacon = false;
-            staBssid = null;
-            tid = -1;
-        }
-
-        void parseMesh() {
-            try {
-                _parseMeshVersion();
-            } catch (Exception e) {
-                e.printStackTrace();
-                initVars();
-            }
-        }
-
-        void _parseMeshVersion() {
-            List<BleAdvData> dataList = EspBleUtils.resolveScanRecord(scanRecord);
-            for (BleAdvData advData : dataList) {
-                // Check manufacturer adv type(0xff)
-                if (advData.getType() != BLE_MANUFACTURER_ADV_TYPE) {
-                    continue;
-                }
-
-                byte[] manuData = advData.getData();
-                // Check data length
-                if (manuData.length < 14) {
-                    continue;
-                }
-                // Check manufacturer id
-                int advManuId = (manuData[0] & 0xff) | ((manuData[1] & 0xff) << 8);
-                if (advManuId != manufacturerId) {
-                    mLog.d(String.format("BLE ADV ManufacturerID = %04x", advManuId));
-//                    continue;
-                }
-                // Check (MDF)
-                if ((manuData[2] & 0xff) != 0x4d
-                        || (manuData[3] & 0xff) != 0x44
-                        || (manuData[4] & 0xff) != 0x46) {
-                    continue;
-                }
-
-                version = manuData[5] & 3;
-                onlyBeacon = ((manuData[5] >> 4) & 1) == 1;
-                staBssid = String.format("%02x%02x%02x%02x%02x%02x",
-                        manuData[6], manuData[7], manuData[8], manuData[9], manuData[10], manuData[11]);
-                tid = (manuData[12] & 0xff) | ((manuData[13] & 0xff) << 8);
-                return;
-            }
-
-            initVars();
-        }
-    }
 }

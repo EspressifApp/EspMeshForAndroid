@@ -53,7 +53,10 @@ public class EspUdpServer {
                 DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
                 try {
                     mSocket.receive(packet);
-                } catch (IOException | NullPointerException e) {
+                } catch (IOException e) {
+                    System.out.println("UDP server ioe");
+                    break;
+                } catch (NullPointerException e) {
                     e.printStackTrace();
                     break;
                 }

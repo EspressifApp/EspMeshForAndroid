@@ -51,7 +51,6 @@ import iot.espressif.esp32.action.common.EspActionDownloadFromIotEsp;
 import iot.espressif.esp32.action.device.EspActionDeviceInfo;
 import iot.espressif.esp32.action.device.EspActionDeviceOTA;
 import iot.espressif.esp32.action.device.IEspActionDevice;
-import iot.espressif.esp32.action.device.IEspActionDeviceConfigure.EspBlufi;
 import iot.espressif.esp32.action.device.IEspActionDeviceOTA;
 import iot.espressif.esp32.action.device.IEspActionDeviceReboot;
 import iot.espressif.esp32.action.user.EspActionUserLoadLastLogged;
@@ -69,6 +68,7 @@ import iot.espressif.esp32.db.model.OperationDB;
 import iot.espressif.esp32.db.model.SceneDB;
 import iot.espressif.esp32.db.model.SnifferDB;
 import iot.espressif.esp32.model.device.IEspDevice;
+import iot.espressif.esp32.model.device.ble.MeshBlufiClient;
 import iot.espressif.esp32.model.device.ota.EspOTAClient;
 import iot.espressif.esp32.model.device.other.Sniffer;
 import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
@@ -107,7 +107,7 @@ class AppApiForJSImpl implements AppApiForJSConstants {
     private Disposable mSnifferTask;
 
     private final Object mBlufiLock = new Object();
-    private EspBlufi mBlufi;
+    private MeshBlufiClient mBlufi;
 
     private final Object mOtaLock = new Object();
     private Map<String, EspOTAClient> mOtaClientMap = new HashMap<>();
@@ -144,7 +144,7 @@ class AppApiForJSImpl implements AppApiForJSConstants {
                         e.printStackTrace();
                     }
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    mLog.w("JS task queue interrupted");
                     break;
                 }
             }
