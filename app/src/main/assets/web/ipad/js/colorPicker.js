@@ -146,7 +146,7 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
 
                 Raphael(function () {
                     var cp = Raphael.colorwheel(left, top, INIT_SIZE, hsbColor,
-                        document.getElementById(id), 100, 60, flag),
+                        document.getElementById(id), 130, 60, flag),
                         clr = hsbColor, h = 0, s = 0, l = 0, t = 0, b = 0, isChange = false;;
                     var onchange = function (item) {
                         return function (clr) {
