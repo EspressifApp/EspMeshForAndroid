@@ -87,7 +87,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/timingList.html", "./timingDevic
             },
             getList: function() {
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(this.macs) +
-                    ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST +
+                    ',"'+DEVICE_IP+'": "'+this.$store.state.deviceIp+'","' + MESH_REQUEST +
                     '": "' + GTE_CALENDAR + '","callback": "getListResult"}';
                 MINT.Indicator.open();
                 espmesh.requestDevicesMulticastAsync(data);

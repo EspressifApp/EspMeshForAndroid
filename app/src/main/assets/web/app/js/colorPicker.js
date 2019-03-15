@@ -18,11 +18,15 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
         },
         data: function(){
             return {
-                initSize: 260,
+                initSize: 240,
                 showColor: false,
                 pickerShow: true,
                 device: this.$store.state.deviceInfo,
-                deviceList: this.$store.state.deviceList
+                deviceList: this.$store.state.deviceList,
+                borderColor: "",
+                pickerText: this.$t('warmColdSwitch'),
+                isWhite: false,
+                currentL: 0,
             }
         },
         methods:{
@@ -30,6 +34,7 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
                 var self = this,
                     hueValue = 0, saturation = 100, luminance = 100, temperature = 0, brightness = 10;
                 self.deviceList = self.$store.state.deviceList;
+                self.pickerText = self.$t('warmColdSwitch');
                 if (self.colorType == RECENT_TYPE_DEVICE) {
                     self.device = self.$store.state.deviceInfo;
                     $.each(self.device.characteristics, function(i, item) {
@@ -47,7 +52,11 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
                         })
 
                 };
-                var hsbColor = "hsb("+hueValue / 360+","+saturation / 100+","+luminance / 100+")";
+                var h = hueValue / 360,
+                    s = saturation / 100,
+                    b = luminance / 100,
+                    hsbColor = "hsb("+h+","+s+","+b+")";
+                self.currentL = b;
                 self.initColor(hsbColor, [temperature, brightness]);
                 setTimeout(function() {
                     self.showColor = true;
@@ -62,13 +71,18 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
             initColor: function (hsbColor, colors) {
                 var doc = $(document),
                     width = doc.width();
-                this._initColorPicker(hsbColor, this.colorId,(width - this.initSize) / 2, 80, true);
-                this._initColorPicker(colors, this.temperatureId,(width - this.initSize) / 2, 80, false);
+                this._initColorPicker(hsbColor, this.colorId,(width - this.initSize) / 2, 120, true);
+                this._initColorPicker(colors, this.temperatureId,(width - this.initSize) / 2, 120, false);
             },
             pickerChange: function () {
                 this.pickerShow = !this.pickerShow;
+                if (this.pickerShow) {
+                    this.pickerText = this.$t('warmColdSwitch');
+                } else {
+                    this.pickerText = this.$t('colorSwitch');
+                }
             },
-            editDevice: function(hueValue, saturation, luminance) {
+            editDevice: function(hueValue, saturation, luminance, flag) {
                 var self = this, meshs = [], changeList = [],
                     rgb = Raphael.getRGB("hsb("+hueValue+","+saturation+
                         ","+luminance+")").hex,
@@ -76,6 +90,7 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
                 hueValue = Math.round(parseFloat(hueValue) * 360);
                 saturation = Math.round(parseFloat(saturation) * 100);
                 luminance = Math.round(parseFloat(luminance) * 100);
+                self.isWhite = flag;
                 if (luminance != 0) {
                     meshs.push({cid: HUE_CID, value: hueValue});
                     meshs.push({cid: SATURATION_CID, value: saturation});
@@ -157,12 +172,19 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
                     window.onBackPressed = self.hide;
                 });
             },
+            setBorderColor: function(h, s, b, p) {
+                var rgb = Raphael.getRGB("hsb("+h+","+s+","+b+")");
+                if (p < 0 || p >= 1) {
+                    p = 1;
+                }
+                this.borderColor = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", " + p + ")";
+            },
             _initColorPicker: function (hsbColor, id, left, top, flag) {
                 var self = this;
                 $("#" + id).empty();
                 Raphael(function () {
                     var cp = Raphael.colorwheel(left, top, self.initSize, hsbColor,
-                        document.getElementById(id), 100, 60, flag),
+                        document.getElementById(id), 130, 60, flag),
                         clr = hsbColor, h = 0, s = 0, l = 0, t = 0, b = 0, isChange = false;;
                     var onchange = function (item) {
                         return function (clr) {
@@ -174,13 +196,19 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
                             t = cp.getHSTH();
                             b = cp.getB();
                             isChange = true;
+
                         };
                     };
                     cp.onchange = onchange(cp);
                     $(document).on("touchend", "#"+id, function () {
                         if (isChange) {
                             if (self.pickerShow) {
-                                self.editDevice(h, s, l);
+                                if (self.isWhite && self.currentL != b) {
+                                    self.editDevice(0, 0, l, true);
+                                } else {
+                                    self.editDevice(h, s, l, false);
+                                }
+                                self.currentL = b;
                             } else {
                                 self.editTemperature(t, b);
                             }

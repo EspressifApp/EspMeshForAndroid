@@ -47,10 +47,12 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                 window.onLoadDeviceTable = self.onLoadDeviceTable;
                 window.onLoadTableDevices = self.onLoadTableDevices;
                 self.selectAllShow = true;
-                self.initTableScroll();
-                self.getTable();
+                MINT.Indicator.open();
                 setTimeout(function(){
+                    self.initTableScroll();
+                    self.getTable();
                     self.initDeviceScroll();
+                    MINT.Indicator.close();
                 }, 500);
                 self.tableFlag = true;
             },
@@ -195,7 +197,6 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                 espmesh.loadTableDevices();
             },
             onLoadDeviceTable: function(res){
-                console.log(res);
                 var self = this;
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
@@ -213,7 +214,6 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
 
             },
             onLoadTableDevices: function(res) {
-                console.log(res);
                 var self = this;
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
@@ -349,7 +349,6 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                 });
                 ISCROLL_DEVICE.on("scrollEnd", function() {
                     self.distanceY = ISCROLL_DEVICE.y;
-                    console.log(self.distanceY);
                 })
             },
             initTableScroll: function () {
@@ -430,7 +429,6 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                     touchstart: function(e) {
                         var that = this;
                         selectTag = $(this).attr("data-mac");
-                        console.log(selectTag);
                         flag = true;
                         if (!docWrapper.hasClass("active") && !Util._isEmpty(selectTag)) {
                             TIMER_ID = setTimeout(function(){

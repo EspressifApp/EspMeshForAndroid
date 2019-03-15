@@ -45,6 +45,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 otaMacs: [],
                 commandColorMacs: [],
                 operateType: RECENT_TYPE_GROUP,
+                operateCurrent: 0,
                 deviceList: [],
                 groupMacs: [],
                 groupDevices: [],
@@ -89,15 +90,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
             show: function() {
                 var self = this;
                 self.onBackGroupColor();
-                $("#light-group-wrapper").removeClass("hidden").siblings().addClass("hidden");
-                $("#light-wrapper-li").addClass("active").siblings().removeClass("active");
                 self.deviceList = self.$store.state.deviceList;
                 self.groupList = self.$store.state.groupList;
                 self.getGroupDevices();
                 self.isSelectedMacs = [];
-                setTimeout(function() {
-                    self.$refs.color.show();
-                }, 1500);
                 $("#" +self.colorSelectedAllId).addClass("active");
                 self.isShowSet();
                 $(".slider-input").slider('destroy');
@@ -148,9 +144,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                     self.attrList = [];
                     self.getAttrList();
                     self.showSet = true;
+                    self.operateCurrent = 3;
                     self.showColor = false;
                 } else {
                     self.showSet = false;
+                    self.operateCurrent = 0;
                     self.showColor = true;
                 }
             },
@@ -484,11 +482,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
             },
             operate: function (id, e) {
                 this.groupMacs = this.getMacs();
-                if (id == "color-group-wrapper") {
+                if (id == 1) {
                     this.$refs.color.show();
                 }
-                $(e.currentTarget).addClass("active").siblings().removeClass("active");
-                $("#" +id).removeClass("hidden").siblings().addClass("hidden");
+                this.operateCurrent = id;
             },
             getColor: function (h, s, b) {
                 return Raphael.getRGB("hsb(" + h / 360 + "," + s / 100 + "," + b / 100 + ")").hex;

@@ -48,6 +48,8 @@ define(function(){
         "groupAll": "全部",
         "scanDevice": "扫描设备",
         "deviceList": "设备列表",
+        "warmColdSwitch": "切换冷暖",
+        "colorSwitch": "切换彩光",
         "next": "下一步",
         "nextStep": "下一个",
         "light": "灯",

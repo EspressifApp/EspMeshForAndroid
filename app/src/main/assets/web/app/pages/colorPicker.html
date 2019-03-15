@@ -1,9 +1,12 @@
 <div v-show="showColor">
-    <div @click="pickerChange" :class="{'active': pickerShow}" class="picker-change">
+    <div @click="pickerChange" :class="{'active': !pickerShow}" class="picker-change">
         <i class="icon-loop back"></i>
+        <div class="picker-change-text">{{pickerText}}</div>
+    </div>
+    <div @click="editDevice(0, 0, currentL, true)" v-show="pickerShow" class="white-color  flex flex-ac flex-jcc">
+        <span v-show="isWhite" class="icon-ok-circled"></span>
     </div>
     <div v-show="pickerShow" :id="colorId" class="color-picker">
-
     </div>
     <div v-show="!pickerShow" :id="temperatureId" class="temperature-picker">
     </div>

@@ -99,7 +99,7 @@ define(["vue","MINT", "Util", "txt!../../pages/scan.html", "../js/reports", "../
                 },
                 getScan: function() {
                     var data = '{"' + MESH_MAC + '": ' + JSON.stringify(this.getRootMac()) +
-                        ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST +
+                        ',"'+DEVICE_IP+'": "'+this.$store.state.deviceIp+'","' + MESH_REQUEST +
                         '": "' + GET_SNIFFER + '", "callback": "onGetScan"}';
                     espmesh.requestDeviceAsync(data);
 

@@ -8,6 +8,10 @@
                 </h4>
             </div>
             <div class="content-info" id="content-info">
+                <div class="on-off flex">
+                    <span class="flex-1" :class="{'active': !getStatus()}" @click="close(0)">OFF</span>
+                    <span class="flex-1" :class="{'active': getStatus()}" @click="close(1)">ON</span>
+                </div>
                 <div class="color-wrapper">
                     <v-color :colorId="colorId" :temperatureId="temperatureId" :colorType="operateType"
                              :macs="deviceMacs" v-on:colorShow="hide" ref="color"></v-color>

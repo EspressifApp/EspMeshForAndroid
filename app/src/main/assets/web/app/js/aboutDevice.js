@@ -87,6 +87,5 @@ define(["vue","MINT", "Util", "txt!../../pages/aboutDevice.html" ],
             }
 
         });
-
         return AboutDevice;
     });

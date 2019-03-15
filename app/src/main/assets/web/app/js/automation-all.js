@@ -188,7 +188,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
                 },
                 delEvent: function (parentMac) {
                     var data = '{"' + MESH_MAC + '": "' + parentMac +
-                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
+                        '","'+DEVICE_IP+'": "'+this.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
                         '"events":' + JSON.stringify(this.eventNames) + '}';
                     espmesh.requestDeviceAsync(data);
 

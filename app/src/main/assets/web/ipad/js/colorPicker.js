@@ -116,7 +116,7 @@ define(["vue","MINT", "txt!../../pages/colorPicker.html"], function(v, MINT, col
                 meshs.push({cid: TEMPERATURE_CID, value: temperature});
                 meshs.push({cid: BRIGHTNESS_CID, value: brightness});
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
-                    ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
+                    ',"'+DEVICE_IP+'": "'+this.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                     '"characteristics":' + JSON.stringify(meshs) + '}';
                 espmesh.addQueueTask(JSON.stringify({"method":"requestDevicesMulticastAsync","argument": data}));
                 $.each(this.deviceList, function(i, item){

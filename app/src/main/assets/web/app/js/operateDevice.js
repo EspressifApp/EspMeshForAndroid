@@ -1,5 +1,5 @@
-define(["vue","MINT", "txt!../../pages/operateDevice.html", "../js/colorPicker" ],
-    function(v, MINT, operateDevice, colorPicker) {
+define(["vue","MINT", "Util", "txt!../../pages/operateDevice.html", "../js/colorPicker" ],
+    function(v, MINT, Util, operateDevice, colorPicker) {
 
     var OperateDevice = v.extend({
 
@@ -40,7 +40,54 @@ define(["vue","MINT", "txt!../../pages/operateDevice.html", "../js/colorPicker" 
                 this.addFlag = false;
                 this.$store.commit("setShowScanBle", true);
                 this.$emit("operateShow");
-            }
+            },
+            getStatus: function() {
+                var self = this, status = 0;
+                if (!Util._isEmpty(self.device.characteristics)) {
+                    var characteristics = self.device.characteristics;
+                    $.each(characteristics, function(i, item) {
+                        if (item.cid == STATUS_CID) {
+                            status = item.value;
+                        }
+                    });
+                }
+                return (status == STATUS_ON ? true : false);
+            },
+            close: function (status) {
+                var self = this, meshs = [], deviceStatus = 0, position = 0,
+                    deviceList = this.$store.state.deviceList,
+                    mac = self.device.mac;
+                $.each(deviceList, function(i, item){
+                    if (item.mac == mac) {
+                        deviceList.splice(i, 1);
+                        position = i;
+                        self.device = item;
+                        return false;
+                    }
+                });
+                var characteristics = [];
+                $.each(self.device.characteristics, function(i, item) {
+                    if (item.cid == STATUS_CID) {
+                        deviceStatus = item.value;
+                        item.value = parseInt(status);
+                    }
+                    characteristics.push(item);
+                });
+                if (!deviceStatus == status) {
+                    meshs.push({cid: STATUS_CID, value: parseInt(status)});
+                    var data = '{"' + MESH_MAC + '": "' + mac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
+                        '"characteristics":' + JSON.stringify(meshs) + '}';
+
+                    self.device.characteristics = characteristics;
+                    deviceList.splice(position, 0, self.device);
+                    espmesh.requestDeviceAsync(data);
+                    self.$store.commit("setList", deviceList);
+                } else {
+                    deviceList.splice(position, 0, self.device);
+                    self.$store.commit("setList", deviceList);
+                }
+            },
         },
         components: {
             "v-color": colorPicker

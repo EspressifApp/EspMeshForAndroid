@@ -98,14 +98,14 @@
             });
             t.cursorhsb = r.set();
             var h = size20 * 2 + 2;
-            t.cursorhsb.push(r.rect(size2 - h / fi / 2, padding - 1, h / fi, h, 3 * size / 200).attr({
+            t.cursorhsb.push(r.rect(size2 - h / fi / 2, padding - 1, h / fi, h, 3 * size / 200 + 4.1).attr({
                 stroke: "#000",
-                opacity: .5,
+                opacity: .3,
                 "stroke-width": w3
             }));
-            t.cursorhsb.push(t.cursorhsb[0].clone().attr({
+            t.cursorhsb.push(r.rect(size2 - h / fi / 2, padding - 1, h / fi, h, 3 * size / 200 + 4.1).attr({
                 stroke: "#fff",
-                opacity: 1,
+                opacity: .9,
                 "stroke-width": w1
             }));
             t.ring = r.path(["M", size2, padding, "A", R, R, 0, 1, 1, size2 - 1, padding, "l1,0M", size2, padding + size20 * 2, "A", R2, R2, 0, 1, 1, size2 - 1, padding + size20 * 2, "l1,0"]).attr({
@@ -115,18 +115,18 @@
             });
 
             // rect drawing
-            t.main = r.rect(padding + h / fi / 2, size + padding * 2 + rectNum, size - padding * 2 - h / fi, h - padding * 2).attr({
+            t.main = r.rect(padding + h / fi / 2, size + padding * 2 + 90, size - padding * 2 - h / fi, h - padding * 2 - 4, 3 * size / 200 + 4.1).attr({
                 stroke: "#fff",
                 fill: "180-#fff-#000"
             });
 
             t.cursor = r.set();
-            t.cursor.push(r.rect(size - padding - h / fi, size + padding + rectNum, ~~(h / fi), h, w3).attr({
+            t.cursor.push(r.rect(size - padding - h / fi, size + padding + 90, ~~(h / fi), h - 4, w3 + 4.1).attr({
                 stroke: "#000",
                 opacity: .5,
                 "stroke-width": w3
             }));
-            t.cursor.push(t.cursor[0].clone().attr({
+            t.cursor.push(r.rect(size - padding - h / fi, size + padding + 90, ~~(h / fi), h - 4, w3 + 4.1).attr({
                 stroke: "#fff",
                 opacity: 1,
                 "stroke-width": w1
@@ -221,6 +221,9 @@
         x > this.maxx && (x = this.maxx);
         this.cursor.attr({x: x - this.bwidth});
         this.B = (x - this.minx) / (this.maxx - this.minx);
+        if (this.B <= 0.05) {
+            this.B = 0.05;
+        }
         this.onchange && this.onchange(this.color());
     };
     proto.getHSTH = function () {

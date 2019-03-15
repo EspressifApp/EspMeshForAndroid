@@ -161,14 +161,15 @@ public class EspWebActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        mWebView.removeJavascriptInterface(AppApiForJS.NAME);
-        mWebView.destroy();
-        mWebForm.removeAllViews();
-
         mBleNotifyThread.interrupt();
         if (mRegisteredCast) {
             unregisterReceiver(mReceiver);
         }
+
+        mWebForm.removeAllViews();
+        mWebView.removeJavascriptInterface(AppApiForJS.NAME);
+        mWebView.destroy();
+
         release();
     }
 

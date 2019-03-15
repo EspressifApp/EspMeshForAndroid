@@ -58,14 +58,14 @@ public class EspActionDeviceOTA implements IEspActionDeviceOTA {
         result.setVersion(version);
         result.setFileName(name);
 
-        String binDir = getBinDirPath();
-        if (binDir == null) {
+        String binDirPath = getBinDirPath();
+        if (binDirPath == null) {
             mLog.w("download get bin dir path null");
             return null;
         }
-        File binDirFile = new File(binDir);
-        if (!binDirFile.exists()) {
-            if (!binDirFile.mkdirs()) {
+        File binDir = new File(binDirPath);
+        if (!binDir.exists()) {
+            if (!binDir.mkdirs()) {
                 mLog.w("download create dir failed");
                 return null;
             }

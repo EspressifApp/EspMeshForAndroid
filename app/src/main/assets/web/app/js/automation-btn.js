@@ -637,11 +637,9 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     }
                 },
                 onDelButton: function(res) {
-                    console.log(res);
                     if (!Util._isEmpty(res)) {
                         res = JSON.parse(res);
                         var tag = res.tag;
-                        console.log(tag.parentMac);
                         Util._addRequestEvent(tag.mac, tag.events, this.$store.state.deviceIp);
                     }
                 }

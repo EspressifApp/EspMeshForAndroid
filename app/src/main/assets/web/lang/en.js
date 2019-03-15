@@ -47,6 +47,8 @@ define(function(){
         "groupAll": "All",
         "scanDevice": "Scan the devices",
         "deviceList": "devices ",
+        "warmColdSwitch": "Warm/Cold Switch",
+        "colorSwitch": "Color Switch",
         "next": "Next",
         "nextStep": "Next",
         "light": "Light",

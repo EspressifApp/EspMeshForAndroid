@@ -9,7 +9,7 @@
                 <i @click="showOperate" class="icon-more right-top"></i>
             </div>
             <div class="content-info flex-wrapper no-padding-bottom" :id="lightId">
-                <div id="light-group-wrapper" class="light-wrapper">
+                <div v-show="operateCurrent == 0" id="light-group-wrapper" class="light-wrapper">
                     <div class="selected-radio">
                         <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
                         <div @click="selectAllDevice($event)"  class="select-small-radio flex flex-ac flex-jce">
@@ -34,11 +34,17 @@
                         </div>
                     </div>
                 </div>
-                <div id="color-group-wrapper" class="color-wrapper">
+                <div v-show="operateCurrent == 1" class="on-off flex">
+                    <span  class="flex-1" :class="{'active': !getStatusByGroup(groupMacs)}"
+                           @click="close(0)">OFF</span>
+                    <span class="flex-1"  :class="{'active': getStatusByGroup(groupMacs)}"
+                           @click="close(1)">ON</span>
+                </div>
+                <div v-show="operateCurrent == 1" id="color-group-wrapper" class="color-wrapper">
                     <v-color :colorId="colorId" :temperatureId="temperatureId"
                              :macs="groupMacs" v-on:colorShow="hide" :colorType="operateType" ref="color"></v-color>
                 </div>
-                <div id="scene-group-wrapper" class="scene-wrapper hidden">
+                <div v-show="operateCurrent == 2" id="scene-group-wrapper" class="scene-wrapper">
                     <ul class="scene-info">
                         <li v-for="item in sceneList" @click="setScene(item.h, item.s, item.b)">
                             <i :class="item.icon" :style="{background: getColor(item.h, item.s, item.b)}"></i>
@@ -46,7 +52,7 @@
                         </li>
                     </ul>
                 </div>
-                <div id="attr-group-wrapper" class="attr-wrapper">
+                <div v-show="operateCurrent == 3" id="attr-group-wrapper" class="attr-wrapper">
                     <div v-for="(item, index) in attrList" class="card-wrapper">
                         <div class="card-name"><span>{{item.name}}</span><span class="icon-blue">{{item.value}}</span></div>
                         <div class="card-content">
@@ -70,19 +76,19 @@
             </div>
             <footer class="footer-info">
                 <ul>
-                    <li id="light-wrapper-li" @click="operate('light-group-wrapper', $event)" class="active">
+                    <li id="light-wrapper-li" @click="operate(0)" :class="{'active': operateCurrent == 0}">
                         <i class="icon-light"></i>
                         <span>{{$t('nav.device')}}</span>
                     </li>
-                    <li v-show="!showSet" @click="operate('color-group-wrapper', $event)" class="active">
+                    <li v-show="!showSet" @click="operate(1)" :class="{'active': operateCurrent == 1}">
                         <i class="icon-contrast"></i>
                         <span>{{$t('color')}}</span>
                     </li>
-                    <li v-show="!showSet" @click="operate('scene-group-wrapper', $event)">
+                    <li v-show="!showSet" @click="operate(2)" :class="{'active': operateCurrent == 2}">
                         <i class="icon-disc"></i>
                         <span>{{$t('scene')}}</span>
                     </li>
-                    <li v-show="showSet" @click="operate('attr-group-wrapper', $event)">
+                    <li v-show="showSet" @click="operate(3)" :class="{'active': operateCurrent == 3}">
                         <i class="icon-gear"></i>
                         <span>{{$t('set')}}</span>
                     </li>
