@@ -139,6 +139,9 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
         @Override
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
             mLog.d(String.format(Locale.ENGLISH, "onMtuChanged status=%d, mtu=%d", status, mtu));
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                mBlufi.getBlufiClient().setPostPackageLengthLimit(mtu - 3);
+            }
             mUserCallback.onMtuChanged(gatt, status);
             mBlufi.getBlufiClient().negotiateSecurity();
         }

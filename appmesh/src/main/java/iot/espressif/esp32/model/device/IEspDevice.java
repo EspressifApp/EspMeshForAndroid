@@ -342,17 +342,6 @@ public interface IEspDevice {
      */
     void release();
 
-    /*
-     * Interface definition for a callback to be invoked when invoke {@link #notifyStatusChanged()}
-     */
-    interface StatusChangedListener {
-        void onStatusChanged(String bssid);
-    }
-
-    void setPosition(String position);
-
-    String getPosition();
-
     void setIdfVersion(String version);
 
     String getIdfVersion();
@@ -368,4 +357,12 @@ public interface IEspDevice {
     void setTrigger(int trigger);
 
     int getTrigger();
+
+    void setEvents(String events);
+
+    String getEvents();
+
+    void setPosition(String position);
+
+    String getPosition();
 }

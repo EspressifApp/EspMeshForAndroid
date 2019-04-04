@@ -3,7 +3,7 @@ package iot.espressif.esp32.action.device;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import iot.espressif.esp32.db.manager.EspDBManager;
+import iot.espressif.esp32.db.box.MeshObjectBox;
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.device.properties.EspDeviceState;
 import iot.espressif.esp32.model.user.EspUser;
@@ -22,9 +22,9 @@ public class EspActionDeviceDelete implements IEspActionDeviceDelete {
             device.addState(EspDeviceState.State.DELETED);
         }
 
-        EspDBManager manager = EspDBManager.getInstance();
+        MeshObjectBox manager = MeshObjectBox.getInstance();
         for (IEspDevice device : devices) {
-            manager.device().deleteDevice(device.getMac());
+            manager.device().deleteDevice(device.getId());
         }
 
         for (IEspDevice device : devices) {

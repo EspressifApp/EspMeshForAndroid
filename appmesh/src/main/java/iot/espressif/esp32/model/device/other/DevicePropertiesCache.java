@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import iot.espressif.esp32.action.device.IEspActionDeviceInfo;
+import iot.espressif.esp32.db.box.MeshObjectBox;
 import iot.espressif.esp32.db.model.DeviceDB;
-import iot.espressif.esp32.db.manager.EspDBManager;
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
 
@@ -41,13 +41,16 @@ public class DevicePropertiesCache {
     public void setPropertiesIfCache(IEspDevice device) {
         DeviceDB db = mMacDeviceDBMap.get(device.getMac());
         if (db != null) {
-            device.setName(db.getName());
-            device.setDeviceTypeId(db.getTid());
-            device.setRomVersion(db.getVersion());
-            device.setProtocol(db.getProtocol());
-            device.setProtocolPort(db.getProtocol_port());
+            device.setName(db.name);
+            device.setDeviceTypeId(db.tid);
+            device.setRomVersion(db.rom_version);
+            device.setProtocol(db.protocol);
+            device.setProtocolPort(db.protocol_port);
+            device.setIdfVersion(db.idf_version);
+            device.setMlinkVersion(db.mlink_version);
+            device.setTrigger(db.trigger);
 
-            List<EspDeviceCharacteristic> cs = mAssetMap.get(db.getTid());
+            List<EspDeviceCharacteristic> cs = mAssetMap.get(db.tid);
             if (cs != null) {
                 for (EspDeviceCharacteristic c : cs) {
                     device.addOrReplaceCharacteristic(c.cloneInstance());
@@ -73,9 +76,9 @@ public class DevicePropertiesCache {
     private Map<String, DeviceDB> getMacDeviceDBMap() {
         Map<String, DeviceDB> result = new HashMap<>();
 
-        List<DeviceDB> deviceDBList = EspDBManager.getInstance().device().loadDeviceList();
+        List<DeviceDB> deviceDBList = MeshObjectBox.getInstance().device().loadAllDevices();
         for (DeviceDB db : deviceDBList) {
-            result.put(db.getMac(), db);
+            result.put(db.mac, db);
         }
         return result;
     }

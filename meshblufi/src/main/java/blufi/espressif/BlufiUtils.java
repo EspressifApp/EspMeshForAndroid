@@ -6,6 +6,7 @@ public class BlufiUtils {
             Thread.sleep(timeout);
         } catch (InterruptedException e) {
             e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
     }
 }

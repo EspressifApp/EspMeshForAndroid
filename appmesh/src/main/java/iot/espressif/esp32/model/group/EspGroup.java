@@ -9,6 +9,8 @@ class EspGroup implements IEspGroup {
     private final HashSet<String> mBssids;
     private long mId;
     private String mName;
+    private boolean mIsMesh;
+    private boolean mIsUser;
 
     EspGroup() {
         mBssids = new HashSet<>();
@@ -32,6 +34,26 @@ class EspGroup implements IEspGroup {
     @Override
     public void setName(String name) {
         mName = name;
+    }
+
+    @Override
+    public boolean isMesh() {
+        return mIsMesh;
+    }
+
+    @Override
+    public void setIsMesh(boolean isMesh) {
+        mIsMesh = isMesh;
+    }
+
+    @Override
+    public boolean isUser() {
+        return mIsUser;
+    }
+
+    @Override
+    public void setIsUser(boolean isUser) {
+        mIsUser = isUser;
     }
 
     @Override
@@ -66,6 +88,13 @@ class EspGroup implements IEspGroup {
     public List<String> getDeviceBssids() {
         synchronized (mBssids) {
             return new ArrayList<>(mBssids);
+        }
+    }
+
+    @Override
+    public void clearBssids() {
+        synchronized (mBssids) {
+            mBssids.clear();
         }
     }
 

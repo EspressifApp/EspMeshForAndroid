@@ -1,5 +1,3 @@
 <resources>
     <string name="app_name">ESP-Mesh</string>
-
-    <string name="qr_code_message">Place a QR code inside the viewfinder rectangle to scan it.</string>
 </resources>

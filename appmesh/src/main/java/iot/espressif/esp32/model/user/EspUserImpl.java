@@ -194,4 +194,16 @@ class EspUserImpl {
             }
         }
     }
+
+    void addGroup(IEspGroup group) {
+        synchronized (mGroupLock) {
+            mGroupMap.put(group.getId(), group);
+        }
+    }
+
+    void deleteGroup(long id) {
+        synchronized (mGroupLock) {
+            mGroupMap.remove(id);
+        }
+    }
 }

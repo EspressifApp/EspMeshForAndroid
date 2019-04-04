@@ -41,12 +41,18 @@ public final class EspDeviceFactory {
 
     public static IEspDevice parseDeviceDB(DeviceDB db) {
         IEspDevice device = new EspDevice();
-        device.setMac(db.getMac());
-        device.setName(db.getName());
-        device.setDeviceTypeId(db.getTid());
-        device.setProtocol(db.getProtocol());
-        device.setProtocolPort(db.getProtocol_port());
-        device.setRomVersion(db.getVersion());
+        device.setId(db.id);
+        device.setMac(db.mac);
+        device.setName(db.name);
+        device.setDeviceTypeId(db.tid);
+        device.setProtocol(db.protocol);
+        device.setProtocolPort(db.protocol_port);
+        device.setRomVersion(db.rom_version);
+        device.setIdfVersion(db.idf_version);
+        device.setMlinkVersion(db.mlink_version);
+        device.setTrigger(db.trigger);
+        device.setEvents(db.events);
+        device.setPosition(db.position);
         EspDeviceState state = new EspDeviceState();
         state.addState(EspDeviceState.State.OFFLINE);
         device.setDeviceState(state);

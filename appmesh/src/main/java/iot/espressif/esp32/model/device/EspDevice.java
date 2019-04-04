@@ -40,6 +40,7 @@ class EspDevice implements IEspDevice {
     private String mMdfVersion;
     private int mMlinkVersion;
     private int mTrigger;
+    private String mEvents;
 
     EspDevice() {
         mCharaArray = new SparseArray<>();
@@ -339,6 +340,16 @@ class EspDevice implements IEspDevice {
     @Override
     public int getTrigger() {
         return mTrigger;
+    }
+
+    @Override
+    public void setEvents(String events) {
+        mEvents = events;
+    }
+
+    @Override
+    public String getEvents() {
+        return mEvents;
     }
 
     @Override

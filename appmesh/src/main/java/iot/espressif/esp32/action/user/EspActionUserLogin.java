@@ -5,7 +5,7 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 
-import iot.espressif.esp32.db.manager.EspDBManager;
+import iot.espressif.esp32.db.box.MeshObjectBox;
 import iot.espressif.esp32.model.user.EspLoginResult;
 import iot.espressif.esp32.model.user.EspUser;
 import libs.espressif.net.EspHttpResponse;
@@ -43,7 +43,7 @@ public class EspActionUserLogin implements IEspActionUserLogin {
                 user.setEmail(email);
 
                 String pwd = savePwd ? password : null;
-                EspDBManager dbManager = EspDBManager.getInstance();
+                MeshObjectBox dbManager = MeshObjectBox.getInstance();
                 dbManager.user().saveUser(userId, userKey, userName, email, pwd);
                 dbManager.user().saveLastLoginUser(userId);
             }

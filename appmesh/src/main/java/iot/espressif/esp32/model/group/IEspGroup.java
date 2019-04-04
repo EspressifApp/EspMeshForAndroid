@@ -32,6 +32,14 @@ public interface IEspGroup {
      */
     void setName(String name);
 
+    boolean isMesh();
+
+    void setIsMesh(boolean isMesh);
+
+    boolean isUser();
+
+    void setIsUser(boolean isUser);
+
     /**
      * Add device bssid in this group
      *
@@ -66,6 +74,11 @@ public interface IEspGroup {
      * @return device bssid list
      */
     List<String> getDeviceBssids();
+
+    /**
+     * Remove all device bssid
+     */
+    void clearBssids();
 
     /**
      * Return true if group contain the specified device bssid

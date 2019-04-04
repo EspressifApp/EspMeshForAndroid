@@ -31,7 +31,8 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import iot.espressif.esp32.app.EspApplication;
-import iot.espressif.esp32.db.manager.EspDBManager;
+import iot.espressif.esp32.db.box.DeviceBox;
+import iot.espressif.esp32.db.box.MeshObjectBox;
 import iot.espressif.esp32.db.model.DeviceDB;
 import iot.espressif.esp32.model.callback.DeviceScanCallback;
 import iot.espressif.esp32.model.device.EspDeviceFactory;
@@ -49,7 +50,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
 
     @Override
     public List<IEspDevice> doActionLoadStationsDB() {
-        List<DeviceDB> devDBs = EspDBManager.getInstance().device().loadDeviceList();
+        List<DeviceDB> devDBs = MeshObjectBox.getInstance().device().loadAllDevices();
 
         List<IEspDevice> result = new ArrayList<>();
         for (DeviceDB db : devDBs) {
@@ -145,6 +146,8 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
+                return result;
             }
         }
 
@@ -154,6 +157,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
                 scanTaskQueue.take();
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
                 return result;
             }
         }
@@ -164,6 +168,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
                 topoTaskQueue.take();
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
                 return result;
             }
         }
@@ -207,6 +212,13 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
         }
         result.addAll(tcpCheckDevices);
 
+        DeviceBox deviceBox = MeshObjectBox.getInstance().device();
+        for (IEspDevice device : result) {
+            DeviceDB deviceDB = deviceBox.loadDevice(device.getMac());
+            if (deviceDB != null) {
+                device.setId(deviceDB.id);
+            }
+        }
         return result;
     }
 

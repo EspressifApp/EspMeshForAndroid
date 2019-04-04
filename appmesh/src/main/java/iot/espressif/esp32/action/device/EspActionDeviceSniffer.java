@@ -8,8 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import iot.espressif.esp32.db.box.MeshObjectBox;
 import iot.espressif.esp32.db.model.SnifferDB;
-import iot.espressif.esp32.db.manager.EspDBManager;
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.device.other.Sniffer;
 import iot.espressif.esp32.utils.DeviceUtil;
@@ -25,19 +25,19 @@ public class EspActionDeviceSniffer implements IEspActionDeviceSniffer {
 
     @Override
     public List<Sniffer> doActionLoadSnifferDB() {
-        List<SnifferDB> snifferDBs = EspDBManager.getInstance().sniffer().loadSniffers();
+        List<SnifferDB> snifferDBs = MeshObjectBox.getInstance().sniffer().loadAllSniffers();
         List<Sniffer> result = new ArrayList<>(snifferDBs.size());
         for (SnifferDB db : snifferDBs) {
             Sniffer sniffer = new Sniffer();
-            sniffer.setId(db.getId());
-            sniffer.setType(db.getType());
-            sniffer.setBssid(db.getBssid());
-            sniffer.setUTCTime(db.getUtc_time());
-            sniffer.setRssi(db.getRssi());
-            sniffer.setChannel(db.getChannel());
-            sniffer.setDeviceMac(db.getDevice_mac());
-            sniffer.setOrganization(db.getOrganization());
-            sniffer.setName(db.getName());
+            sniffer.setId(db.id);
+            sniffer.setType(db.type);
+            sniffer.setBssid(db.bssid);
+            sniffer.setUTCTime(db.utc_time);
+            sniffer.setRssi(db.rssi);
+            sniffer.setChannel(db.channel);
+            sniffer.setDeviceMac(db.device_mac);
+            sniffer.setOrganization(db.organization);
+            sniffer.setName(db.name);
 
             result.add(sniffer);
         }

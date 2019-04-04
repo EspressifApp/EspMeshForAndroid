@@ -16,7 +16,7 @@ import java.util.Map;
 
 import iot.espressif.esp32.app.EspApplication;
 import iot.espressif.esp32.constants.DeviceConstants;
-import iot.espressif.esp32.db.manager.EspDBManager;
+import iot.espressif.esp32.db.box.MeshObjectBox;
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
 import iot.espressif.esp32.model.device.properties.EspDeviceState;
@@ -102,7 +102,8 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
                     break;
             }
 
-            EspDBManager.getInstance().device().saveDevice(device);
+            long id = MeshObjectBox.getInstance().device().saveDevice(device);
+            device.setId(id);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();

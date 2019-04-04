@@ -105,6 +105,20 @@ public enum EspUser {
         mUser.loadGroups();
     }
 
+    public void addGroup(IEspGroup group) {
+        if (!isLogged()) {
+            return;
+        }
+        mUser.addGroup(group);
+    }
+
+    public void deleteGroup(long id) {
+        if (!isLogged()) {
+            return;
+        }
+        mUser.deleteGroup(id);
+    }
+
     public void syncDevice(IEspDevice device) {
         if (!isLogged()) {
             return;
