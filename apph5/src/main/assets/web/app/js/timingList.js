@@ -77,7 +77,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/timingList.html", "./timingDevic
                         '", "callback": "onRemoveTiming", "tag": {"name": "'+name+'"}}';
 
                     setTimeout(function() {
-                        espmesh.requestDevicesMulticastAsync(data);
+                        espmesh.requestDevicesMulticast(data);
                     }, 1000);
 
                 }).catch(function(err){
@@ -90,7 +90,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/timingList.html", "./timingDevic
                     ',"'+DEVICE_IP+'": "'+this.$store.state.deviceIp+'","' + MESH_REQUEST +
                     '": "' + GTE_CALENDAR + '","callback": "getListResult"}';
                 MINT.Indicator.open();
-                espmesh.requestDevicesMulticastAsync(data);
+                espmesh.requestDevicesMulticast(data);
             },
             getListResult: function(res) {
                 var self = this, list = [], resultList = {}, calendarList = [];

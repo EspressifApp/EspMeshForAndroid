@@ -19,7 +19,7 @@ public class EspActionUserRegister implements IEspActionUserRegister {
                     .put(KEY_EMAIL, email)
                     .put(KEY_PASSWORD, password);
 
-            EspHttpResponse response = EspHttpUtils.Post(URL_REGISTER, postJSON.toString().getBytes(), null);
+            EspHttpResponse response = EspHttpUtils.Post(URL_REGISTER, postJSON.toString().getBytes(), null, null);
             if (response == null) {
                 return EspRegisterResult.NETWORK_UNACCESSIBLE;
             }

@@ -1,4 +1,4 @@
-define(["vue", "MINT", "txt!../../pages/info.html", "../js/colorPicker"],
+define(["vue", "MINT", "txt!../../pages/info.html", "../../app/js/colorPicker"],
     function(v, MINT, info, colorPicker) {
 
     var Info = v.extend({
@@ -19,6 +19,8 @@ define(["vue", "MINT", "txt!../../pages/info.html", "../js/colorPicker"],
                 deviceMacs: [],
                 deviceList: [],
                 deviceInfo: "",
+                isDevice: true,
+                isRoom: false,
             }
         },
 
@@ -35,17 +37,8 @@ define(["vue", "MINT", "txt!../../pages/info.html", "../js/colorPicker"],
                 window.onEditName = this.onEditName;
                 self.flag = true;
                 setTimeout(function () {
-                    self.setLeftAndTop();
-                    self.$refs.deviceColor.show();
+                    self.$refs.color.show();
                 })
-            },
-            setLeftAndTop: function() {
-                var self = this,
-                    doc = $("body"),
-                    xy = $("#"+self.colorId),
-                    width = doc.width();
-                self.$store.commit("setTopColor", xy.offset().top);
-                self.$store.commit("setLeftColor", ((width - INIT_SIZE) / 2));
             },
             hideInfo: function () {
                 this.flag = false;
@@ -79,7 +72,7 @@ define(["vue", "MINT", "txt!../../pages/info.html", "../js/colorPicker"],
                         '"name":' + JSON.stringify(name) + ', "callback": "onEditName", "tag": {"mac": "'+mac+
                         '", "name": "'+name+'"}}';
                     setTimeout(function(){
-                        espmesh.requestDeviceAsync(data);``
+                        espmesh.requestDevice(data);
 
                     }, 500);
                 });

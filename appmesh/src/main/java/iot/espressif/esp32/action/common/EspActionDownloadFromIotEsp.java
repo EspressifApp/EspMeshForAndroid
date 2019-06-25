@@ -5,7 +5,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -23,11 +25,11 @@ public class EspActionDownloadFromIotEsp extends EspActionDownload implements IE
 
     @Override
     public EspRomQueryResult doActionQueryLatestVersion(String deviceKey) {
-        EspHttpHeader header = new EspHttpHeader(KEY_AUTH, String.format("%s %s", KEY_TOKEN, deviceKey));
-
+        Map<String, String> headers = new HashMap<>();
+        headers.put(KEY_AUTH, String.format("%s %s", KEY_TOKEN, deviceKey));
         JSONObject romJSON;
         try {
-            EspHttpResponse response = EspHttpUtils.Get(URL_QUERY, null, header);
+            EspHttpResponse response = EspHttpUtils.Get(URL_QUERY, null, headers);
             if (response == null) {
                 return null;
             }

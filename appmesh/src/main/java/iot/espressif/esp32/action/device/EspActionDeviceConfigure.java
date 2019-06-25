@@ -8,17 +8,30 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.HttpURLConnection;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import blufi.espressif.BlufiCallback;
 import blufi.espressif.BlufiClient;
 import blufi.espressif.params.BlufiConfigureParams;
 import blufi.espressif.response.BlufiStatusResponse;
 import iot.espressif.esp32.app.EspApplication;
+import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.device.ble.MeshBlufiCallback;
 import iot.espressif.esp32.model.device.ble.MeshBlufiClient;
+import iot.espressif.esp32.utils.DeviceUtil;
 import libs.espressif.app.SdkUtil;
+import libs.espressif.ble.EspBleUtils;
 import libs.espressif.log.EspLog;
+import libs.espressif.net.EspHttpResponse;
 
 public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
     private final EspLog mLog = new EspLog(getClass());
@@ -33,14 +46,9 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
         MeshBlufiClient blufi = new MeshBlufiClient();
         blufi.setMeshVersion(meshVersion);
 
-        Context context = EspApplication.getInstance().getApplicationContext();
+        Context context = EspApplication.getEspApplication().getApplicationContext();
         BleCallback bleCallback = new BleCallback(blufi, params, userCallback);
-        BluetoothGatt gatt;
-        if (SdkUtil.isAtLeastM_23()) {
-            gatt = device.connectGatt(context, false, bleCallback, BluetoothDevice.TRANSPORT_LE);
-        } else {
-            gatt = device.connectGatt(context, false, bleCallback);
-        }
+        BluetoothGatt gatt = EspBleUtils.connectGatt(device, context, bleCallback);
         blufi.setBluetoothGatt(gatt);
 
         return blufi;
@@ -102,7 +110,7 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
                     gatt.disconnect();
                     return;
                 }
-                mUserCallback.onGattServiceDiscover(gatt, BlufiCallback.STATUS_SUCCESS, UUID_WRITE_CHARACTERISTIC);
+                mUserCallback.onGattCharacteristicDiscover(gatt, BlufiCallback.STATUS_SUCCESS, UUID_WRITE_CHARACTERISTIC);
 
                 BluetoothGattCharacteristic notifyCharact = service.getCharacteristic(UUID_NOTIFICATION_CHARACTERISTIC);
                 if (notifyCharact == null) {
@@ -142,7 +150,7 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 mBlufi.getBlufiClient().setPostPackageLengthLimit(mtu - 3);
             }
-            mUserCallback.onMtuChanged(gatt, status);
+            mUserCallback.onMtuChanged(gatt, mtu, status);
             mBlufi.getBlufiClient().negotiateSecurity();
         }
 
@@ -211,5 +219,43 @@ public class EspActionDeviceConfigure implements IEspActionDeviceConfigure {
                 mUserCallback.onWifiStateResponse(client, response);
             }
         }
+    }
+
+    public boolean doActionAddWhiteList(Collection<IEspDevice> devices, Collection<String> whiteList) {
+        if (whiteList.isEmpty()) {
+            return false;
+        }
+
+        String host = null;
+        for (IEspDevice device : devices) {
+            if (host == null) {
+                host = device.getLanHostAddress();
+                if (host == null) {
+                    throw new IllegalArgumentException("Device address is null");
+                }
+            } else {
+                if (!host.equals(device.getLanHostAddress())) {
+                    throw new IllegalArgumentException("All devices require same address");
+                }
+            }
+        }
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put(KEY_REQUEST, REQUEST_ADD_DEVICE);
+            JSONArray whiteArray = new JSONArray();
+            for (String newMac : whiteList) {
+                whiteArray.put(newMac);
+            }
+            json.put(KEY_WHITELIST, whiteArray);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+        Map<String, String> headers = new HashMap<>();
+        headers.put(DeviceUtil.HEADER_ROOT_RESP, String.valueOf(true));
+        List<EspHttpResponse> results = DeviceUtil.httpLocalMulticastRequest(devices, json.toString().getBytes(),
+                null, headers);
+        return !results.isEmpty() && results.get(0).getCode() == HttpURLConnection.HTTP_OK;
     }
 }

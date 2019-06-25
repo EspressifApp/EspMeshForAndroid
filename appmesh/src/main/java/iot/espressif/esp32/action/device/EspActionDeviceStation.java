@@ -68,6 +68,21 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
 
     @Override
     public List<IEspDevice> doActionScanStationsLocal(DeviceScanCallback callback) {
+        EspApplication app = EspApplication.getEspApplication();
+        WifiManager wm = (WifiManager) app.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        assert wm != null;
+        WifiManager.MulticastLock multicastLock = wm.createMulticastLock(getClass().getSimpleName());
+        multicastLock.setReferenceCounted(false);
+        multicastLock.acquire();
+
+        List<IEspDevice> result = scanStations(callback);
+
+        multicastLock.release();
+
+        return result;
+    }
+
+    private List<IEspDevice> scanStations(DeviceScanCallback callback) {
         List<IEspDevice> result = new Vector<>();
 
         DevicePropertiesCache devProCache = new DevicePropertiesCache();
@@ -128,6 +143,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
         LinkedBlockingQueue<Object> scanTaskQueue = new LinkedBlockingQueue<>();
         int mdnsCount = 1;
         int udpCount = 3;
+
         for (int i = 0; i < mdnsCount; i ++) {
             Observable.just(listener)
                     .subscribeOn(Schedulers.io())
@@ -224,15 +240,9 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
 
     private void scanMDNS(ScanListener scanListener) {
         mLog.d("mDNS scan start");
-        EspApplication app = EspApplication.getInstance();
+        EspApplication app = EspApplication.getEspApplication();
         WifiManager wm = (WifiManager) app.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (wm == null) {
-            mLog.w("mDNS WifiManager is null");
-            return;
-        }
-        WifiManager.MulticastLock lock = wm.createMulticastLock(getClass().getSimpleName());
-        lock.setReferenceCounted(false);
-        lock.acquire();
+        assert wm != null;
 
         JmDNS jmDNS = null;
         try {
@@ -298,9 +308,6 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
                 }
                 mLog.d("mDNS close");
             }
-
-            lock.release();
-            mLog.d("mDNS lock release");
         }
 
         mLog.d("mDNS scan end");
@@ -334,7 +341,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
 
                     try {
                         byte[] sendData = UDP_SEND_DATA.getBytes();
-                        InetAddress address = NetUtil.getBroadcastAddress(EspApplication.getInstance());
+                        InetAddress address = NetUtil.getBroadcastAddress(EspApplication.getEspApplication());
                         DatagramPacket sendPk = new DatagramPacket(sendData, sendData.length, address, UDP_DEVICE_PORT);
                         datagramSocket.send(sendPk);
                         mLog.d("UDP send " + UDP_SEND_DATA);

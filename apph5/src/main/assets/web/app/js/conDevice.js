@@ -27,7 +27,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                 rssiList: [],
                 wifiInfo: {},
                 count: 0,
-                success: true
+                success: true,
+                timerId: "",
             }
         },
         methods:{
@@ -44,7 +45,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                 this.textList = [];
                 this.rssiList = [];
                 this.conWifi();
-                console.log(JSON.stringify(this.moreObj));
             },
             hide: function () {
                 this.addFlag = false;
@@ -57,6 +57,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                     scanDeviceList = self.$store.state.scanDeviceList,
                     scanMacs = [], rssi = -1000, rssiMac = "", version = -1;
                 espmesh.startBleScan();
+                self.setTimer();
                 self.success = true;
                 self.title = self.$t('connetDeviceTitle');
                 self.desc = self.$t('connetDeviceDesc');
@@ -84,17 +85,28 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                             "white_list": scanMacs, "bssid": self.wifiInfo.bssid, "mesh_id": self.convert(self.meshId),
                             "version": version};
                         data = Object.assign(data, self.moreObj)
-                        console.log(JSON.stringify(data));
                         console.log(JSON.stringify(scanMacs));
-                        console.log(scanMacs.length);
                         espmesh.saveMeshId(self.meshId);
                         espmesh.startConfigureBlufi(JSON.stringify(data));
                     } else {
                         self.setFail(self.$t('farDeviceDesc'));
                     }
-
                 }, 5000);
 
+            },
+            setTimer: function() {
+                var self = this;
+                self.timerId = setInterval(function() {
+                    console.log("aaaaa");
+                    if (!self.addFlag) {
+                        clearInterval(self.timerId);
+                    }
+                    if (self.value < 5) {
+                        self.value += 1;
+                    } else {
+                        clearInterval(self.timerId);
+                    }
+                }, 1000)
             },
             convert: function(bssid) {
                 var strs = bssid.split(":"), meshIds = [];
@@ -166,6 +178,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
             setFail: function(msg) {
                 var self = this;
                 espmesh.stopBleScan();
+                espmesh.stopConfigureBlufi();
                 self.success = false;
                 self.title = self.$t('connetFailDesc');
                 self.desc = msg;

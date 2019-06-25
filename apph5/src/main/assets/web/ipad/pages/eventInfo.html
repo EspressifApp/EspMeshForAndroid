@@ -1,6 +1,6 @@
 <transition name="moves">
     <div v-show="flag" class="operate-way">
-        <div @click="hide" class="mask"></div>
+        <div @click="hide" class="event-mask"></div>
         <div id="event-wrapper" class="event-info modal-wrapper active">
             <div class="col-xs-12 no-padding">
                 <p class="event-title">Event information<span  @click="hide" class="icon-cross cancel-times"></span></p>
@@ -8,7 +8,7 @@
             {{list}}
             <div class="col-xs-12 no-padding" id="event-all">
                 <div v-for="item in eventList" class='col-sm-4 col-xs-6 margin-bottom-30'>
-                    <div class='col-xs-12 event-item' @click="showItemEvent(item.name)">
+                    <div class='col-xs-12 event-item-info' @click="showItemEvent(item.name)">
                         <div class="item-title"><i :class="getIcon()"></i></div>
                         <div class="desc">
                             If device state at <strong>{{getDesc(item)}}</strong>,

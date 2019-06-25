@@ -2,6 +2,14 @@
     <div @click="hideUl" class="content-wrapper" id="device-wrapper">
         <div class="title-info">
             <h4 class="app-title">{{$t('nav.device')}}</h4>
+            <div v-show="!isWifiConnect"  @click="showWifiFail" :class="!blueEnable ? 'right-75' : 'right-40'" class="right-top ">
+                <span class="right-icon">
+                    <i class="icon-wifi icon-position"><i class="icon-cancel-circled"></i></i>
+                </span>
+            </div>
+            <div v-show="!blueEnable"  @click="showBlueFail" class="right-top right-40">
+                <span class="right-icon"><i class="icon-bluetooth icon-position"><i class="icon-cancel-circled"></i></i></span>
+            </div>
             <i @click.stop="showUl($event)" class="icon-plus right-top"></i>
             <ul v-show="flag" class="add-ul">
                 <li @click.stop="addDevice($event)"><i class="icon-light"></i><span>{{$t('addDevice')}}</span></li>
@@ -21,8 +29,8 @@
                          infinite-scroll-disabled="loadMoreing"
                          infinite-scroll-distance="30">
                         <div v-for="item in loadList" :id="item.mac" :key="item.mac" v-longtap="{fn: showOperate, mac: item.mac}"
-                             @click.self="operateItem(item)" class="item">
-                            <div @click.stop="operateItem(item)" class="item-icon-circle">
+                             @click.self="operateItem(item)" class="item item-device">
+                            <div @click.stop="operateItem(item)" :class="getBxColor(item.layer)" class="item-icon-circle">
                                 <i :class="getIcon(item.tid)"
                                    :style="{'color': getColor(item.characteristics, item.tid)}"></i>
                                 <span v-show="linkShow(item)"><i class="icon-link"></i></span>
@@ -30,16 +38,22 @@
                             <div @click.stop="operateItem(item)" class="item-name">
                                 <span :class="{'cr-warning': getFlag(item.position)}">{{getPosition(item.position)}}</span>
                                 <span v-show="!showDesc(item.name)">{{item.mac}}</span>
-                                <span v-show="showDesc(item.name)"  :class="{'desc': showDesc(item.position)}">{{item.name}}
-                                <span v-show="showDesc(item.position)">({{item.version}})</span></span>
+                                <span v-show="showDesc(item.name)"  :class="{'desc': showDesc(item.position)}">
+                                    {{item.name}}
+                                    <span v-show="showDesc(item.position)">({{item.version}})&nbsp;&nbsp;&nbsp;
+                                        <img v-show="item.rssi <= 0" class="item-img" :src="getRssiIcon(item.rssi)"/>
+                                    </span>
+
+                                </span>
                                 <span class="desc" v-show="!showDesc(item.position)">
-                                {{item.version}}
-                            </span>
+                                    {{item.version}}&nbsp;&nbsp;&nbsp;
+                                    <img v-show="item.rssi <= 0" class="item-img" :src="getRssiIcon(item.rssi)"/>
+                                </span>
                             </div>
                             <div class="item-power">
                                 <div v-show="isLigth(item.tid)" class="switch-wrapper">
-                                    <span :class="{'active': !getStatus(item.characteristics)}" @click="close(item.mac, 0)">OFF</span>
-                                    <span :class="{'active': getStatus(item.characteristics)}" @click="close(item.mac, 1)">ON</span>
+                                    <span :class="{'active': !getStatus(item.characteristics)}" @click="close(item.mac, 0, $event)">OFF</span>
+                                    <span :class="{'active': getStatus(item.characteristics)}" @click="close(item.mac, 1, $event)">ON</span>
                                 </div>
                                 <div v-show="isSensor(item.tid, item.characteristics)" class="sensor-wrapper">
                                     <span class="desc">temp: {{getSensorTemperature(item.characteristics)}}℃</span>
@@ -51,11 +65,15 @@
                     </div>
 
                     <div v-if="showAdd" class="add-wrapper">
-                        <h3>{{$t('addDevice')}}</h3>
-                        <p>{{$t('listDesc')}}</p>
-                        <div @click="addDevice($event)">
-                            <i class="icon-plus"></i>
+                        <div class="add-icon-wrapper">
+                            <img class="add-image" src="images/no_light.png"/>
                         </div>
+                        <div class="add-title">{{$t('noAddDeviceDesc')}}</div>
+                        <div class="add-desc">{{$t('listDesc')}}</div>
+                        <div  class="add-plus" @click="addDevice($event)">
+                            {{$t('addDevice')}}
+                        </div>
+                        <div class="add-desc">{{$t('videoDesc')}}&nbsp;<span @click="showVideo" class="blue">{{$t('clickVideoDesc')}}</span></div>
                     </div>
                     <div slot="top" class="mint-loadmore-top">
                         <span v-show="topStatus !== 'loading'" :class="{ 'rotate': topStatus === 'drop' }">↓</span>
@@ -81,8 +99,8 @@
                                                :class="getIcon(deviceInfo.tid)"></i>{{deviceInfo.name}}</span>
                         <div v-show="isLigth(deviceInfo.tid)" class="desc">
                             <div class="switch-wrapper">
-                                <span :class="{'active': !getStatus(deviceInfo.characteristics)}" @click="operateClose(deviceInfo.mac, 0)">OFF</span>
-                                <span :class="{'active': getStatus(deviceInfo.characteristics)}" @click="operateClose(deviceInfo.mac, 1)">ON</span>
+                                <span :class="{'active': !getStatus(deviceInfo.characteristics)}" @click="operateClose(deviceInfo.mac, 0, $event)">OFF</span>
+                                <span :class="{'active': getStatus(deviceInfo.characteristics)}" @click="operateClose(deviceInfo.mac, 1, $event)">ON</span>
                             </div>
                         </div>
                     </li>
@@ -92,6 +110,7 @@
                     <li @click="showOta"><span>{{$t('otaUpdate')}}</span></li>
                     <li @click="showPair"><span>{{$t('location')}}</span></li>
                     <li @click="showAuto"><span>{{$t('association')}}</span></li>
+                    <li @click="showConfig" v-show="isShowConfig(deviceInfo.tid)"><span>配置</span></li>
                     <!--<li @click="showSendIp"><span>{{$t('setIP')}}</span></li>-->
                     <li @click="showCommand"><span>{{$t('command')}}</span></li>
                     <!--<li @click="showIbeacon"><span>Ibeacon</span></li>-->
@@ -105,7 +124,7 @@
     <v-joinDevice v-on:joinShow="onBackIndex" ref="join"></v-joinDevice>
     <v-addGroup v-on:addGroupShow="onBackIndex" v-if="deviceList.length > 0"
                 :name="groupName" :addGroupId="addGroupId" ref="group"></v-addGroup>
-    <v-operateDevice v-on:operateShow="onBackIndex" :colorId="colorId" :temperatureId="temperatureId"
+    <v-operateDevice v-on:operateShow="onBackIndex" :isDevice="isDevice" :isRoom="false" :colorId="colorId" :temperatureId="temperatureId"
                      ref="operate"></v-operateDevice>
     <v-aboutDevice v-on:aboutShow="onBackIndex" :deviceInfo="deviceInfo" v-if="deviceInfo" ref="aboutDevice"></v-aboutDevice>
     <v-otaInfo v-on:otaShow="onBackIndex" :otaId="otaDeviceId" :macs="otaMacs" v-if="deviceInfo" ref="ota"></v-otaInfo>
@@ -118,4 +137,7 @@
     <v-setDevicePair v-on:setDevicePairShow="onBackIndex" ref="setDevicePair"></v-setDevicePair>
     <v-command v-on:commandShow="onBackIndex" :commandMacs="commandMacs" ref="command"></v-command>
     <v-sendIP v-on:sendIPShow="onBackIndex" :commandMacs="commandMacs" ref="sendIP"></v-sendIP>
+    <v-blueFail v-on:blueFailShow="onBackIndex" ref="blueFail"></v-blueFail>
+    <v-wifiFail v-on:wifiFailShow="onBackIndex" ref="wifiFail"></v-wifiFail>
+    <v-config v-on:configShow="onBackIndex" :deviceInfo="deviceInfo" v-if="deviceInfo" ref="config"></v-config>
 </div>

@@ -501,6 +501,10 @@ class EspOTAClientImpl extends EspOTAClient {
             EspHttpParams params = new EspHttpParams();
             params.setSOTimeout(timeout);
             EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
+            Map<String, String> httpHeaders = new HashMap<>();
+            if (tokenH != null) {
+                httpHeaders.put(tokenH.getName(), tokenH.getValue());
+            }
             Map<String, IEspDevice> deviceMap = new HashMap<>();
             for (IEspDevice device : devices) {
                 deviceMap.put(device.getMac(), device);
@@ -513,7 +517,7 @@ class EspOTAClientImpl extends EspOTAClient {
                 }
 
                 List<EspHttpResponse> respList = DeviceUtil.httpLocalMulticastRequest(deviceMap.values(),
-                        postJSON.toString().getBytes(), params, true, tokenH);
+                        postJSON.toString().getBytes(), params, httpHeaders);
                 if (respList == null) {
                     return Collections.emptyMap();
                 }
@@ -603,17 +607,17 @@ class EspOTAClientImpl extends EspOTAClient {
                 }
             }
 
-            EspHttpHeader addrHeader = new EspHttpHeader(HEADER_OTA_ADDRESS, otaAddr.toString());
-            mLog.e("OTA requestOTA PKG LEN = " + appPkgLength);
-            EspHttpHeader lenHeader = new EspHttpHeader(HEADER_OTA_LENGTH, String.valueOf(appPkgLength));
-            EspHttpHeader countHeader = new EspHttpHeader(HEADER_NODE_COUNT, String.valueOf(requestDevices.size()));
-            EspHttpHeader macsHeader = new EspHttpHeader(HEADER_NODE_MAC, bssids.toString());
-            EspHttpHeader contentTypeHeader = new EspHttpHeader(EspHttpUtils.CONTENT_TYPE, "application/ota_bin");
+            Map<String, String> headers = new HashMap<>();
+            headers.put(HEADER_OTA_ADDRESS, otaAddr.toString());
+            headers.put(HEADER_OTA_LENGTH, String.valueOf(appPkgLength));
+            headers.put(HEADER_NODE_COUNT, String.valueOf(requestDevices.size()));
+            headers.put(HEADER_NODE_MAC, bssids.toString());
+            headers.put(EspHttpUtils.CONTENT_TYPE, "application/ota_bin");
 
             EspHttpParams params = new EspHttpParams();
             params.setTryCount(3);
             params.setSOTimeout(5000);
-            return EspHttpUtils.Post(url, null, params, addrHeader, lenHeader, countHeader, macsHeader, contentTypeHeader);
+            return EspHttpUtils.Post(url, null, params, headers);
         }
 
         private void writeBinData(int pkgLen, List<IEspDevice> devices, Map<IEspDevice, Set<Integer>> deviceSeqMap)

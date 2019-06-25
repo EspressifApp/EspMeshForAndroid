@@ -30,7 +30,7 @@ public class DeviceDB {
 
     public int trigger;
 
-    public String events;
-
     public String position;
+
+    public String group_ids;
 }

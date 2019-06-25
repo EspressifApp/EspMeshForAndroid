@@ -114,7 +114,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                     ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST +
                     '": "' + GET_MESH + '","callback": "debugResult", "tag": "debugResult"}';
-                espmesh.requestDevicesMulticastAsync(data);
+                espmesh.requestDevicesMulticast(data);
 
             },
             getMesh: function(macList) {
@@ -128,7 +128,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macList) +
                     ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' +
                     GET_MESH + '", "callback": "onGetMesh", "tag": {"macs": '+JSON.stringify(macs)+'}}';
-                espmesh.requestDevicesMulticastAsync(data);
+                espmesh.requestDevicesMulticast(data);
 
             },
             getInitData: function() {
@@ -348,7 +348,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                             var data = '{"' + MESH_MAC + '": "' + device.mac +
                                 '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
                                 '"position":"' + device.position + '"}';
-                            espmesh.requestDeviceAsync(data);
+                            espmesh.requestDevice(data);
                             return  false;
                         }
                     });
@@ -505,7 +505,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/debug.html", "./debugInfo"],
                 console.log(res);
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
-                    self.debugList = res.result;
+                    self.debugList = Util.uniqeByKeys(res.result, ["mac"]);
                 }
                 self.getInitData();
                 MINT.Indicator.close();

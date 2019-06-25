@@ -23,6 +23,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                 oldFloor: "",
                 oldArea: "",
                 oldCode: "",
+                oldMac: "",
                 mac: "",
                 floorArray: ["1F", "2F", "3F", "4F", "5F", "6F","7F", "8F", "9F", "10F", "11F", "12F",
                     "13F", "14F", "15F", "16F"],
@@ -47,12 +48,13 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                 self.oldFloor = "";
                 self.oldArea = "";
                 self.oldCode = "";
+                self.oldMac = "";
                 self.mac = "";
                 if (!Util._isEmpty(self.pairInfo)) {
                     self.oldFloor = self.floor = self.pairInfo.floor;
                     self.oldArea = self.area = self.pairInfo.area;
                     self.oldCode = self.serialNum = self.pairInfo.code;
-                    self.mac = self.pairInfo.mac;
+                    self.oldMac = self.mac = self.pairInfo.mac;
                     self.showEdit = true;
                 } else {
                     self.getLastPair(self.pairList);
@@ -64,8 +66,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                 self.showFloor = false;
                 self.showArea = false;
                 self.flag = true;
-                window.onSetPairPosition = this.onSetPairPosition;
-                window.onEditPair = this.onEditPair;
+                window.onSetPairPosition = self.onSetPairPosition;
+                window.onEditPair = self.onEditPair;
+                window.onSetNull = self.onSetNull;
             },
             hide: function () {
                 this.$emit("setPairShow");
@@ -214,7 +217,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                         flag = true;
                         return false;
                     }
-                })
+                });
+
                 setTimeout(function(){
                     if (flag) {
                         self.setDevicePosition(self.$t('saveSuccessDesc'), self.$t('saveFailDesc'), "onSetPairPosition");
@@ -235,6 +239,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                 }, 500);
 
             },
+            setPositionNull: function() {
+                var self = this,
+                    data = '{"' + MESH_MAC + '": "' + self.oldMac +
+                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
+                        '"position": "", "callback": "onSetNull"}';
+                console.log(data);
+                espmesh.requestDevice(data);
+            },
             setDevicePosition: function(suc, fail, fun) {
                 var self = this, flag = false,
                     position = self.floor + "-" + self.area + "-" + self.serialNum,
@@ -242,7 +254,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                         '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
                         '"position":"' + position + '", "callback": "'+fun+'", "tag": {"suc": "'+
                         suc+'", "fail": "'+fail+'"}}';
-                espmesh.requestDeviceAsync(data);
+                espmesh.requestDevice(data);
             },
             onSetPairPosition: function(res) {
                 var self = this;
@@ -382,10 +394,24 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                 }
                 MINT.Indicator.open();
                 setTimeout(function() {
+                    console.log(self.oldMac);
+                    if (!Util._isEmpty(self.oldMac)) {
+                        self.oldMac = self.oldMac.toLowerCase();
+                        if (self.oldMac != self.mac) {
+                            var isFlag = false;
+                            $.each(self.deviceList, function(i,item) {
+                                if (item.mac == self.oldMac) {
+                                    isFlag = true;
+                                    return false;
+                                }
+                            });
+                            self.setPositionNull();
+                        }
+                    }
                     if (flag) {
                         self.setDevicePosition(self.$t('editSuccessDesc'), self.$t('editFailDesc'), "onEditPair");
                     } else {
-                        espmesh.deleteHWDevice(self.pairInfo.mac);
+                        espmesh.deleteHWDevices(JSON.stringify([self.pairInfo.mac]));
                         espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
                                 "floor": self.floor, "area":  self.area}]));
                         MINT.Toast({
@@ -398,6 +424,20 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                     MINT.Indicator.close();
                 }, 500);
 
+            },
+            onSetNull: function(res) {
+                var self = this;
+                res = JSON.parse(res);
+                if (res.result.status_code == 0) {
+                    $.each(self.deviceList, function(i, item){
+                        if (item.mac == self.oldMac) {
+                            item.position = "";
+                            self.deviceList.splice(i, 1, item);
+                            return false;
+                        }
+                    });
+                    self.$store.commit("setList", self.deviceList);
+                }
             },
             onEditPair: function(res) {
                 var self = this;
@@ -413,7 +453,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                             return false;
                         }
                     });
-                    espmesh.deleteHWDevice(self.pairInfo.mac);
+                    espmesh.deleteHWDevices(JSON.stringify([self.pairInfo.mac]));
                     espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
                         "floor": self.floor, "area":  self.area}]));
                     MINT.Toast({

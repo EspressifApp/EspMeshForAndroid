@@ -34,7 +34,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
                     }
                     var json = "{"
                     $.each(self.requestList, function(i, item) {
-                        json += '"'+item.key + '":' + item.value;
+                        json += '"'+item.key + '":' + self.checkRate(item.value);
                         if (i < (self.requestList.length - 1)) {
                             json += ',';
                         }
@@ -49,7 +49,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
         methods:{
             show: function() {
                 this.requestList = [{key: "request", value: null}];
-                window.onLoadAllValuesInFile = this.onLoadAllValuesInFile;
+                window.onGetLoadSelect = this.onGetLoadSelect;
                 window.onSend = this.onSend;
                 this.chartShow = false;
                 this.commandShow = false;
@@ -110,7 +110,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
 
             },
             getLoadSelect: function() {
-                espmesh.loadAllValuesInFile(COMMAND_LIST_FILE);
+                espmesh.loadAllValuesInFile(JSON.stringify({name: COMMAND_LIST_FILE, callback: "onGetLoadSelect"}));
             },
             checkRadio: function() {
                 var self = this;
@@ -124,6 +124,17 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
                 this.resultShow = false;
                 this.commandShow = false;
             },
+            checkRate: function (str) {
+              var re = /^[0-9]+.?[0-9]*$/;
+              if (!Util._isEmpty(str)) {
+                if (!re.test(str) && str.indexOf("[") == -1 && str.indexOf("{") == -1) {
+                  if (str.indexOf('"') == -1) {
+                    str = '"' + str + '"'
+                  }
+              　}
+              }
+              return str
+            },
             send: function() {
                 var self = this, data = '{"' + MESH_MAC + '": ' + JSON.stringify(self.commandMacs)
                     + ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'",', json = "", list = [];
@@ -135,7 +146,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
                 }
                 $.each(self.requestList, function(i, item) {
                     if (!Util._isEmpty(item.value)) {
-                        json += '"'+item.key + '":' + item.value + ',';
+                        json += '"'+item.key + '":' + self.checkRate(item.value) + ',';
                         list.push(item);
                     }
                 })
@@ -154,7 +165,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
                     if (Util.isJSON(data)) {
                         MINT.Indicator.open();
                         setTimeout(function() {
-                            espmesh.requestDevicesMulticastAsync(data);
+                            espmesh.requestDevicesMulticast(data);
                         }, 1000)
                     } else {
                         INSTANCE_TOAST = MINT.Toast({
@@ -185,30 +196,33 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
                 self.getLoadSelect();
                 window.onBackPressed = this.hide;
             },
-            onLoadAllValuesInFile: function(res) {
+            onGetLoadSelect: function(res) {
                 var self = this;
                 console.log(res);
                 self.loadSelectList = [];
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
-                    var content = res.content;
-                    var lastKey = "";
+                    if (res.name == COMMAND_LIST_FILE) {
+                        var content = res.content;
+                        var lastKey = "";
 
-                    for(var i in content) {
-                        console.log(i);
-                        self.loadSelectList.push(decodeURIComponent(i));
-                    }
-                    var num = self.loadSelectList.length - 1;
-                    if (self.loadSelectList.length > 0) {
-                        self.requestList = [];
-                        if (!Util._isEmpty(res.latest_key)) {
-                            lastKey = JSON.parse(decodeURIComponent(res.latest_key));
-                            for (var i in lastKey) {
-                                self.requestList.push({key: i, value: JSON.stringify(lastKey[i])});
-                            }
+                        for(var i in content) {
+                            console.log(i);
+                            self.loadSelectList.push(decodeURIComponent(i));
                         }
+                        var num = self.loadSelectList.length - 1;
+                        if (self.loadSelectList.length > 0) {
+                            self.requestList = [];
+                            if (!Util._isEmpty(res.latest_key)) {
+                                lastKey = JSON.parse(decodeURIComponent(res.latest_key));
+                                for (var i in lastKey) {
+                                    self.requestList.push({key: i, value: JSON.stringify(lastKey[i])});
+                                }
+                            }
 
+                        }
                     }
+
                 }
             }
 

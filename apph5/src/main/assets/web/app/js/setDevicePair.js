@@ -195,7 +195,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/setDevicePair.html"],
                     data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
                         '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
                         '"position":"' + position + '", "callback": "'+fun+'"}';
-                espmesh.requestDeviceAsync(data);
+                espmesh.requestDevice(data);
             },
             getNum: function() {
                 var self = this,

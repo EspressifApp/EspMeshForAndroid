@@ -1,5 +1,8 @@
 package iot.espressif.esp32.db.box;
 
+import org.json.JSONArray;
+
+import java.util.Collection;
 import java.util.List;
 
 import io.objectbox.Box;
@@ -36,8 +39,13 @@ public class DeviceBox {
         entity.idf_version = device.getIdfVersion();
         entity.mlink_version = device.getMlinkVersion();
         entity.trigger = device.getTrigger();
-        entity.events = device.getEvents();
         entity.position = device.getPosition();
+
+        Collection<String> groupIds = device.getGroupIds();
+        if (!groupIds.isEmpty()) {
+            JSONArray groupArray = new JSONArray(groupIds);
+            entity.group_ids = groupArray.toString();
+        }
 
         return mBox.put(entity);
     }

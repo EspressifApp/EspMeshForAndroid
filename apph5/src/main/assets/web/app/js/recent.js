@@ -150,7 +150,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/recent.html", "../js/footer", ".
                 })
                 if (status == STATUS_ON) {
                     if (mode == MODE_CTB) {
-                        rgb = self.modeFun(temperature, brightness);
+                        rgb = Util.modeFun(temperature, brightness);
                     } else {
                         rgb = Raphael.hsb2rgb(hueValue / 360, saturation / 100, luminance / 100).hex;
                     }
@@ -160,32 +160,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/recent.html", "../js/footer", ".
                     rgb = "#3ec2fc";
                 }
                 return rgb;
-            },
-            modeFun: function(temperature, brightness) {
-                var r = 0,
-                    g = 0,
-                    b = 0,
-                    r1 = 248,
-                    g1 = 207,
-                    b1 = 109,
-                    r2 = 255,
-                    g2 = 255,
-                    b2 = 255,
-                    r3 = 164,
-                    g3 = 213,
-                    b3 = 255;
-                if (temperature < 50) {
-                    var num = temperature / 50;
-                    r = Math.floor((r2 - r1) * num) + r1;
-                    g = Math.floor((g2 - g1) * num) + g1;
-                    b = Math.floor((b2 - b1) * num) + b1;
-                } else {
-                    var num = (temperature - 50) / 50;
-                    r = r2 - Math.floor((r2 - r3) * num);
-                    g = g2 - Math.floor((g2 - g3) * num);
-                    b = b2 - Math.floor((b2 - b3) * num);
-                }
-                return "rgba("+r+", "+g+", "+b+", 1)";
             },
             typeBoolean: function(type) {
                 var typeFlag = false;
@@ -253,7 +227,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/recent.html", "../js/footer", ".
                         var data = '{"' + MESH_MAC + '": "' + mac +
                             '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
                             DEVICE_DELAY + '": ' + DELAY_TIME + '}';
-                        espmesh.requestDeviceAsync(data);
+                        espmesh.requestDevice(data);
                         espmesh.removeDeviceForMac(mac);
                         self.infoShow = false;
                         $.each(self.deviceList, function(i, item) {
@@ -327,7 +301,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/recent.html", "../js/footer", ".
                         '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + RENAME_DEVICE + '",' +
                         '"name":' + JSON.stringify(obj.value) + ',"callback": "onEditDeviceName"}';
                     setTimeout(function(){
-                        espmesh.requestDeviceAsync(data);
+                        espmesh.requestDevice(data);
                     }, 500);
                 });
             },
@@ -438,7 +412,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/recent.html", "../js/footer", ".
                         var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                             ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
                             DEVICE_DELAY + '": ' + DELAY_TIME + '}';
-                        espmesh.requestDevicesMulticastAsync(data);
+                        espmesh.requestDevicesMulticast(data);
                         espmesh.removeDevicesForMacs(JSON.stringify(macs));
                         MINT.Indicator.close();
                         self.$store.commit("setList", self.deviceList);
@@ -532,7 +506,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/recent.html", "../js/footer", ".
                     ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                        '"characteristics":' + JSON.stringify(meshs) + '}';
 
-                espmesh.requestDevicesMulticastAsync(data);
+                espmesh.requestDevicesMulticast(data);
                 self.changeDevice(macs, status);
             },
             changeDevice: function (macs, status) {

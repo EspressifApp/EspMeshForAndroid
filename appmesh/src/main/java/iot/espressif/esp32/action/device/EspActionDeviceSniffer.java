@@ -55,7 +55,7 @@ public class EspActionDeviceSniffer implements IEspActionDeviceSniffer {
         }
 
         List<EspHttpResponse> responseList = DeviceUtil.httpLocalMulticastRequest(devices, postJSON.toString().getBytes(),
-                null, true);
+                null, null);
         Map<String, EspHttpResponse> responseMap = DeviceUtil.getMapWithDeviceResponses(responseList);
 
         List<Sniffer> result = new ArrayList<>(responseList.size());

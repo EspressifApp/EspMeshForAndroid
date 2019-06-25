@@ -46,7 +46,7 @@ define(["vue","MINT", "Util", "txt!../../pages/ibeacon.html", "./ibeaconInfo"],
                     var data = '{"' + MESH_MAC + '": "' + this.deviceInfo.mac +
                         '","'+DEVICE_IP+'": "'+this.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' +
                         GET_IBEACON + '", "callback":"onGetIbeacon"}';
-                    espmesh.requestDeviceAsync(data);
+                    espmesh.requestDevice(data);
 
                 },
                 showInfo: function() {

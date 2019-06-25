@@ -20,7 +20,7 @@ public class EspActionUserResetPassword implements IEspActionUserResetPassword {
             JSONObject postJSON = new JSONObject()
                     .put(KEY_EMAIL, email);
 
-            EspHttpResponse response = EspHttpUtils.Post(URL_RESET_PASSWORD, postJSON.toString().getBytes(), null);
+            EspHttpResponse response = EspHttpUtils.Post(URL_RESET_PASSWORD, postJSON.toString().getBytes(), null, null);
             if (response == null) {
                 return EspResetPasswordResult.FAILED;
             }

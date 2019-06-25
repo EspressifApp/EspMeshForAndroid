@@ -1,6 +1,7 @@
 (function (Raphael) {
-    Raphael.colorwheel = function (x, y, size, initcolor, element, sizeNum, rectNum, flag) {
-        return new ColorWheel(x, y, size, initcolor, flag, element, sizeNum, rectNum);
+    Raphael.colorwheel = function (x, y, size, initcolor, element, flag) {
+        console.log(y);
+        return new ColorWheel(x, y, size, initcolor, flag, element);
     };
     function angle(x, y) {
         return (x < 0) * 180 + Math.atan(-y / -x) * 180 / pi;
@@ -8,7 +9,7 @@
     var pi = Math.PI,
         doc = document,
         win = window,
-        ColorWheel = function (x, y, size, initcolor, flag, element, sizeNum, rectNum) {
+        ColorWheel = function (x, y, size, initcolor, flag, element) {
             size = size || 200;
             var w3 = 3 * size / 200,
                 w1 = size / 200,
@@ -20,7 +21,7 @@
                 t = this;
 
             var H = 1, S = 1, B = 1, s = size - (size20 * 4);
-            var r = element ? Raphael(element, size, size + sizeNum) : Raphael(x, y, size, size + sizeNum),
+            var r = element ? Raphael(element, size, size) : Raphael(x, y, size, size),
                 xy = s / 6 + size20 * 2 + padding,
                 wh = s * 2 / 3 - padding * 2;
             w1 < 1 && (w1 = 1);
@@ -31,7 +32,7 @@
             var a = pi / 2 - pi * 2 / segments * 1.3,
                 R = size2 - padding,
                 R2 = size2 - padding - size20 * 2,
-                path = ["M", size2, padding, "A", R, R, 0, 0, 1, R * Math.cos(a) + R + padding, R - R * Math.sin(a) + padding, "L", R2 * Math.cos(a) + R + padding, R - R2 * Math.sin(a) + padding, "A", R2, R2, 0, 0, 0, size2, padding + size20 * 2, "z"].join();
+                path = ["M", size2, padding, "A", R, R, 0, 0, 1, R * Math.cos(a) + R + padding, R - R * Math.sin(a) + padding, "L", R2 * Math.cos(a) + R + padding, (R - R2 * Math.sin(a) + padding) * 1.6, "A", R2, R2, 0, 0, 0, size2, (padding + size20 * 2) * 1.6, "z"].join();
             if (flag) {
                 for (var i = 0; i < segments; i++) {
                     r.path(path).attr({
@@ -90,20 +91,18 @@
 
                 }
             }
-
-
             r.path(["M", size2, padding, "A", R, R, 0, 1, 1, size2 - 1, padding, "l1,0", "M", size2, padding + size20 * 2, "A", R2, R2, 0, 1, 1, size2 - 1, padding + size20 * 2, "l1,0"]).attr({
                 "stroke-width": w3,
                 stroke: ""
             });
             t.cursorhsb = r.set();
             var h = size20 * 2 + 2;
-            t.cursorhsb.push(r.rect(size2 - h / fi / 2, padding - 1, h / fi, h, 3 * size / 200 + 4.1).attr({
+            t.cursorhsb.push(r.rect(size2 - h / fi / 2, padding - 1, h / fi, h * 1.6, 3 * size / 200 + 4.1).attr({
                 stroke: "#000",
                 opacity: .3,
                 "stroke-width": w3
             }));
-            t.cursorhsb.push(r.rect(size2 - h / fi / 2, padding - 1, h / fi, h, 3 * size / 200 + 4.1).attr({
+            t.cursorhsb.push(r.rect(size2 - h / fi / 2, padding - 1, h / fi, h * 1.6, 3 * size / 200 + 4.1).attr({
                 stroke: "#fff",
                 opacity: .9,
                 "stroke-width": w1
@@ -115,22 +114,26 @@
             });
 
             // rect drawing
-            t.main = r.rect(padding + h / fi / 2, size + padding * 2 + 90, size - padding * 2 - h / fi, h - padding * 2 - 4, 3 * size / 200 + 4.1).attr({
+            // t.main = r.rect(padding + h / fi / 2, size + padding * 2 + 80, size - padding * 2 - h / fi, h - padding * 2 - 4, 3 * size / 200 + 4.1).attr({
+            //     stroke: "#fff",
+            //     fill: "180-#fff-#000"
+            // });
+            t.main = r.rect(padding + h / fi / 2, size + padding * 2 + 80, size - padding * 2 - h / fi, 0, 3 * size / 200 + 4.1).attr({
                 stroke: "#fff",
                 fill: "180-#fff-#000"
             });
 
             t.cursor = r.set();
-            t.cursor.push(r.rect(size - padding - h / fi, size + padding + 90, ~~(h / fi), h - 4, w3 + 4.1).attr({
-                stroke: "#000",
-                opacity: .5,
-                "stroke-width": w3
-            }));
-            t.cursor.push(r.rect(size - padding - h / fi, size + padding + 90, ~~(h / fi), h - 4, w3 + 4.1).attr({
-                stroke: "#fff",
-                opacity: 1,
-                "stroke-width": w1
-            }));
+            // t.cursor.push(r.rect(size - padding - h / fi, size + padding + 80, ~~(h / fi), h-4, w3 + 4.1).attr({
+            //     stroke: "#000",
+            //     opacity: .5,
+            //     "stroke-width": w3
+            // }));
+            // t.cursor.push(r.rect(size - padding - h / fi, size + padding + 80, ~~(h / fi), h-4, w3 + 4.1).attr({
+            //     stroke: "#fff",
+            //     opacity: 1,
+            //     "stroke-width": w1
+            // }));
             t.btop = t.main.clone().attr({
                 stroke: "#000",
                 fill: "#000",
@@ -168,7 +171,7 @@
                 t.docOnMove(dx, dy, x, y);
             }, function (x, y) {
                 t.clrOnTheMove = true;
-                t.setB(x - t.x);
+                //t.setB(x - t.x);
             }, function () {
                 t.clrOnTheMove = false;
             });
@@ -217,6 +220,7 @@
         this.onchange && this.onchange(this.color());
     };
     proto.setB = function (x) {
+        console.log(x);
         x < this.minx && (x = this.minx);
         x > this.maxx && (x = this.maxx);
         this.cursor.attr({x: x - this.bwidth});
@@ -243,7 +247,7 @@
 
         }
         if (this.clrOnTheMove) {
-            this.setB(x - this.x, y - this.y);
+            //this.setB(x - this.x, y - this.y);
         }
     };
     proto.remove = function () {
@@ -309,7 +313,7 @@
         var d = color.h * 360;
         this.H = color.h;
         this.S = color.s;
-        this.B = color.b;
+        //this.B = color.b;
 
         this.cursorhsb.attr({transform: "r" + [d, this.size2, this.size2]});
         //this.main.attr({fill: "180-hsb(" + [this.H, this.S] + ",1)-#000"});
@@ -325,7 +329,7 @@
             var d = color.h * 360;
             this.H = color.h;
             this.S = color.s;
-            this.B = color.b;
+            //this.B = color.b;
             //this.cursorhsb.attr({transform: "r" + [d, this.size2, this.size2]});
             //this.main.attr({fill: "180-hsb(" + [this.H, this.S] + ",1)-#000"});
             var x = (this.maxx - this.minx) * this.B + this.minx - this.bwidth;

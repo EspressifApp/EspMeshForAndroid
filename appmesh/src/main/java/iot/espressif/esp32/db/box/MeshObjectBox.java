@@ -16,7 +16,7 @@ public class MeshObjectBox {
     private SceneBox mSceneBox;
     private SnifferBox mSnifferBox;
     private UserBox mUserBox;
-    private DeviceHWBox mDeviceHWBox;
+    private CustomBox mCustomBox;
 
     public static MeshObjectBox getInstance() {
         if (sInstance == null) {
@@ -31,19 +31,19 @@ public class MeshObjectBox {
     }
 
     public synchronized void init(Context context) {
-            if (mBoxStore != null) {
-                throw new IllegalStateException("MeshObjectBox has initialized");
-            }
+        if (mBoxStore != null) {
+            throw new IllegalStateException("MeshObjectBox has initialized");
+        }
 
-            mBoxStore = MyObjectBox.builder().androidContext(context).build();
-            mApBox = new ApBox(mBoxStore);
-            mDeviceBox = new DeviceBox(mBoxStore);
-            mGroupBox = new GroupBox(mBoxStore);
-            mOperationBox = new OperationBox(mBoxStore);
-            mSceneBox = new SceneBox(mBoxStore);
-            mSnifferBox = new SnifferBox(mBoxStore);
-            mUserBox = new UserBox(mBoxStore);
-            mDeviceHWBox = new DeviceHWBox(mBoxStore);
+        mBoxStore = MyObjectBox.builder().androidContext(context).build();
+        mApBox = new ApBox(mBoxStore);
+        mDeviceBox = new DeviceBox(mBoxStore);
+        mGroupBox = new GroupBox(mBoxStore);
+        mOperationBox = new OperationBox(mBoxStore);
+        mSceneBox = new SceneBox(mBoxStore);
+        mSnifferBox = new SnifferBox(mBoxStore);
+        mUserBox = new UserBox(mBoxStore);
+        mCustomBox = new CustomBox(mBoxStore);
     }
 
     public synchronized void close() {
@@ -58,7 +58,7 @@ public class MeshObjectBox {
         mSceneBox = null;
         mSnifferBox = null;
         mUserBox = null;
-        mDeviceHWBox = null;
+        mCustomBox = null;
     }
 
     public ApBox ap() {
@@ -69,8 +69,8 @@ public class MeshObjectBox {
         return mDeviceBox;
     }
 
-    public DeviceHWBox deviceHW() {
-        return mDeviceHWBox;
+    public CustomBox custom() {
+        return mCustomBox;
     }
 
     public GroupBox group() {

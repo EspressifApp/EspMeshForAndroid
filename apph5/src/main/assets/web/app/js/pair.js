@@ -11,6 +11,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                 showAdd: false,
                 pairList: [],
                 pairShow: false,
+                searchName: "",
                 pairInfo: "",
                 deviceList: [],
                 total: 0,
@@ -22,13 +23,34 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
         },
         computed: {
             list: function() {
-                if (this.flag) {
-                    this.pairList = this.$store.state.siteList;
-                    if (this.pairList.length > 0) {
-                        this.showAdd = false;
+                var self = this;
+                if (self.flag) {
+                    var list = [];
+                    var pairList = self.$store.state.siteList;
+                    if (Util._isEmpty(self.searchName)) {
+                        $.each(pairList, function(i, item) {
+                            var position = item.floor + "-" + item.area + "-" + item.code;
+                            item.position = position;
+                            list.push(item);
+                        })
+                        list = self.sortList(list);
                     } else {
-                        this.showAdd = true;
+                        var searchList = [];
+                        $.each(pairList, function(i, item) {
+                            var position = item.floor + "-" + item.area + "-" + item.code;
+                            item.position = position;
+                            if (item.mac.indexOf(self.searchName) != -1 || position.indexOf(self.searchName) != -1) {
+                                searchList.push(item);
+                            }
+                        })
+                        list = self.sortList(searchList);
                     }
+                    if (pairList.length > 0) {
+                        self.showAdd = false;
+                    } else {
+                        self.showAdd = true;
+                    }
+                    self.pairList = list;
                 }
             }
         },
@@ -49,6 +71,22 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                 $("#pair-wrapper span.span-radio").removeClass("active");
                 self.flag = true;
                 window.onSetDevicePosition = this.onSetDevicePosition;
+            },
+            sortList: function(list) {
+                var self = this, emptyList = [], arrayList = [];
+                $.each(list, function(i, item) {
+                    if (!Util._isEmpty(item.position)) {
+                        arrayList.push(item);
+                    } else {
+                        emptyList.push(item);
+                    }
+                });
+                arrayList.sort(Util.sortBySub("position"));
+                emptyList.sort(Util.sortBy("mac"));
+                $.each(emptyList, function(i, item) {
+                    arrayList.push(item);
+                });
+                return arrayList;
             },
             hide: function () {
                 this.$emit("pairShow");
@@ -89,20 +127,29 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                 for (var i = 0; i < docs.length; i++) {
                     macs.push($(docs[i]).attr("data-value"));
                 };
-                MINT.MessageBox.confirm(self.$t('delInfoDesc'), self.$t('delInfoTitle'),{
-                        confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
-                    self.calcelDevice();
-                    MINT.Indicator.open();
-                    $.each(self.deviceList, function(i,item) {
-                        if (macs.indexOf(item.mac) != -1) {
-                            deviceMacs.push(item.mac);
-                        }
-                    })
-                    console.log(JSON.stringify(deviceMacs));
-                    setTimeout(function() {
-                        self.deletePair(deviceMacs.length > 0, deviceMacs, macs)
-                    }, 1000);
-                });
+                if (macs.length > 0) {
+                    MINT.MessageBox.confirm(self.$t('delInfoDesc'), self.$t('delInfoTitle'),{
+                            confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
+                        self.calcelDevice();
+                        MINT.Indicator.open();
+                        $.each(self.deviceList, function(i,item) {
+                            if (macs.indexOf(item.mac) != -1) {
+                                deviceMacs.push(item.mac);
+                            }
+                        })
+                        console.log(JSON.stringify(deviceMacs));
+                        setTimeout(function() {
+                            self.deletePair(deviceMacs.length > 0, deviceMacs, macs)
+                        }, 1000);
+                    });
+                } else {
+                    MINT.Toast({
+                        message: self.$t('selectPairDesc'),
+                        position: 'bottom',
+                        duration: 2000
+                    });
+                }
+
             },
             selectMac: function(mac) {
                 if (this.deleteShow) {
@@ -161,7 +208,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                     mac = obj.mac;
                 self.pairInfo = "";
                 if (!self.deleteShow) {
-                    self.pairList = self.$store.state.siteList;
                     $.each(self.pairList, function(i, item) {
                         if (item.mac == mac) {
                             self.pairInfo = item;
@@ -223,7 +269,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                         SET_POSITION + '",' + '"position":"", "callback": "onSetDevicePosition", "tag": {"deviceMacs": '+
                         JSON.stringify(deviceMacs)+',"macs": '+JSON.stringify(macs)+'}}';
                 console.log(data);
-                espmesh.requestDevicesMulticastAsync(data);
+                espmesh.requestDevicesMulticast(data);
 
             },
             onSetDevicePosition: function(res) {

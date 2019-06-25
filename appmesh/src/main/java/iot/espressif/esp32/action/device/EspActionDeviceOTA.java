@@ -13,8 +13,8 @@ import libs.espressif.log.EspLog;
 public class EspActionDeviceOTA implements IEspActionDeviceOTA {
     private final EspLog mLog = new EspLog(getClass());
 
-    private String getBinDirPath() {
-        String espDirPath = EspApplication.getInstance().getEspRootSDPath();
+    public static String getBinDirPath() {
+        String espDirPath = EspApplication.getEspApplication().getEspRootSDPath();
         if (espDirPath == null) {
             return null;
         }

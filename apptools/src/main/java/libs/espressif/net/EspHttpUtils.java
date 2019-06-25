@@ -12,8 +12,10 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -34,10 +36,6 @@ public class EspHttpUtils {
 
     public static final String HTTP = "http";
     public static final String HTTPS = "https";
-
-    public static final EspHttpHeader HEADER_KEEP_ALIVE = new ConstHeader(CONNECTION, KEEP_ALIVE);
-    public static final EspHttpHeader HEADER_CONTENT_JSON = new ConstHeader(CONTENT_TYPE, APPLICATION_JSON);
-    public static final EspHttpHeader HEADER_CHUNKED = new ConstHeader(TRANSFER_ENCODING, CHUNKED);
 
     private static final EspLog log = new EspLog(EspHttpUtils.class);
 
@@ -62,7 +60,7 @@ public class EspHttpUtils {
      * @param headers http headers
      * @return response. null is failed.
      */
-    public static EspHttpResponse Get(String url, EspHttpParams params, EspHttpHeader... headers) {
+    public static EspHttpResponse Get(String url, EspHttpParams params, Map<String, String> headers) {
         return execute(url, METHOD_GET, null, params, headers);
     }
 
@@ -74,7 +72,7 @@ public class EspHttpUtils {
      * @param headers http headers
      * @return response. null is failed.
      */
-    public static EspHttpResponse Post(String url, byte[] content, EspHttpParams params, EspHttpHeader... headers) {
+    public static EspHttpResponse Post(String url, byte[] content, EspHttpParams params, Map<String, String> headers) {
         return execute(url, METHOD_POST, content, params, headers);
     }
 
@@ -86,7 +84,7 @@ public class EspHttpUtils {
      * @param headers http headers
      * @return response. null is failed.
      */
-    public static EspHttpResponse Put(String url, byte[] content, EspHttpParams params, EspHttpHeader... headers) {
+    public static EspHttpResponse Put(String url, byte[] content, EspHttpParams params, Map<String, String> headers) {
         return execute(url, METHOD_PUT, content, params, headers);
     }
 
@@ -98,13 +96,17 @@ public class EspHttpUtils {
      * @param headers http headers
      * @return response. null is failed.
      */
-    public static EspHttpResponse Delete(String url, byte[] content, EspHttpParams params, EspHttpHeader... headers) {
+    public static EspHttpResponse Delete(String url, byte[] content, EspHttpParams params, Map<String, String> headers) {
         return execute(url, METHOD_DELETE, content, params, headers);
     }
 
     private static EspHttpResponse execute(String url, String method, byte[] content,
-                                           EspHttpParams params, EspHttpHeader... headers) {
+                                           EspHttpParams params, Map<String, String> headers) {
         EspHttpResponse response = null;
+
+        if (headers == null) {
+            headers = Collections.emptyMap();
+        }
 
         int tryCount = 1;
         boolean requireResp = true;
@@ -129,13 +131,13 @@ public class EspHttpUtils {
         return response;
     }
 
-    private static HttpURLConnection createURLConnection(String url, String method, EspHttpParams params, EspHttpHeader... headers) {
+    private static HttpURLConnection createURLConnection(String url, String method, EspHttpParams params, Map<String, String> headers) {
         try {
             URL targetURL = new URL(url);
             String file = targetURL.getFile();
             if (file != null) {
                 for (char c : SPEC_CHARS) {
-                    String asciiStr = String.format(Locale.ENGLISH, "%%%02X", (int)c);
+                    String asciiStr = String.format("%%%02X", (int)c);
                     file = file.replace(String.valueOf(c), asciiStr);
                 }
                 targetURL = new URL(targetURL.getProtocol(), targetURL.getHost(), targetURL.getPort(), file);
@@ -144,16 +146,12 @@ public class EspHttpUtils {
             connection.setRequestMethod(method);
             int timeoutConn = -1;
             int timeoutSO = -1;
-            for (EspHttpHeader head : headers) {
-                if (head == null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                if (entry == null) {
                     continue;
                 }
 
-                connection.addRequestProperty(head.getName(), head.getValue());
-            }
-            String connValue = connection.getRequestProperty(CONNECTION);
-            if (connValue == null) {
-                connection.addRequestProperty(CONNECTION, CLOSE);
+                connection.addRequestProperty(entry.getKey(), entry.getValue());
             }
 
             if (params != null) {
@@ -170,7 +168,7 @@ public class EspHttpUtils {
             connection.setReadTimeout(timeoutSO);
 
             if (params != null && params.isTrustAllCerts()
-                    && targetURL.getProtocol().toLowerCase(Locale.ENGLISH).equals(HTTPS)) {
+                    && targetURL.getProtocol().equalsIgnoreCase(HTTPS)) {
                 HttpsURLConnection httpsConn = (HttpsURLConnection) connection;
                 SSLUtils.trustAllHosts(httpsConn);
                 httpsConn.setHostnameVerifier(SSLUtils.DO_NOT_VERIFY);
@@ -256,19 +254,10 @@ public class EspHttpUtils {
             if (values == null || values.isEmpty()) {
                 continue;
             }
-            StringBuilder value = new StringBuilder();
-            int index = 0;
-            for (String v : values) {
-                value.append(v);
-                if (index < values.size() - 1) {
-                    value.append(';');
-                }
-                index++;
-            }
 
-            EspHttpHeader respHeader = new EspHttpHeader(key, value.toString());
+            EspHttpHeader respHeader = new EspHttpHeader(key, values);
             response.setHeader(respHeader);
-            log.i(key + ": " + value);
+            log.i(respHeader.toString());
         }
 
         // Get http content
@@ -355,6 +344,7 @@ public class EspHttpUtils {
             result.setMessage(statusMessage.toString());
         }
 
+        Map<String, List<String>> headerMap = new HashMap<>();
         for (int i = 1; i < headers.length; i++) {
             String headerStr = headers[i];
             int index = headerStr.indexOf(": ");
@@ -362,10 +352,18 @@ public class EspHttpUtils {
                 log.w("invalid header : " + headerStr);
                 return null;
             }
-            String name = headerStr.substring(0, index);
-            String value = headerStr.substring(index + 2, headerStr.length());
-            EspHttpHeader h = new EspHttpHeader(name, value);
-            result.setHeader(h);
+            String name = headerStr.substring(0, index).toLowerCase();
+            String value = headerStr.substring(index + 2);
+            List<String> values = headerMap.get(name);
+            if (values == null) {
+                values = new ArrayList<>();
+                headerMap.put(name, values);
+            }
+            values.add(value);
+        }
+        for (Map.Entry<String, List<String>> entry : headerMap.entrySet()) {
+            EspHttpHeader header = new EspHttpHeader(entry.getKey(), entry.getValue());
+            result.setHeader(header);
         }
 
         if (contentOS.size() > 0) {
@@ -377,17 +375,6 @@ public class EspHttpUtils {
 
     private static boolean isEmpty(byte[] data) {
         return data == null || data.length == 0;
-    }
-
-    private final static class ConstHeader extends EspHttpHeader {
-        ConstHeader(String name, String value) {
-            super(name, value);
-        }
-
-        @Override
-        public void setValue(String value) {
-            throw new IllegalArgumentException("Esp const header forbid change value");
-        }
     }
 
     public static Map<String, String> getQueryMap(String url)

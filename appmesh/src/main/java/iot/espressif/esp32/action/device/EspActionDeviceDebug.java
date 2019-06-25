@@ -1,6 +1,8 @@
 package iot.espressif.esp32.action.device;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.utils.DeviceUtil;
@@ -33,6 +35,8 @@ public class EspActionDeviceDebug implements IEspActionDeviceDebug {
         EspHttpParams params = new EspHttpParams();
         params.setTryCount(3);
         byte[] content = command.getBytes();
-        DeviceUtil.httpLocalMulticastRequest(devices, content, params, false, DeviceUtil.HEADER_ROOT_RESP);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(DeviceUtil.HEADER_ROOT_RESP, String.valueOf(true));
+        DeviceUtil.httpLocalMulticastRequest(devices, content, params, headers);
     }
 }

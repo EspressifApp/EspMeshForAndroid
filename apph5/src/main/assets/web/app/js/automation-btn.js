@@ -30,7 +30,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     eventCids: [],
                     btnValues: BUTTON_DEVICES,
                     pressList: {"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": [],
-                        "10": [], "11": [], "12": []},
+                        "10": [], "11": [], "12": [], "13": []},
                     eventA: [],
                     deviceA: [],
                     eventB: [],
@@ -400,7 +400,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                                 rightCid = $(this).attr("data-right"),
                                 leftName = "",
                                 rightName = "";
-                            var name = "", subCid = 0
+                            var name = "", subCid = 0;
                             if (id == "11") {
                                 leftValue = BUTTON_EVENT_8;
                                 rightValue = BUTTON_EVENT_9;
@@ -613,9 +613,6 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                         console.log(JSON.stringify(events));
                     }
                     self.delEvent(parentMac, events);
-                    setTimeout(function() {
-
-                    }, 3000)
                 },
                 delEvent: function (parentMac, events) {
                     var self = this;
@@ -631,7 +628,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                             '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
                             '"events":' + JSON.stringify(eventNames) + ',"callback": "onDelButton", "tag": {"mac": "'+
                             parentMac+'", "events": '+JSON.stringify(events)+'}}';
-                        espmesh.requestDeviceAsync(data);
+                        espmesh.requestDevice(data);
                     } else {
                         Util._addRequestEvent(parentMac, events, self.$store.state.deviceIp);
                     }

@@ -151,7 +151,7 @@ define(["vue", "MINT", "txt!../../pages/deviceTypeInfo.html", "../js/otaInfo"],
                                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                                     ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
                                     DEVICE_DELAY + '": ' + DELAY_TIME + '}';
-                                espmesh.requestDevicesMulticastAsync(data);
+                                espmesh.requestDevicesMulticast(data);
                                 espmesh.removeDevicesForMacs(JSON.stringify(macs));
                                 var devices = [];
                                 $.each(self.deviceList, function(i, item) {

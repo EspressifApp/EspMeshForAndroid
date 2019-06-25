@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         applicationId "h5.espressif.esp32"
         minSdkVersion 21
-        targetSdkVersion 27
-        versionCode 43
-        versionName "1.0.5"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        targetSdkVersion 28
+        versionCode 44
+        versionName "1.0.6"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -23,15 +23,12 @@ android {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:design:27.1.1'
+    implementation lib.appcompat
+    implementation lib.material
     // RxJAVA
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.7'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation lib.rxjava
+    implementation lib.rxandroid
 
     // Modules
     implementation project(':apph5')

@@ -26,7 +26,7 @@ define(["vue", "MINT", "txt!../../pages/eventInfo.html", "../js/addEvent"],
                 window.onBackPressed = self.hide;
                 self.deviceInfo = self.$store.state.deviceInfo;
                 window.onDeleteEvent = this.onDeleteEvent;
-                self.$parent.loadAllDeviceEventsPosition();
+                self.$parent.loadAllDeviceEventsCoordinate();
                 self.flag = true;
             },
             hide: function () {
@@ -50,7 +50,7 @@ define(["vue", "MINT", "txt!../../pages/eventInfo.html", "../js/addEvent"],
                 }
             },
             setEventList: function() {
-                this.$parent.loadAllDeviceEventsPosition();
+                this.$parent.loadAllDeviceEventsCoordinate();
                 this.getDeviceEvents();
             },
             getIcon: function () {
@@ -105,7 +105,7 @@ define(["vue", "MINT", "txt!../../pages/eventInfo.html", "../js/addEvent"],
                         '"events":' + JSON.stringify(events) + ', "callback": "onDeleteEvent", "tag": {"mac": "'+
                         mac+'", "name": "'+name+'"}}';
                     setTimeout(function(){
-                        espmesh.requestDeviceAsync(data);
+                        espmesh.requestDevice(data);
                     }, 500);
                 });
 

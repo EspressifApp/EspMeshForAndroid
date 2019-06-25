@@ -1,20 +1,17 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.objectboxVersion = '2.3.3'
     repositories {
         google()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.2'
+        classpath 'com.android.tools.build:gradle:3.4.1'
         
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
-        dependencies {
-            classpath "io.objectbox:objectbox-gradle-plugin:$objectboxVersion"
-        }
+        classpath "io.objectbox:objectbox-gradle-plugin:2.3.4"
     }
 }
 
@@ -27,4 +24,18 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+ext {
+    lib = [
+            appcompat : 'androidx.appcompat:appcompat:1.0.2',
+            material : 'com.google.android.material:material:1.0.0',
+
+            zxing_android_embedded : "com.journeyapps:zxing-android-embedded:3.6.0",
+            rxjava : "io.reactivex.rxjava2:rxjava:2.2.8",
+            rxandroid : "io.reactivex.rxjava2:rxandroid:2.1.1",
+            jmdns : "org.jmdns:jmdns:3.5.4",
+            slf4j_api : "org.slf4j:slf4j-api:1.7.25",
+            slf4j_simple : "org.slf4j:slf4j-simple:1.7.25"
+    ]
 }

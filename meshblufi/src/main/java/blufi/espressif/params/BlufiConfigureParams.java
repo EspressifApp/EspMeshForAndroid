@@ -9,6 +9,8 @@ import java.util.Set;
 public class BlufiConfigureParams implements Serializable {
     private int mOpMode;
 
+    private byte[] mCustomData;
+
     private String mStaBSSID;
     private String mStaSSID;
     private String mStaPassword;
@@ -52,6 +54,14 @@ public class BlufiConfigureParams implements Serializable {
 
     public void setOpMode(int mode) {
         mOpMode = mode;
+    }
+
+    public byte[] getCustomData() {
+        return mCustomData;
+    }
+
+    public void setCustomData(byte[] customData) {
+        mCustomData = customData;
     }
 
     public String getStaBSSID() {

@@ -14,6 +14,7 @@ define(["vue", "txt!../../pages/footer.html"], function(v, footer) {
                 group: "group",
                 user: "user",
                 recent: "recent",
+                room: "room",
                 showFooter: true,
             }
         },
@@ -47,24 +48,22 @@ define(["vue", "txt!../../pages/footer.html"], function(v, footer) {
                 });
             },
             showGroup: function() {
-                this.stopScan();
-                this.$store.commit("setShowScanBle", false);
-                this.$router.push({
-                    path: "/group"
-                });
+                this.setRouter("/group");
+            },
+            showRoom: function() {
+                this.setRouter("/room");
             },
             showUser: function() {
-                this.stopScan();
-                this.$store.commit("setShowScanBle", false);
-                this.$router.push({
-                    path: "/user"
-                });
+                this.setRouter("/user");
             },
             showRecent: function() {
+                this.setRouter("/recent");
+            },
+            setRouter: function(url) {
                 this.stopScan();
                 this.$store.commit("setShowScanBle", false);
                 this.$router.push({
-                    path: "/recent"
+                    path: url
                 });
             }
         },

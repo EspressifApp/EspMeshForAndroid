@@ -37,7 +37,7 @@ define(["vue","MINT", "Util", "txt!../../pages/ibeaconInfo.html"],
                         self.ibeaconInfo.major+',"minor":'+self.ibeaconInfo.minor+',"power":'+
                         self.ibeaconInfo.power+', "callback": "onSetIbeaconInfo"}';
                     setTimeout(function() {
-                         espmesh.requestDeviceAsync(data);
+                         espmesh.requestDevice(data);
 
                     }, 1000);
 

@@ -1,6 +1,8 @@
 define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./resetDevice", "../js/addGroup",
-"../js/groupInfo", "../js/groupColor", "../js/otaInfo", "../js/joinMesh", "./command", "./sendIP"],
-    function(v, MINT, Util, group, footer, resetDevice, addGroup, groupInfo, groupColor, otaInfo, joinMesh, command, sendIP) {
+    "../js/groupInfo", "../js/groupColor", "../js/otaInfo", "../js/joinMesh", "./command", "./sendIP",
+    "./blueFail", "./wifiFail"],
+    function(v, MINT, Util, group, footer, resetDevice, addGroup, groupInfo, groupColor, otaInfo,
+        joinMesh, command, sendIP, blueFail, wifiFail) {
 
     var Group = v.extend({
         template: group,
@@ -26,7 +28,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                 commandMacs: [],
                 currentStatus: true,
                 searchName: "",
-                groupName: ""
+                groupName: "",
+                isWifiConnect: true,
+                blueEnable: true,
             }
         },
         watch: {
@@ -41,6 +45,24 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
             this.loadGroups();
         },
         computed: {
+            wifiEnable: function() {
+                var wifiInfo = this.$store.state.wifiInfo;
+                if (!Util._isEmpty(wifiInfo)) {
+                    this.isWifiConnect = wifiInfo.connected;
+                } else {
+                    this.isWifiConnect = false;
+                }
+                return this.isWifiConnect;
+            },
+            isBlueEnable: function() {
+                var blueEnable =  this.$store.state.blueInfo;
+                if (!Util._isEmpty(blueEnable)) {
+                    this.blueEnable = blueEnable;
+                } else {
+                    this.blueEnable = false;
+                }
+                return this.blueEnable;
+            },
             list: function () {
                 var self = this;
                 self.deviceList = self.$store.state.deviceList;
@@ -61,8 +83,33 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
 
         methods:{
             addDevice: function (event) {
-                this.flag = false;
-                this.$refs.device.show();
+                var self = this;
+                self.flag = false;
+                if (!self.isWifiConnect) {
+                    setTimeout(function() {
+                        self.showWifiFail();
+                    })
+                    return false;
+                }
+                if (!self.blueEnable) {
+                    setTimeout(function() {
+                        self.showBlueFail();
+                    })
+                    return false;
+                }
+                self.$refs.device.show();
+            },
+            showBlueFail: function() {
+                var self = this;
+                setTimeout(function() {
+                    self.$refs.blueFail.show();
+                })
+            },
+            showWifiFail: function() {
+                var self = this;
+                setTimeout(function() {
+                    self.$refs.wifiFail.show();
+                })
             },
             loadGroups: function() {
                 this.onBackGroup();
@@ -138,6 +185,15 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                     countFlag = true;
                 }
                 return countFlag;
+            },
+            isShowNo: function() {
+                var self = this, num = 0;
+                $.each(self.groupList, function(i, item) {
+                    if (!item.is_user) {
+                        num++;
+                    }
+                });
+               return num == 0 ? true : false
             },
             getDevicesByGroup: function (macs) {
                 var self = this, count = 0;
@@ -242,8 +298,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                     self.hideOperate();
                     MINT.MessageBox.confirm(self.$t('delGroupDesc'), self.$t('delGroupTitle'),{
                         confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
-                        espmesh.deleteGroup(self.groupObj.id);
-                        $("#" + self.groupObj.id).remove();
+                        console.log(self.groupObj.id);
+                        espmesh.deleteGroup(self.groupObj.id + "");
                         self.changeStore();
                         self.$store.commit("setGroupList", self.groupList);
                     });
@@ -270,7 +326,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                             ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
                             DEVICE_DELAY + '": ' + DELAY_TIME + '}';
                         console.log(data);
-                        espmesh.requestDevicesMulticastAsync(data);
+                        espmesh.requestDevicesMulticast(data);
                         espmesh.removeDevicesForMacs(JSON.stringify(macs));
                         MINT.Indicator.close();
                         self.$store.commit("setList", self.deviceList);
@@ -326,19 +382,20 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                     self.$refs.groupcolor.show();
                 }, 300);
             },
-            close: function (macs, status, id) {
+            close: function (macs, status, id, e) {
+                Util.addBgClass(e);
                 var self = this, meshs = [];
                 self.currentStatus = (status == STATUS_ON ? true : false);
                 meshs.push({cid: STATUS_CID, value: parseInt(status)});
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                     ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                     '"characteristics":' + JSON.stringify(meshs) + '}';
-                espmesh.addQueueTask(JSON.stringify({"method":"requestDevicesMulticastAsync","argument": data}));
+                espmesh.addQueueTask(JSON.stringify({"method":"requestDevicesMulticast","argument": data}));
                 self.changeDevice(macs, status);
             },
-            operateClose: function(macs, status, id) {
+            operateClose: function(macs, status, id, e) {
                 var self = this;
-                self.close(macs, status, id);
+                self.close(macs, status, id, e);
                 setTimeout(function() {
                     window.onBackPressed = self.hideOperate;
                 })
@@ -392,7 +449,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
             "v-groupColor": groupColor,
             "v-joinMesh": joinMesh,
             "v-command": command,
-            "v-sendIP": sendIP
+            "v-sendIP": sendIP,
+            "v-blueFail": blueFail,
+            "v-wifiFail": wifiFail
         }
     });
     return Group;

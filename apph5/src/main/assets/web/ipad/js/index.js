@@ -1,5 +1,5 @@
 define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/index.html",
-    "../js/info", "../js/eventInfo", "../js/table", "./resetDevice", "./scanDevice", "./remind", "./writing"],
+    "../js/info", "../js/eventInfo", "../js/table", "../../app/js/resetDevice", "./scanDevice", "./remind", "./writing"],
     function(v, MINT, Util, jsPlumb, Hammer, IScroll, index, info, eventInfo, table, resetDevice, scanDevice, remind, writing) {
 
     var Index = v.extend({
@@ -24,19 +24,24 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                 hsb: "",
                 listMacs: [],
                 distanceY: 0,
+
             }
         },
         mounted: function() {
-            this.wifiNum = 0;
-            espmesh.hideCoverImage();
-            this.$store.commit("setShowScanBle", true);
-            this.$store.commit("setShowLoading", true);
-            this.reload();
-            this.initPages();
-            this.eventDeviceMacs = [];
-            this.loadHWDevices();
-            espmesh.registerPhoneStateChange();
-            this.loadAllDeviceEventsPosition();
+            var self = this;
+            self.wifiNum = 0;
+            self.$store.commit("setShowScanBle", true);
+            self.$store.commit("setShowLoading", true);
+            setTimeout(function() {
+                self.reload();
+                espmesh.hideCoverImage();
+                self.initPages();
+                self.eventDeviceMacs = [];
+                self.loadHWDevices();
+                espmesh.registerPhoneStateChange();
+                self.loadAllDeviceEventsCoordinate();
+            }, 2000)
+
         },
         computed: {
             list: function () {
@@ -572,7 +577,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                         ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
                         DEVICE_DELAY + '": "' + DELAY_TIME + '"}';
                     setTimeout(function(){
-                        espmesh.requestDevicesMulticastAsync(data);
+                        espmesh.requestDevicesMulticast(data);
                         MINT.Indicator.close();
                     }, 500);
                 });
@@ -676,7 +681,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
 
             },
             refreshBtn: function() {
-                this.loadAllDeviceEventsPosition();
+                this.loadAllDeviceEventsCoordinate();
                 JSPLUMB_INSTANCE.deleteEveryEndpoint();
                 $("#topocontent").find("div.elebox").remove();
                 this.stopBleScan();
@@ -706,7 +711,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                     setTimeout(function(){
                         JSPLUMB_INSTANCE.deleteEveryEndpoint();
                         $("#topocontent").find("div.elebox").remove();
-                        espmesh.requestDevicesMulticastAsync(data);
+                        espmesh.requestDevicesMulticast(data);
                         var devices = [];
                         $.each(self.deviceList, function(i, item) {
                             if (macs.indexOf(item.mac) < 0) {
@@ -954,7 +959,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                         '"events":' + JSON.stringify(events) + ', "callback": "OnAsyncDevice", "tag": {"mac": "'+
                         parentMac+'", "childMac": "'+childMac+'"}}';
                 sessionStorage.setItem(childMac+ "_" + parentMac, JSON.stringify(events));
-                espmesh.requestDeviceAsync(data);
+                espmesh.requestDevice(data);
             },
             initEvent: function () {
                 var self = this,
@@ -964,9 +969,9 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(eventMacs) +
                     ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' +
                     GET_EVENT +'","callback": "onInitEvent"}';
-                espmesh.requestDevicesMulticastAsync(data);
+                espmesh.requestDevicesMulticast(data);
             },
-            addFirstMenu: function (item, position) {
+            addFirstMenu: function (item, coordinate) {
                 var hueValue = 0,
                     saturation = 0,
                     luminance = 0,
@@ -991,7 +996,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                         var hsb = "hsb("+ (hueValue / 360) +","+ (saturation / 100) +","+(luminance / 100) +")";
                         color = Raphael.getRGB(hsb);
                     }
-                    var newstyle = 'left:' + position.left + 'px;top:' + position.top + 'px',
+                    var newstyle = 'left:' + coordinate.left + 'px;top:' + coordinate.top + 'px',
                         str = '<div data-tid="' + tid + '" class="elebox '+meshMac+'" id='+meshMac+' style='+newstyle+'>';
                     if (tid >= MIN_LIGHT && tid <= MAX_LIGHT) {
                         str += '<div class="join-wrapper"><span></span><span></span></div><div class="content-wrapper">'+
@@ -1075,7 +1080,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                 if (!Util._isEmpty(eventsPositions) && eventsPositions.length > 0) {
                     var events = [];
                     $.each(eventsPositions, function(i, item) {
-                        if (item.mac == mac) {
+                        if (item.mac == mac && !Util._isEmpty(item.events)) {
                             events = JSON.parse(item.events);
                         }
                     })
@@ -1093,10 +1098,10 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                             if (macs.indexOf(deviceMac) > -1) {
                                 $.each(eventsPositions, function(j, itemSub) {
                                     if (deviceMac == itemSub.mac) {
-                                        var position = itemSub.position;
-                                        position = JSON.parse(position)
-                                        if (!Util._isEmpty(position)) {
-                                            self.addMenu(mac, item, position);
+                                        var coordinate = itemSub.coordinate;
+                                        if (!Util._isEmpty(coordinate)) {
+                                            coordinate = JSON.parse(coordinate)
+                                            self.addMenu(mac, item, coordinate);
                                         } else {
                                             self.addMenu(mac, item, {left: DEVICE_LEFT, top: DEVICE_TOP});
                                             DEVICE_LEFT += 80;
@@ -1107,13 +1112,13 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                             }
                         })
                     }
-                    self.loadAllDeviceEventsPosition();
+                    self.loadAllDeviceEventsCoordinate();
                 }
             },
-            loadAllDeviceEventsPosition: function() {
-                espmesh.loadAllDeviceEventsPosition(JSON.stringify({"callback": "onLoadAllDeviceEventsPosition", "tag": ""}));
+            loadAllDeviceEventsCoordinate: function() {
+                espmesh.loadAllDeviceEventsCoordinate(JSON.stringify({"callback": "onLoadAllDeviceEventsCoordinate", "tag": ""}));
             },
-            addMenu: function (mac, item, position) {
+            addMenu: function (mac, item, coordinate) {
                 var self = this,
                     hueValue = 0,
                     saturation = 0,
@@ -1142,7 +1147,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                         var hsb = "hsb("+ (hueValue / 360) +","+ (saturation / 100) +","+(luminance / 100) +")";
                         color = Raphael.getRGB(hsb);
                     }
-                    var newstyle = 'left:' + position.left + 'px;top:' + position.top + 'px',
+                    var newstyle = 'left:' + coordinate.left + 'px;top:' + coordinate.top + 'px',
                         str = '<div data-tid="' + tid + '" class="elebox '+meshMac+'" id='+meshMac+' style='+newstyle+'>';
                     if (tid >= MIN_LIGHT && tid <= MAX_LIGHT) {
                         str += '<div class="join-wrapper"><span></span><span></span></div><div class="content-wrapper">'+
@@ -1172,35 +1177,43 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                 }
                 self.disabledDevice(meshMac);
             },
-            addSession: function (mac, position, events) {
+            addSession: function (mac, coordinate, events) {
                 var self = this;
                 var eventsPositions = self.$store.state.eventsPositions;
                 var device = "";
                 $.each(eventsPositions, function(i, item) {
                     if (item.mac == mac) {
+                        if (Util._isEmpty(item.events)) {
+                            item.events = JSON.stringify([]);
+                        }
                         device = item;
                         return false;
                     }
                 });
+                console.log(JSON.stringify(device));
                 if (Util._isEmpty(device)) {
-                    espmesh.saveDeviceEventsPosition(JSON.stringify({"mac": mac, "events": JSON.stringify(events),
-                        "position": JSON.stringify(position)}));
+                    console.log(JSON.stringify({"mac": mac, "events": JSON.stringify(events),
+                                                        "coordinate": JSON.stringify(coordinate)}));
+                    espmesh.saveDeviceEventsCoordinate(JSON.stringify({"mac": mac, "events": JSON.stringify(events),
+                        "coordinate": JSON.stringify(coordinate)}));
                 } else {
-                    if (Util._isEmpty(position)) {
-                        position = device.position;
+                    if (Util._isEmpty(coordinate)) {
+                        coordinate = device.coordinate;
                     } else {
-                        position = JSON.stringify(position);
+                        coordinate = JSON.stringify(coordinate);
                     }
                     if (Util._isEmpty(events) || events.length <= 0) {
                         events = device.events;
                     } else {
                         events = JSON.stringify(events);
                     }
-                    espmesh.saveDeviceEventsPosition(JSON.stringify({"mac": mac, "events": events,
-                        "position": position}));
-                    self.loadAllDeviceEventsPosition();
+                    console.log(JSON.stringify({"mac": mac, "events": events,
+                                                        "coordinate": coordinate}));
+                    espmesh.saveDeviceEventsCoordinate(JSON.stringify({"mac": mac, "events": events,
+                        "coordinate": coordinate}));
+                    self.loadAllDeviceEventsCoordinate();
                 }
-                self.loadAllDeviceEventsPosition();
+                self.loadAllDeviceEventsCoordinate();
             },
             addSessions: function (events) {
                 var self = this,
@@ -1211,8 +1224,8 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                     $.each(events, function(i, item) {
                         var itemEvents = item.events;
                         if (!Util._isEmpty(itemEvents) && itemEvents.length > 0) {
-                            espmesh.saveDeviceEventsPosition(JSON.stringify({"mac": item.mac,
-                                "events": JSON.stringify(itemEvents), "position": null}));
+                            espmesh.saveDeviceEventsCoordinate(JSON.stringify({"mac": item.mac,
+                                "events": JSON.stringify(itemEvents), "coordinate": null}));
                         }
                     });
                 } else {
@@ -1222,22 +1235,22 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                         if (!Util._isEmpty(itemEvents) && itemEvents.length > 0) {
                             $.each(eventsPositions, function(j, itemSub) {
                                 if (item.mac == itemSub.mac) {
-                                    espmesh.saveDeviceEventsPosition(JSON.stringify({"mac": item.mac,
-                                        "events": JSON.stringify(itemEvents), "position": itemSub.position}));
+                                    espmesh.saveDeviceEventsCoordinate(JSON.stringify({"mac": item.mac,
+                                        "events": JSON.stringify(itemEvents), "coordinate": itemSub.coordinate}));
                                     flag = false;
                                     return false;
                                 }
                             })
                             if (flag) {
                                 if (!Util._isEmpty(itemEvents) && itemEvents.length > 0) {
-                                    espmesh.saveDeviceEventsPosition(JSON.stringify({"mac": item.mac,
-                                        "events": JSON.stringify(itemEvents), "position": null}));
+                                    espmesh.saveDeviceEventsCoordinate(JSON.stringify({"mac": item.mac,
+                                        "events": JSON.stringify(itemEvents), "coordinate": null}));
                                 }
                             }
                         }
                     })
                 }
-                self.loadAllDeviceEventsPosition();
+                self.loadAllDeviceEventsCoordinate();
             },
             removeSession: function (parentMacs, childMac) {
                 var self = this;
@@ -1274,17 +1287,17 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                             var dataEvents = '{"' + MESH_MAC + '": "' + parentMac +
                                 '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST +
                                 '": "' + SET_EVENT + '",' + '"events":' + JSON.stringify(parentEvents) + '}';
-                            espmesh.requestDeviceAsync(dataEvents);
+                            espmesh.requestDevice(dataEvents);
                         }
                         if (events.length > 0) {
                             var dataEvents = '{"' + MESH_MAC + '": "' + parentMac +
                                 '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST +
                                 '": "' + REMOVE_EVENT + '",' + '"events":' + JSON.stringify(events) + '}';
-                            espmesh.requestDeviceAsync(dataEvents);
+                            espmesh.requestDevice(dataEvents);
                         }
-                        espmesh.saveDeviceEventsPosition(JSON.stringify({mac:device.mac, events: device.events, position: device.position}));
+                        espmesh.saveDeviceEventsCoordinate(JSON.stringify({mac:device.mac, events: device.events, coordinate: device.coordinate}));
                     }
-                    self.loadAllDeviceEventsPosition();
+                    self.loadAllDeviceEventsCoordinate();
 
                 }
                 setTimeout(function() {
@@ -1305,11 +1318,11 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                             var dataChildEvents = '{"' + MESH_MAC + '": "' + childMac +
                                 '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
                                 '"events":' + JSON.stringify(eventsChild) + '}';
-                            espmesh.requestDeviceAsync(dataChildEvents);
+                            espmesh.requestDevice(dataChildEvents);
                         }
                     }
-                    espmesh.deleteDeviceEventsPosition(childMac);
-                    self.loadAllDeviceEventsPosition();
+                    espmesh.deleteDeviceEventsCoordinate(childMac);
+                    self.loadAllDeviceEventsCoordinate();
                 }, 1500)
 
             },
@@ -1370,7 +1383,9 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                     parentMacs = [];
                 if (!Util._isEmpty(eventsPositions)) {
                     $.each(eventsPositions, function(i, item) {
+                        console.log('sads');
                         var itemEvents = JSON.parse(item.events);
+                        console.log('ssss');
                         if (!Util._isEmpty(itemEvents) && itemEvents.length > 0) {
                             var event = itemEvents[0],
                                 executeMac = event.execute_mac,
@@ -1441,6 +1456,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
             },
             onInitEvent: function(deviceEvents) {
                 var self = this;
+                console.log(deviceEvents);
                 var events = [];
                 if (!Util._isEmpty(deviceEvents)) {
                     deviceEvents = JSON.parse(deviceEvents).result;
@@ -1450,7 +1466,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                         }
                     })
                 }
-                espmesh.loadAllDeviceEventsPosition(JSON.stringify({"callback": "onInitAllEvent", "tag": ""}));
+                espmesh.loadAllDeviceEventsCoordinate(JSON.stringify({"callback": "onInitAllEvent", "tag": ""}));
             },
             onBackIndex: function() {
                 var self = this;
@@ -1531,7 +1547,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                                         }
                                     })
                                     if (!Util._isEmpty(device)) {
-                                        self.addFirstMenu(item, JSON.parse(device.position));
+                                        self.addFirstMenu(item, JSON.parse(device.coordinate));
                                         var mac = item.mac,
                                             tid = item.tid;
                                         self.addLink([{mac: mac, tid: tid, events: device.events }]);
@@ -1637,11 +1653,16 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
             },
             onWifiStateChanged: function(wifi) {
                 var self = this;
-                wifi =JSON.parse(wifi);
+                console.log(wifi);
+                var wifiInfo = this.$store.state.wifiInfo;
+                wifi = JSON.parse(wifi);
                 if (wifi.connected) {
+                    wifi.ssid = decodeURIComponent(wifi.ssid);
+                    if (wifi.ssid == wifiInfo.ssid) {
+                        return false;
+                    }
                     if (self.wifiNum != 0) {
                         clearTimeout(WIFI_TIMER);
-                        wifi.ssid = decodeURIComponent(wifi.ssid);
                         WIFI_TIMER = setTimeout(function() {
                             MINT.Toast({
                                 message: self.$t('wifiChangeDesc'),
@@ -1658,6 +1679,8 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                     }
                     self.wifiNum++;
                     self.$store.commit("setWifiInfo", wifi);
+                } else {
+                    self.$store.commit("setWifiInfo", "");
                 }
             },
             onBluetoothStateChanged: function(blue) {
@@ -1777,33 +1800,43 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
             },
             onInitAllEvent: function(res) {
                 var self = this;
+                console.log(res);
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
-                    var events = JSON.parse(decodeURIComponent(res.content));
-                    $.each(self.deviceList, function(i, item) {
-                        $.each(events, function(j, itemSub){
-                            if (itemSub.mac == item.mac) {
-                                var position = itemSub.position;
-                                if (!Util._isEmpty(position)) {
-                                    position = JSON.parse(position);
-                                    self.addFirstMenu(item, position);
-                                } else {
-                                    self.addFirstMenu(item, {left: DEVICE_LEFT, top: DEVICE_TOP});
-                                    DEVICE_LEFT += 80;
-                                }
-                                events.push({mac: item.mac, tid: item.tid, events: itemSub.events });
+                    var events = JSON.parse(decodeURIComponent(res.content)),
+                        newEvents = [];
+                    console.log(decodeURIComponent(res.content));
+                    setTimeout(function() {
+                       for (var i = 0; i < events.length; i++){
+                           var item = events[i];
+                           if (!Util._isEmpty(item.events)) {
+                               for(var j = 0; j < self.deviceList.length; j++){
+                                  var itemSub = self.deviceList[j];
+                                  if (itemSub.mac == item.mac) {
+                                      var coordinate = item.coordinate;
+                                      if (!Util._isEmpty(coordinate)) {
+                                          coordinate = JSON.parse(coordinate);
+                                          self.addFirstMenu(itemSub, coordinate);
+                                      } else {
+                                          self.addFirstMenu(itemSub, {left: DEVICE_LEFT, top: DEVICE_TOP});
+                                          DEVICE_LEFT += 80;
+                                      }
+                                      newEvents.push({mac: itemSub.mac, tid: itemSub.tid, events: item.events });
+                                  }
+                               }
                             }
-                        })
+                        }
                     })
+                    
                 }
                 setTimeout(function() {
-                    self.addLink(events);
+                    self.addLink(newEvents);
                     self.startBleScan();
                     self.onBackIndex();
                     MINT.Indicator.close();
-                }, 1000);
+                }, 3000);
             },
-            onLoadAllDeviceEventsPosition: function(res) {
+            onLoadAllDeviceEventsCoordinate: function(res) {
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
                     var result = JSON.parse(decodeURIComponent(res.content));
@@ -1813,6 +1846,8 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
             onLoadHWDevices: function(res) {
                 this.$store.commit("setSiteList", JSON.parse(res));
             },
+            onAddQueueTask: function() {
+            }
         },
         created: function () {
              window.onDeviceScanned = this.onDeviceScanned;
@@ -1826,8 +1861,9 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
              window.onInitEvent = this.onInitEvent;
              window.onBluetoothStateChanged = this.onBluetoothStateChanged;
              window.onInitAllEvent = this.onInitAllEvent;
-             window.onLoadAllDeviceEventsPosition = this.onLoadAllDeviceEventsPosition;
+             window.onLoadAllDeviceEventsCoordinate = this.onLoadAllDeviceEventsCoordinate;
              window.onLoadHWDevices = this.onLoadHWDevices;
+             window.onAddQueueTask = this.onAddQueueTask;
         },
         components: {
             "v-info": info,

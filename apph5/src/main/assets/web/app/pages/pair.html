@@ -4,7 +4,7 @@
             <div class="title-info">
                 <h4 class="app-title">
                     <span @click="hide"><i class="icon-left back"></i></span>
-                    {{$t('pair')}}
+                    {{$t('pair')}}<sapn v-show="deleteShow">&nbsp;&nbsp;({{selected}}/{{total}})</sapn>
                 </h4>
                 <i @click.stop="pairMore($event)" class="icon-more right-top"></i>
                 <ul v-show="flagUl" class="add-ul">
@@ -13,11 +13,15 @@
                 </ul>
             </div>
             {{list}}
-            <div v-show="deleteShow" class="selected-radio">
-                <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
-                <div @click="selectAllDevice($event)"  class="select-small-radio flex flex-ac flex-jce">
+            <div class="filter-wrapper selected-radio">
+                <div class="input-info flex-1">
+                    <i class="icon-search"></i>
+                    <input type="search" v-model="searchName" class="form-control" :placeholder="$t('searchMAC')">
+                </div>
+                <div v-show="deleteShow"  @click="selectAllDevice($event)"
+                     class="radio-info select-small-radio flex flex-ac flex-jce">
                     <span class="span-radio"
-                           :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
+                          :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
             </div>
             <div @click="moreFlag" class="content-info flex-wrapper" :class="{'attr': !deleteShow}" id="pair-wrapper">
                 <div v-show="!showAdd" class="overflow-touch">
@@ -36,10 +40,13 @@
                     </div>
                 </div>
                 <div v-show="showAdd" class="add-wrapper">
-                    <h3>{{$t('addPair')}}</h3>
-                    <p>{{$t('pairListDesc')}}</p>
-                    <div @click="addPair($event)">
-                        <i class="icon-plus"></i>
+                    <div class="add-icon-wrapper">
+                        <img class="add-image" src="images/no_map.png"/>
+                    </div>
+                    <div class="add-title">{{$t('noAddPairDesc')}}</div>
+                    <div class="add-desc">{{$t('listDesc')}}</div>
+                    <div  class="add-plus" @click="addPair($event)">
+                        {{$t('addPair')}}
                     </div>
                 </div>
             </div>

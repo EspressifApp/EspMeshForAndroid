@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.annotation.Nonnull;
+
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
@@ -38,20 +40,20 @@ import libs.espressif.net.EspHttpUtils;
 import libs.espressif.utils.DataUtil;
 
 public class DeviceUtil {
-    public static final EspHttpHeader HEADER_ROOT_RESP = new EspHttpHeader("root-response", "true") {
-        @Override
-        public void setValue(String value) {
-        }
-    };
+    /**
+     * Value of the header is String "true" or "false"
+     */
+    public static final String HEADER_ROOT_RESP = "root-response";
 
     public static final String CONTENT_TYPE_BIN = "application/bin";
 
     public static final String FILE_REQUEST = "/device_request";
 
     private static final String HEADER_MESH_MAC = IEspActionDevice.HEADER_NODE_MAC;
+    private static final String HEADER_GROUP = IEspActionDevice.HEADER_NODE_GROUP;
     private static final String HEADER_MESH_COUNT = IEspActionDevice.HEADER_NODE_COUNT;
 
-    private static EspHttpResponse httpPost(String url, byte[] content, EspHttpParams params, EspHttpHeader... headers) {
+    private static EspHttpResponse httpPost(String url, byte[] content, EspHttpParams params, Map<String, String> headers) {
         if (params == null) {
             params = new EspHttpParams();
         }
@@ -78,6 +80,26 @@ public class DeviceUtil {
         return null;
     }
 
+    private static void addMeshHeaders(@Nonnull Map<String, String> headers, int bssidSize, String bssid) {
+        boolean hasGroup = false;
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            if (HEADER_GROUP.equals(entry.getKey())) {
+                hasGroup = true;
+                break;
+            }
+        }
+        if (hasGroup) {
+            headers.put(EspHttpUtils.CONTENT_TYPE, EspHttpUtils.APPLICATION_JSON);
+            // TODO Mesh Node Header will deprecate in next 2 or 3 version.
+            headers.put(HEADER_MESH_COUNT, String.valueOf(bssidSize));
+            headers.put(HEADER_MESH_MAC, bssid);
+        } else {
+            headers.put(EspHttpUtils.CONTENT_TYPE, EspHttpUtils.APPLICATION_JSON);
+            headers.put(HEADER_MESH_COUNT, String.valueOf(bssidSize));
+            headers.put(HEADER_MESH_MAC, bssid);
+        }
+    }
+
     /**
      * Post a local device request
      *
@@ -88,7 +110,7 @@ public class DeviceUtil {
      * @return http response, null if failed.
      */
     public static EspHttpResponse httpLocalRequest(IEspDevice device, byte[] content,
-                                                   EspHttpParams params, EspHttpHeader... headers) {
+                                                   EspHttpParams params, Map<String, String> headers) {
         return httpLocalRequest(device.getProtocol(), device.getLanHostAddress(), device.getProtocolPort(),
                 device.getMac(), content, params, headers);
     }
@@ -105,18 +127,13 @@ public class DeviceUtil {
      */
     public static EspHttpResponse httpLocalRequest(
             String protocol, String host, int port, String bssid, byte[] content,
-            EspHttpParams params, EspHttpHeader... headers) {
+            EspHttpParams params, Map<String, String> headers) {
         String url = getLocalUrl(protocol, host, FILE_REQUEST, port);
-
-        EspHttpHeader[] newHeaders;
-        int offset;
-        offset = 3;
-        newHeaders = new EspHttpHeader[headers.length + offset];
-        newHeaders[0] = new EspHttpHeader(HEADER_MESH_COUNT, "1");
-        newHeaders[1] = new EspHttpHeader(HEADER_MESH_MAC, bssid);
-        newHeaders[2] = EspHttpUtils.HEADER_CONTENT_JSON;
-        System.arraycopy(headers, 0, newHeaders, offset, headers.length);
-
+        Map<String, String> newHeaders = new HashMap<>();
+        if (headers != null) {
+            newHeaders.putAll(headers);
+        }
+        addMeshHeaders(newHeaders, 1, bssid);
         return httpPost(url, content, params, newHeaders);
     }
 
@@ -128,8 +145,13 @@ public class DeviceUtil {
      * @param params  http params
      * @param headers http headers
      */
-    public static List<EspHttpResponse> httpLocalMulticastRequest(
-            Collection<IEspDevice> devices, byte[] content, EspHttpParams params, boolean multithread, EspHttpHeader... headers) {
+    public static List<EspHttpResponse> httpLocalMulticastRequest(Collection<IEspDevice> devices,
+              byte[] content, EspHttpParams params, Map<String, String> headers) {
+        HashMap<String, String> newHeaders = new HashMap<>();
+        if (headers != null) {
+            newHeaders.putAll(headers);
+        }
+
         final List<EspHttpResponse> result = new LinkedList<>();
 
         HashMap<InetAddress, List<IEspDevice>> inetDevicesMap = new HashMap<>();
@@ -156,7 +178,7 @@ public class DeviceUtil {
                 final String host = address.getHostAddress();
                 final byte[] orgContent = content;
                 final EspHttpParams orgParams = params;
-                final EspHttpHeader[] orgHeaders = headers;
+                final Map<String, String> orgHeaders = newHeaders;
                 List<IEspDevice> inetDevices = entry.getValue();
                 Collections.sort(inetDevices, (dev1, dev2) -> {
                     Integer layer1 = dev1.getMeshLayerLevel();
@@ -174,7 +196,7 @@ public class DeviceUtil {
                             IEspDevice protocolDev = protocolMap.get(host);
                             List<EspHttpResponse> respList = httpLocalMulticastRequest(
                                     protocolDev.getProtocol(), host, protocolDev.getProtocolPort(),
-                                    bssids, orgContent, orgParams, multithread, orgHeaders);
+                                    bssids, orgContent, orgParams, orgHeaders);
                             emitter.onNext(respList);
                             emitter.onComplete();
                         } catch (Exception e) {
@@ -232,7 +254,12 @@ public class DeviceUtil {
      */
     public static List<EspHttpResponse> httpLocalMulticastRequest(
             String protocol, String host, int port, Collection<String> bssids, byte[] content,
-            EspHttpParams params, boolean multithread, EspHttpHeader... headers) {
+            EspHttpParams params, Map<String, String> headers) {
+        Map<String, String> newHeaders = new HashMap<>();
+        if (headers != null) {
+            newHeaders.putAll(headers);
+        }
+
         String url = getLocalUrl(protocol, host, FILE_REQUEST, port);
 
         final int bssidChunkLimit = Integer.MAX_VALUE;//multithread ? 30 : Integer.MAX_VALUE;
@@ -255,73 +282,80 @@ public class DeviceUtil {
             chunkedBssidsList.add(bssidList);
         }
 
+        if (chunkedBssidsList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Only 1 group bssids
         if (chunkedBssidsList.size() == 1) {
             List<String> limitBssids = chunkedBssidsList.iterator().next();
-            return multicast(url, limitBssids, content, params, headers);
-        } else if (chunkedBssidsList.size() < 1) {
-            return Collections.emptyList();
-        } else {
-            int threadCount = Math.min(threadLimit, chunkedBssidsList.size());
-            LinkedBlockingQueue<Boolean> resultWaitor = new LinkedBlockingQueue<>();
-            Vector<EspHttpResponse> result = new Vector<>();
+            return multicast(url, limitBssids, content, params, newHeaders);
+        }
 
-            for (int i = 0; i < threadCount; i++) {
-                Observable.create(emitter -> {
-                    try {
-                        while (!emitter.isDisposed()) {
-                            System.out.println("Chunked bssid list = " + chunkedBssidsList.size());
-                            List<String> limitBssids = chunkedBssidsList.poll();
-                            if (limitBssids == null) {
-                                break;
-                            }
+        // There are more than 1 group bssids
+        int threadCount = Math.min(threadLimit, chunkedBssidsList.size());
+        LinkedBlockingQueue<Boolean> resultWaitor = new LinkedBlockingQueue<>();
+        Vector<EspHttpResponse> result = new Vector<>();
 
-                            List<EspHttpResponse> responseList = multicast(url, limitBssids, content, params, headers);
-                            result.addAll(responseList);
+        for (int i = 0; i < threadCount; i++) {
+            final Map<String, String> taskHeader = newHeaders;
+            Observable.create(emitter -> {
+                try {
+                    while (!emitter.isDisposed()) {
+                        List<String> limitBssids = chunkedBssidsList.poll();
+                        if (limitBssids == null) {
+                            break;
                         }
 
-                        emitter.onNext(Boolean.TRUE);
-                        emitter.onComplete();
-                    } catch (Exception e) {
-                        emitter.onError(e);
+                        List<EspHttpResponse> responseList = multicast(url, limitBssids, content, params, taskHeader);
+                        result.addAll(responseList);
                     }
-                }).subscribeOn(Schedulers.io())
-                        .subscribe(new Observer<Object>() {
-                            @Override
-                            public void onSubscribe(Disposable d) {
-                            }
 
-                            @Override
-                            public void onNext(Object o) {
-                            }
-
-                            @Override
-                            public void onError(Throwable e) {
-                                e.printStackTrace();
-                                resultWaitor.add(Boolean.FALSE);
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                resultWaitor.add(Boolean.TRUE);
-                            }
-                        });
-            }
-
-            for (int i = 0; i < threadCount; i++) {
-                try {
-                    resultWaitor.take();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    return Collections.emptyList();
+                    emitter.onNext(Boolean.TRUE);
+                    emitter.onComplete();
+                } catch (Exception e) {
+                    emitter.onError(e);
                 }
-            }
+            }).subscribeOn(Schedulers.io())
+                    .subscribe(new Observer<Object>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+                        }
 
-            return result;
+                        @Override
+                        public void onNext(Object o) {
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            e.printStackTrace();
+                            resultWaitor.add(Boolean.FALSE);
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            resultWaitor.add(Boolean.TRUE);
+                        }
+                    });
         }
+
+        for (int i = 0; i < threadCount; i++) {
+            try {
+                resultWaitor.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return Collections.emptyList();
+            }
+        }
+
+        return result;
     }
 
     private static List<EspHttpResponse> multicast(String url, Collection<String> bssids, byte[] content,EspHttpParams params,
-                          EspHttpHeader... headers) {
+                          Map<String, String> headers) {
+        if (headers == null) {
+            headers = new HashMap<>();
+        }
         Collection<String> dstBssids;
         if (bssids.size() >= 200) {
             dstBssids = new ArrayList<>(1);
@@ -330,19 +364,14 @@ public class DeviceUtil {
             dstBssids = bssids;
         }
 
-        final int newHeaderCount = 3;
-        EspHttpHeader[] newHeaders = new EspHttpHeader[headers.length + newHeaderCount];
         StringBuilder bssidsSB = new StringBuilder();
         for (String bssid : dstBssids) {
             bssidsSB.append(bssid).append(',');
         }
         bssidsSB.deleteCharAt(bssidsSB.length() - 1);
-        newHeaders[1] = new EspHttpHeader(HEADER_MESH_MAC, bssidsSB.toString());
-        newHeaders[0] = new EspHttpHeader(HEADER_MESH_COUNT, String.valueOf(dstBssids.size()));
-        newHeaders[2] = EspHttpUtils.HEADER_CONTENT_JSON;
-        System.arraycopy(headers, 0, newHeaders, newHeaderCount, headers.length);
+        addMeshHeaders(headers, dstBssids.size(), bssidsSB.toString());
 
-        EspHttpResponse response = httpPost(url, content, params, newHeaders);
+        EspHttpResponse response = httpPost(url, content, params, headers);
         if (response == null) {
             return Collections.emptyList();
         }
@@ -455,13 +484,13 @@ public class DeviceUtil {
     }
 
     public static Map<String, EspHttpResponse> httpLocalUnicastRequest(
-            Collection<IEspDevice> devices, byte[] content, EspHttpParams params, EspHttpHeader... headers) {
+            Collection<IEspDevice> devices, byte[] content, EspHttpParams params, Map<String, String> headers) {
         return httpLocalUnicastRequest(devices, content, params, null, headers);
     }
 
     public static Map<String, EspHttpResponse> httpLocalUnicastRequest(
             Collection<IEspDevice> devices, byte[] content, EspHttpParams params, final DeviceRequestCallable callable,
-            EspHttpHeader... headers) {
+            Map<String, String> headers) {
         final Map<String, EspHttpResponse> result = new Hashtable<>();
 
         final int threadCount = Math.min(10, devices.size());
@@ -470,7 +499,7 @@ public class DeviceUtil {
         deviceList.addAll(devices);
         final byte[] orgContent = content;
         final EspHttpParams orgParams = params;
-        final EspHttpHeader[] orgHeaders = headers;
+        final Map<String, String> orgHeaders = headers;
         final DeviceRequestCallable orgCallable = callable;
         final Thread mainTaskThread = Thread.currentThread();
 
@@ -617,7 +646,8 @@ public class DeviceUtil {
 
     public static EspHttpHeader getUserTokenHeader() {
         if (EspUser.INSTANCE.isLogged()) {
-            return new EspHttpHeader(IEspAction.KEY_TOKEN, DataUtil.bytesToString(EspUser.INSTANCE.getToken()));
+//            return new EspHttpHeader(IEspAction.KEY_TOKEN, DataUtil.bytesToString(EspUser.INSTANCE.getToken()));
+            return null;
         } else {
             return null;
         }
@@ -626,6 +656,9 @@ public class DeviceUtil {
     public static Map<String, EspHttpResponse> getMapWithDeviceResponses(Collection<EspHttpResponse> responses) {
         Map<String, EspHttpResponse> map = new HashMap<>();
         for (EspHttpResponse resp : responses) {
+            if (resp == null) {
+                continue;
+            }
             String mac = resp.findHeaderValue(IEspActionDevice.HEADER_NODE_MAC);
             if (mac != null) {
                 map.put(mac, resp);
@@ -661,8 +694,12 @@ public class DeviceUtil {
                         .put(IEspActionDevice.KEY_DELAY, delay);
                 byte[] content = json.toString().getBytes();
                 EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
-                DeviceUtil.httpLocalMulticastRequest(devices, content, params,
-                        false, tokenH, DeviceUtil.HEADER_ROOT_RESP);
+                Map<String, String> headers = new HashMap<>();
+                if (tokenH != null) {
+                    headers.put(tokenH.getName(), tokenH.getValue());
+                }
+                headers.put(HEADER_ROOT_RESP, String.valueOf(true));
+                DeviceUtil.httpLocalMulticastRequest(devices, content, params, headers);
             } catch (JSONException e) {
                 e.printStackTrace();
             }

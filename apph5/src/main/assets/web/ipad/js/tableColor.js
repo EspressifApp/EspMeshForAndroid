@@ -1,4 +1,4 @@
-define(["vue", "MINT", "txt!../../pages/tableColor.html", "../js/colorPicker"],
+define(["vue", "MINT", "txt!../../pages/tableColor.html", "../../app/js/colorPicker"],
     function(v, MINT,  tableColor ,colorPicker) {
 
     var TableColor = v.extend({
@@ -20,7 +20,6 @@ define(["vue", "MINT", "txt!../../pages/tableColor.html", "../js/colorPicker"],
                 window.onBackPressed = self.hide;
                 self.getTableMacs();
                 setTimeout(function () {
-                    self.setLeftAndTop();
                     self.$refs.tableColor.show();
                 })
                 self.tableFlag = true;
@@ -28,13 +27,6 @@ define(["vue", "MINT", "txt!../../pages/tableColor.html", "../js/colorPicker"],
             hide: function () {
                 this.tableFlag = false;
                 this.$emit("tableColorShow");
-            },
-            setLeftAndTop: function() {
-                var self = this,
-                    doc = $("body"),
-                    width = doc.width();
-                self.$store.commit("setTopColor", 80);
-                self.$store.commit("setLeftColor", (width - INIT_SIZE));
             },
             getTableMacs: function() {
                 var docs = $("td.active .td-content"), macs = [];

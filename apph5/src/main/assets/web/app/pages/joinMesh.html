@@ -46,7 +46,7 @@
                         </div>
                         <div class="item-name">
                             <span>{{item.name}}({{getPosition(item.position)}})</span>
-                            <span class="desc">Rssi: {{item.rssi}}&nbsp;&nbsp;&nbsp;Dis: {{distance(item.rssi)}}m</span>
+                            <span class="desc">Mac: {{item.bssid}}&nbsp;&nbsp;&nbsp;<img class="item-img" :src="getRssiIcon(item.rssi)"/></span>
                         </div>
                         <div class="item-power-small">
                             <span :data-value="item.bssid" class="span-radio" :class="{'active': isSelected(item.bssid)}"><span></span></span>

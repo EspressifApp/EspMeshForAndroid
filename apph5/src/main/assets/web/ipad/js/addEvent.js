@@ -385,7 +385,7 @@ define(["vue", "MINT", "txt!../../pages/addEvent.html"],
                         '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + SET_EVENT + '",' +
                         '"events":' + JSON.stringify(events) + ', "callback": "onSetEvent", "tag": {"event": '+
                         JSON.stringify(events)+', "mac": "'+mac+'"}}';
-                    espmesh.requestDeviceAsync(data);
+                    espmesh.requestDevice(data);
 
                 }, 500);
 

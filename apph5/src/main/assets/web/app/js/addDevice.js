@@ -27,6 +27,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 slots1:[{values: [], defaultIndex: 0}],
                 isMore: false,
                 moreObj: {},
+                customData: null,
                 meshType: "",
                 votePercentage: null,
                 voteMaxCount: null,
@@ -50,6 +51,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 xonQsize: null,
                 retransmitEnable: null,
                 dataDrop: null,
+                meshPwd: null,
+                selected: "1"
             }
         },
         computed: {
@@ -104,8 +107,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 self.getMeshId();
                 espmesh.stopBleScan();
                 self.addFlag = true;
+                self.isMore = false;
                 self.moreObj = {};
                 self.meshType = null,
+                self.customData = null;
                 self.votePercentage = null;
                 self.voteMaxCount = null;
                 self.backoffRssi = null;
@@ -128,6 +133,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 self.xonQsiz = null;
                 self.retransmitEnable = null;
                 self.dataDrop = null;
+                self.meshPwd = null;
                 setTimeout(function() {
                     self.configWifi();
                 }, 1000);
@@ -139,19 +145,36 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 this.isMore = !this.isMore;
             },
             selectType: function(num) {
-                this.meshType = parseInt(num);
+                if (!this.moreEnable) {
+                    num = parseInt(num);
+                    if (this.meshTyp == num) {
+                        this.meshTyp = ""
+                    } else {
+                        this.meshType = num;
+                    }
+
+                }
+
             },
             selectRoot: function() {
-                this.rootEnable = !this.rootEnable;
+                if (!this.moreEnable) {
+                    this.rootEnable = !this.rootEnable;
+                }
             },
             selectFix: function() {
-                this.fixEnable = !this.fixEnable;
+                if (!this.moreEnable) {
+                    this.fixEnable = !this.fixEnable;
+                }
             },
             selectRetransmit: function() {
-                this.retransmitEnable = !this.retransmitEnable;
+                if (!this.moreEnable) {
+                    this.retransmitEnable = !this.retransmitEnable;
+                }
             },
             selectDataDrop: function() {
-                this.dataDrop = !this.dataDrop;
+                if (!this.moreEnable) {
+                    this.dataDrop = !this.dataDrop;
+                }
             },
             showPassword: function () {
                 this.showPwd = !this.showPwd;
@@ -227,10 +250,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 this.showMesh = true;
                 window.onBackPressed = this.hideMesh;
             },
-            onMeshChange: function(picker, values) {
+            onMeshChange: function() {
                 var self = this;
-                if (!Util._isEmpty(values[0])) {
-                    var ids = values[0].split(":");
+                var values = this.$refs.picker.getValues()[0];
+                if (!Util._isEmpty(values)) {
+                    var ids = values.split(":");
                     self.meshIdOne = ids[0];
                     self.meshIdTwo = ids[1];
                     self.meshIdThr = ids[2];
@@ -238,6 +262,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                     self.meshIdFive = ids[4];
                     self.meshIdSex = ids[5];
                 }
+                self.hideMesh();
 
             },
             hideMesh: function() {
@@ -284,7 +309,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 }
                 self.meshId = self.meshIdOne + ":" + self.meshIdTwo + ":" + self.meshIdThr + ":" + self.meshIdFour +
                     ":" + self.meshIdFive + ":" + self.meshIdSex;
-                self.moreObj = {mesh_type: self.meshType, vote_percentage: self.votePercentage, vote_max_count: self.voteMaxCount,
+                self.moreObj = {custom_data: self.customData, mesh_password: self.meshPwd, mesh_type: self.meshType, vote_percentage: self.votePercentage, vote_max_count: self.voteMaxCount,
                     backoff_rssi: self.backoffRssi, scan_min_count: self.scanMinCount, scan_fail_count: self.scanFailCount, monitor_ie_count: self.monitorCount,
                     root_healing_ms: self.rootHealing, root_conflicts_enable: self.rootEnable, fix_root_enable: self.fixEnable,
                     capacity_num: self.capacityNum, max_layer: self.maxLayer, max_connection: self.maxConnect,

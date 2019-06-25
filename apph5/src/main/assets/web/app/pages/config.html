@@ -1,0 +1,77 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="showFlag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide">
+                        <i class="icon-left back"></i>
+                    </span>
+                    {{deviceInfo.name}}
+                </h4>
+                <span @click="save" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
+            </div>
+            <div class="content-info attr">
+                <div class="button-sensor-wrapper">
+                    <div class="btn-top">
+                        <div v-for="i in 4" class="btn-content">
+                            <div @click="showSelectRoom('group' + (i - 1))" :class="{'active': isShowGroup('group' + (i - 1))}"
+                                 class="btn-round-no">{{getRoomName("group" + (i - 1))}}</div>
+                        </div>
+                    </div>
+                    <div class="btn-middle-1 btn-long">
+                        <div class="btn-content">
+                            <div data-value="function0" :class="{'active': getActive('function0')}"
+                                 class="btn-round">A</div>
+                        </div>
+                        <div class="btn-content">
+                            <div data-value="function1" :class="{'active': getActive('function1')}" class="btn-round">B</div>
+                        </div>
+                    </div>
+                    <div class="btn-middle-2 btn-long">
+                        <div class="btn-content">
+                            <div data-value="function2" :class="{'active': getActive('function2')}" class="btn-round">C</div>
+                        </div>
+                        <div class="btn-content">
+                            <div data-value="function3" :class="{'active': getActive('function3')}" class="btn-round">D</div>
+                        </div>
+                    </div>
+                    <div class="btn-bottom">
+                        <div v-for="i in 2" class="btn-content">
+                            <div class="btn-round-no"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-wrapper">
+                    <h4>{{$t('btnHold')}}({{$t('adjustment')}})</h4>
+                    <div class="dog">
+                        <div class="dog-info shortPress" :data-value="item.id" v-for="item in shortPress">
+                            <div @click="delExist(item.id)" class="dog-btn" v-show="isExist(item.id)">{{getBtnName(item.id)}}</div>
+                            <span>{{item.name}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <transition name="ups">
+        <div v-show="showSelect" class="ota-upgrade">
+            <div @click="hideSelectRoom" class="mask"></div>
+            <div class="upgrade-info btn-select">
+                <h3>选择房间</h3>
+                <div class="command-select" id="btn-select-device">
+                    <div v-show="item.roomKey != 'create'" @click="selectRoom(item.roomKey)" class="event-item" v-for="item in roomList">
+                        <div class="event-item-name">{{item.name}}</div>
+                        <div class="event-item-power">
+                            <span :data-value="item.roomKey"
+                                  class="span-radio" :class="{'active': selectCurrentRoom == item.roomKey}"><span></span></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-flex">
+                    <button @click="hideSelectRoom" class="btn register-btn retry">{{$t('cancelBtn')}}</button>
+                    <button @click="saveDevice" class="btn register-btn">{{$t('confirmBtn')}}</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

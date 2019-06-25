@@ -12,9 +12,8 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
-import android.util.SparseArray;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +36,11 @@ public class EspBleUtils {
         return UUID.fromString(string);
     }
 
+    public static UUID newUUID(byte[] bytes) {
+        String address = String.format("%02x%02x", bytes[0], bytes[1]);
+        return newUUID(address);
+    }
+
     /**
      * Starts a scan for Bluetooth LE devices.
      *
@@ -50,6 +54,10 @@ public class EspBleUtils {
         }
 
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (!adapter.isEnabled()) {
+            return false;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             BleScanCallback scanCallback = new BleScanCallback(listener);
             mScanListenerMap.put(listener, scanCallback);
@@ -64,12 +72,11 @@ public class EspBleUtils {
                 @Override
                 public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
                     if (mScanListenerMap.get(listener) != null) {
-                        listener.onLeScan(device, rssi, scanRecord);
+                        listener.onLeScan(device, rssi, scanRecord, null);
                     }
                 }
             };
             mScanListenerMap.put(listener, callback);
-            //noinspection deprecation
             return adapter.startLeScan(callback);
         }
     }
@@ -87,7 +94,7 @@ public class EspBleUtils {
             int rssi = result.getRssi();
             byte[] scanRecord = result.getScanRecord() == null ? null : result.getScanRecord().getBytes();
             if (mScanListenerMap.get(mScanListener) != null) {
-                mScanListener.onLeScan(device, rssi, scanRecord);
+                mScanListener.onLeScan(device, rssi, scanRecord, result);
             }
         }
 
@@ -117,6 +124,11 @@ public class EspBleUtils {
         }
 
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (!adapter.isEnabled()) {
+            mScanListenerMap.clear();
+            return;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (callback instanceof ScanCallback) {
                 adapter.getBluetoothLeScanner().stopScan((ScanCallback) callback);
@@ -126,14 +138,8 @@ public class EspBleUtils {
             }
 
         } else {
-            //noinspection deprecation
             adapter.stopLeScan((BluetoothAdapter.LeScanCallback) callback);
         }
-    }
-
-    public static UUID newUUID(byte[] bytes) {
-        String address = String.format("%02x%02x", bytes[0], bytes[1]);
-        return newUUID(address);
     }
 
     public static UUID getIndicationDescriptorUUID() {

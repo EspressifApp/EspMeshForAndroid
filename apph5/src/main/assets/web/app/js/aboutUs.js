@@ -21,7 +21,7 @@ define(["vue","MINT", "txt!../../pages/aboutUs.html" ],
                     this.addFlag = false;
                 },
                 accessUs: function () {
-                    window.location.href = this.$t('httpUrl');
+                    espmesh.newWebView(this.$t('httpUrl'));
                 }
 
             }

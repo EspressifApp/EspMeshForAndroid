@@ -1,6 +1,6 @@
 package iot.espressif.esp32.model.group;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import java.util.Collection;
 

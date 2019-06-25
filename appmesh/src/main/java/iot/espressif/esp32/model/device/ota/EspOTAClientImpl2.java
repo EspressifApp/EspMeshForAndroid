@@ -49,8 +49,6 @@ class EspOTAClientImpl2 extends EspOTAClient {
 
     private final EspLog mLog = new EspLog(getClass());
 
-    private volatile boolean mClosed = false;
-
     private File mBin;
     private String mBinUrl;
 
@@ -59,6 +57,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
     private int mPort;
     private List<String> mMacList;
 
+    private volatile boolean mOtaRunning = false;
     private Thread mOtaThread;
 
     private HttpURLConnection mConnection;
@@ -73,21 +72,18 @@ class EspOTAClientImpl2 extends EspOTAClient {
                 return;
             }
 
-            switch (action) {
-                case DeviceConstants.ACTION_OTA_STATUS_CHANGED: {
-                    mLog.d("Receive ota change local broadcast");
-                    String[] macs = intent.getStringArrayExtra(DeviceConstants.KEY_DEVICE_MACS);
-                    if (macs == null) {
-                        break;
-                    }
-                    synchronized (mProgressMacs) {
-                        mProgressMacs.addAll(Arrays.asList(macs));
-                    }
-                    synchronized (mReceiver) {
-                        mLog.d("Notify mReceiver wait to get ota progress");
-                        mReceiver.notify();
-                    }
-                    break;
+            if (action.equals(DeviceConstants.ACTION_OTA_STATUS_CHANGED)) {
+                mLog.d("Receive ota change local broadcast");
+                String[] macs = intent.getStringArrayExtra(DeviceConstants.KEY_DEVICE_MACS);
+                if (macs == null) {
+                    return;
+                }
+                synchronized (mProgressMacs) {
+                    mProgressMacs.addAll(Arrays.asList(macs));
+                }
+                synchronized (mReceiver) {
+                    mLog.d("Notify mReceiver wait to get ota progress");
+                    mReceiver.notify();
                 }
             }
         }
@@ -141,6 +137,10 @@ class EspOTAClientImpl2 extends EspOTAClient {
 
     @Override
     public synchronized void start() {
+        if (mOtaRunning) {
+            throw new IllegalStateException("OTA task is running");
+        }
+
         runOta();
     }
 
@@ -149,12 +149,12 @@ class EspOTAClientImpl2 extends EspOTAClient {
         close();
 
         try {
+            mLog.d("Request OTA stop");
             URL url = new URL(getStopUrl());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setFixedLengthStreamingMode(0);
             connection.setDoOutput(true);
             connection.setRequestMethod(EspHttpUtils.METHOD_POST);
-            connection.addRequestProperty(EspHttpUtils.CONNECTION, EspHttpUtils.CLOSE);
 
             connection.connect();
 
@@ -174,13 +174,13 @@ class EspOTAClientImpl2 extends EspOTAClient {
 
     @Override
     public synchronized void close() {
-        mClosed = true;
+        mLog.d("close()");
+        mOtaRunning = false;
 
         if (mOtaThread != null) {
             mOtaThread.interrupt();
             mOtaThread = null;
         }
-
         if (mConnection != null) {
             mConnection.disconnect();
             mConnection = null;
@@ -188,6 +188,8 @@ class EspOTAClientImpl2 extends EspOTAClient {
     }
 
     private void runOta() {
+        mOtaRunning = true;
+
         mOtaThread = new Thread(() -> {
             if (getOTACallback() != null) {
                 runOtaCallback(() -> getOTACallback().onOTAPrepare(EspOTAClientImpl2.this));
@@ -237,6 +239,9 @@ class EspOTAClientImpl2 extends EspOTAClient {
                     getOTACallback().onOTAResult(EspOTAClientImpl2.this, sucMacList);
                 });
             }
+
+            mOtaRunning = false;
+            mLog.d("OTA thread over");
         });
         mOtaThread.start();
     }
@@ -266,6 +271,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
             mConnection.setFixedLengthStreamingMode((int)mBin.length());
             mConnection.setDoOutput(true);
             mConnection.setRequestMethod(EspHttpUtils.METHOD_POST);
+            mConnection.setReadTimeout(30000);
 
             mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_MAC, getMacHeaderValue());
             mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_COUNT, String.valueOf(mMacList.size()));
@@ -276,7 +282,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
             OutputStream os = mConnection.getOutputStream();
             int i = 0;
             for (int read = fis.read(); read != -1; read = fis.read()) {
-                if (mClosed) {
+                if (!mOtaRunning) {
                     return false;
                 }
 
@@ -322,9 +328,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
             mLog.d("OTA response code = " + statusCode);
             return statusCode == HttpURLConnection.HTTP_OK;
         } catch (Exception e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+            mLog.w("Catch exception when post bin data");
             e.printStackTrace();
             return false;
         } finally {
@@ -349,7 +353,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
             mConnection.setRequestMethod(EspHttpUtils.METHOD_POST);
             mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_MAC, getMacHeaderValue());
             mConnection.addRequestProperty(IEspActionDevice.HEADER_NODE_COUNT, String.valueOf(mMacList.size()));
-            mConnection.addRequestProperty(EspHttpUtils.CONTENT_TYPE, EspHttpUtils.HEADER_CONTENT_JSON.getValue());
+            mConnection.addRequestProperty(EspHttpUtils.CONTENT_TYPE, EspHttpUtils.APPLICATION_JSON);
             mConnection.addRequestProperty(HEADER_BIN_URL, mBinUrl);
 
             byte[] postData = "{}".getBytes();
@@ -381,9 +385,6 @@ class EspOTAClientImpl2 extends EspOTAClient {
 
             return statusCode == HttpURLConnection.HTTP_OK;
         } catch (Exception e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
             e.printStackTrace();
             return false;
         } finally {
@@ -416,13 +417,17 @@ class EspOTAClientImpl2 extends EspOTAClient {
 
         final long timeout = 600000; // 10 minutes
         final long startTime = SystemClock.elapsedRealtime();
+        final long checkInterval = 30000;
         while (SystemClock.elapsedRealtime() - startTime < timeout) {
+            if (!mOtaRunning) {
+                return false;
+            }
+
             synchronized (mReceiver) {
                 try {
-                    mReceiver.wait(30000);
+                    mReceiver.wait(checkInterval);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    Thread.currentThread().interrupt();
+                    mLog.w("CheckProgress wait interrupted");
                     return false;
                 }
             }
@@ -454,7 +459,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
             EspHttpParams params = new EspHttpParams();
             params.setSOTimeout(30000);
             List<EspHttpResponse> responseList = DeviceUtil.httpLocalMulticastRequest(mProtocol, mHost, mPort,
-                    progressMacList, postJSON.toString().getBytes(), params, true);
+                    progressMacList, postJSON.toString().getBytes(), params, null);
             if (responseList == null) {
                 continue;
             }
@@ -511,7 +516,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
         synchronized (mReceiver) {
             Observable.create(emitter -> {
                 IntentFilter filter = new IntentFilter(DeviceConstants.ACTION_OTA_STATUS_CHANGED);
-                EspApplication.getInstance().registerReceiver(mReceiver, filter);
+                EspApplication.getEspApplication().registerLocalReceiver(mReceiver, filter);
                 synchronized (mReceiver) {
                     mReceiver.notify();
                 }
@@ -521,8 +526,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
             try {
                 mReceiver.wait();
             } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
+                mLog.w("OTA registerReceiver interrupted");
             }
         }
     }
@@ -530,7 +534,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
     private void unregisterReceiver() {
         synchronized (mReceiver) {
             Observable.create(emitter -> {
-                EspApplication.getInstance().unregisterReceiver(mReceiver);
+                EspApplication.getEspApplication().unregisterLocalReceiver(mReceiver);
                 synchronized (mReceiver) {
                     mReceiver.notify();
                 }
@@ -540,7 +544,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
             try {
                 mReceiver.wait();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                mLog.w("OTA unregisterReceiver interrupted");
                 Thread.currentThread().interrupt();
             }
         }
@@ -556,7 +560,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
                 }
             }
             if (sucMacList.isEmpty()) {
-                mLog.w("reboot no suc mac");
+                mLog.w("No suc mac to reboot");
                 return;
             }
 
@@ -564,7 +568,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
                     .put(IEspActionDevice.KEY_REQUEST, IEspActionDeviceReboot.REQUEST_REBOOT)
                     .put(IEspActionDevice.KEY_DELAY, 5000);
             DeviceUtil.httpLocalMulticastRequest(mProtocol, mHost, mPort, sucMacList,
-                    json.toString().getBytes(), null, true);
+                    json.toString().getBytes(), null, null);
         } catch (JSONException e) {
             e.printStackTrace();
         }

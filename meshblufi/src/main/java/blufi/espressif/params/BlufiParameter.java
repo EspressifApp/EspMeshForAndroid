@@ -94,6 +94,8 @@ public interface BlufiParameter {
     }
 
     class MeshData {
+        public static final int BLUFI_DATA_CUSTOM                = 0;
+
         public static final int BLUFI_DATA_ROUTER_SSID           = 1;
         public static final int BLUFI_DATA_ROUTER_PASSWD         = 2;
         public static final int BLUFI_DATA_ROUTER_BSSID          = 3;

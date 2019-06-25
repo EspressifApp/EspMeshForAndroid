@@ -293,7 +293,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 })
                 if (status == STATUS_ON) {
                     if (mode == MODE_CTB) {
-                        rgb = self.modeFun(temperature, brightness);
+                        rgb = Util.modeFun(temperature, brightness);
                     } else {
                         rgb = Raphael.hsb2rgb(hueValue / 360, saturation / 100, luminance / 100).hex;
                     }
@@ -303,32 +303,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                     rgb = "#3ec2fc";
                 }
                 return rgb;
-            },
-            modeFun: function(temperature, brightness) {
-                var r = 0,
-                    g = 0,
-                    b = 0,
-                    r1 = 248,
-                    g1 = 207,
-                    b1 = 109,
-                    r2 = 255,
-                    g2 = 255,
-                    b2 = 255,
-                    r3 = 164,
-                    g3 = 213,
-                    b3 = 255;
-                if (temperature < 50) {
-                    var num = temperature / 50;
-                    r = Math.floor((r2 - r1) * num) + r1;
-                    g = Math.floor((g2 - g1) * num) + g1;
-                    b = Math.floor((b2 - b1) * num) + b1;
-                } else {
-                    var num = (temperature - 50) / 50;
-                    r = r2 - Math.floor((r2 - r3) * num);
-                    g = g2 - Math.floor((g2 - g3) * num);
-                    b = b2 - Math.floor((b2 - b3) * num);
-                }
-                return "rgba("+r+", "+g+", "+b+", 1)";
             },
             isShow: function(macs) {
                 var self = this,
@@ -372,16 +346,23 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
             },
             editName: function () {
                 var self = this;
-                self.hideOperate();
-                MINT.MessageBox.prompt(self.$t('editNameInput'), self.$t('addGroupTitle'),
-                    {inputValue: self.group.name, inputPlaceholder: self.$t('addGroupInput'),
-                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj)  {
-                    self.group.name = obj.value;
-                    espmesh.saveGroups(JSON.stringify([self.group]));
-                    self.changeStore();
-                    self.groupList.push(self.group);
-                    self.$store.commit("setGroupList", self.groupList);
-                });
+                if (self.group.is_user) {
+                    MINT.Toast({
+                        message: self.$t('prohibitEditDesc'),
+                        position: 'middle',
+                    });
+                } else{
+                    self.hideOperate();
+                    MINT.MessageBox.prompt(self.$t('editNameInput'), self.$t('addGroupTitle'),
+                        {inputValue: self.group.name, inputPlaceholder: self.$t('addGroupInput'),
+                        confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj)  {
+                        self.group.name = obj.value;
+                        espmesh.saveGroups(JSON.stringify([self.group]));
+                        self.changeStore();
+                        self.groupList.push(self.group);
+                        self.$store.commit("setGroupList", self.groupList);
+                    });
+                }
             },
             dissolutionGroup: function (e) {
                 var self = this,
@@ -425,7 +406,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                         var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                         ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'", "'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
                                         DEVICE_DELAY + '": ' + DELAY_TIME + '}';
-                        espmesh.requestDevicesMulticastAsync(data);
+                        espmesh.requestDevicesMulticast(data);
                         espmesh.removeDevicesForMacs(JSON.stringify(macs));
                         var devices = [];
                         $.each(self.deviceList, function(i, item) {
@@ -449,7 +430,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                         ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                            '"characteristics":' + JSON.stringify(meshs) + '}';
-                espmesh.requestDevicesMulticastAsync(data);
+                espmesh.requestDevicesMulticast(data);
                 self.changeDevice(macs, status);
             },
              changeDevice: function (macs, status) {
@@ -481,11 +462,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
 
             },
             operate: function (id, e) {
-                this.groupMacs = this.getMacs();
+                var self = this;
+                self.groupMacs = self.getMacs();
                 if (id == 1) {
-                    this.$refs.color.show();
+                    setTimeout(function() {
+                        self.$refs.color.show();
+                    }, 200)
                 }
-                this.operateCurrent = id;
+                self.operateCurrent = id;
             },
             getColor: function (h, s, b) {
                 return Raphael.getRGB("hsb(" + h / 360 + "," + s / 100 + "," + b / 100 + ")").hex;
@@ -595,7 +579,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                         ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                         '"characteristics":' + JSON.stringify(meshs) + '}';
-                espmesh.requestDevicesMulticastAsync(data);
+                espmesh.requestDevicesMulticast(data);
                 self.$store.commit("setList", self.deviceList);
 
             },
@@ -613,7 +597,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 var data = '{"' + MESH_MAC + '": ' + JSON.stringify(macs) +
                         ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                     '"characteristics":' + JSON.stringify(meshs) + '}';
-                espmesh.addQueueTask(JSON.stringify({"method":"requestDevicesMulticastAsync","argument": data}));
+                espmesh.addQueueTask(JSON.stringify({"method":"requestDevicesMulticast","argument": data}));
                 console.log(self.deviceList.length);
                 $.each(self.deviceList, function(i, item){
                     if (macs.indexOf(item.mac) > -1) {

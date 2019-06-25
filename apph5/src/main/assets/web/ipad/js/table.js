@@ -61,6 +61,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                 this.$store.commit("setShowScanBle", true);
                 this.$store.commit("setShowLoading", true);
                 this.$emit("tableShow");
+                MINT.Indicator.close();
             },
             hideParent: function() {
                 window.onBackPressed = this.hideTable;
@@ -206,7 +207,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                     self.init(COL_NUM, ROW_NUM, "table-drop");
                 } else {
                     self.init(self.colNum, self.rowNum, "table-drop");
-                    espmesh.saveDeviceTable("{column: "+self.colNum+", row: "+self.rowNum+"}");
+                    espmesh.saveDeviceTable(JSON.stringify({"column": self.colNum, "row": self.rowNum}));
                     setTimeout(function() {
                         self.droppableTable();
                     }, 100);
@@ -519,7 +520,7 @@ define(["vue", "MINT", "Util", "IScroll", "txt!../../pages/table.html", "../js/i
                     var data = '{"' + MESH_MAC + '": "' + mac +
                         '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' +MESH_REQUEST + '": "' + SET_STATUS + '",' +
                         '"characteristics":' + JSON.stringify(meshs) + '}';
-                    espmesh.addQueueTask(JSON.stringify({"method":"requestDeviceAsync","argument": data}));
+                    espmesh.addQueueTask(JSON.stringify({"method":"requestDevice","argument": data}));
                 }
 
             },

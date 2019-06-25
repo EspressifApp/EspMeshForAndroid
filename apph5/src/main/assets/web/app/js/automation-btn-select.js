@@ -49,7 +49,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-select.html", "../
                     var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
                         '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' +
                         GET_EVENT +'", "callback": "onGetEvent"}';
-                    espmesh.requestDeviceAsync(data);
+                    espmesh.requestDevice(data);
                     console.log(JSON.stringify(self.deviceEvents));
 
                 },
@@ -76,7 +76,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-select.html", "../
                     var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
                         '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + REMOVE_EVENT + '",' +
                         '"events":' + JSON.stringify(eventNames) + '}';
-                    espmesh.requestDeviceAsync(data);
+                    espmesh.requestDevice(data);
                     self.existEvent = false;
                     self.deviceEvents = [];
                     setTimeout(function() {

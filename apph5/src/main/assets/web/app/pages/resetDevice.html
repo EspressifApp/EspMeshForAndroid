@@ -4,6 +4,9 @@
         <div v-show="addFlag" class="add-info operate-way">
             <div class="title-info">
                 <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{$t('scanDevice')}}({{selected}}/{{count}})</h4>
+                <div v-show="!blueEnable"  @click="showBlueFail" class="right-top right-40">
+                    <span class="right-icon"><i class="icon-bluetooth icon-position"><i class="icon-cancel-circled"></i></i></span>
+                </div>
                 <span @click="showFlag" class="icon-more right-top"></span>
                 <ul v-show="flagUl" class="add-ul">
                     <li @click.stop="importDevice($event)"><i class="icon-import"></i><span>{{$t('importDevice')}}</span></li>
@@ -46,7 +49,7 @@
                         </div>
                         <div class="item-name">
                             <span>{{item.name}}({{getPosition(item.position)}})</span>
-                            <span class="desc">Mac: {{item.bssid}}&nbsp;&nbsp;&nbsp;Rssi: {{item.rssi}}</span>
+                            <span class="desc"><img class="item-img" :src="getRssiIcon(item.rssi)"/>&nbsp;&nbsp;&nbsp;Mac: {{item.bssid}}</span>
                         </div>
                         <div class="item-power-small">
                             <span :data-value="item.mac" class="span-radio" :class="{'active': isSelected(item.mac)}"><span></span></span>
@@ -57,32 +60,52 @@
             <div v-show="showFooterInfo" class="position-absolute btn-register-wrapper scan-btn">
                 <button :class="{'bg-gray': selected <= 0}" type="submit" class="btn register-btn" @click="addDevice">{{$t('next')}}</button>
             </div>
-            <div v-show="showFooterInfo" class="position-absolute btn-register-wrapper">
-                <a @click="showDescInfo">{{$t('noShowTitle')}}</a>
+            <div @click="showDescInfo" v-show="showFooterInfo" class="proble-info flex flex-ac">
+                <i class="icon-problem"></i>{{$t('noSearch')}}
             </div>
         </div>
     </transition>
-    <transition name="ups">
-        <div v-show="showDesc" class="operate-wrapper">
-            <div class="scan-desc">
-                <div class="title-info">
-                    <h4 class="app-title">{{$t('noShowCauseTitle')}}</h4>
-                    <span @click="hideDescInfo" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
+    <transition>
+        <div v-show="showDesc" class="ota-upgrade fail-wrapper">
+            <div @click="hideDescInfo" class="mask"></div>
+            <div class="upgrade-info fail-info">
+                <div class="fail-header flex flex-ac">
+                    <div class="fail-blue flex-1 fon">
+                        <div class="fail-round flex flex-ac flex-jcc">
+                            <i class="icon-mobile"><i class="icon-bluetooth"></i></i>
+                        </div>
+                        <span>{{$t('blueIsEnabled')}}</span>
+                    </div>
+                    <div class="fail-line flex-1 flex flex-ac flex-jcc flex-v">
+                        <span class="line-desc flex flex-ac"><i class="icon-map"></i>{{$t('lessMeters')}}</span>
+                        <span class="line"></span>
+                    </div>
+                    <div class="fail-light flex-1">
+                        <div class="fail-round flex flex-ac flex-jcc">
+                            <i class="icon-light"></i>
+                        </div>
+                    </div>
                 </div>
-                <ul class="network-desc">
-                    <li>{{$t('causeDesc1')}}</li>
-                    <li>{{$t('causeDesc2')}}</li>
-                    <li>{{$t('causeDesc3')}}</li>
-                    <li>{{$t('causeDesc4')}}</li>
-                    <li>{{$t('causeDesc5')}}</li>
-                    <li>{{$t('causeDesc6')}}</li>
-                </ul>
-
+                <div class="fail-content">
+                    <h4>{{$t('addDevices')}}</h4>
+                    <ul class="fail-ul">
+                        <li>1. {{$t('devicePowered')}}</li>
+                        <li>2. {{$t('deviceNoConfig')}}</li>
+                        <li>3. {{$t('less20Meters')}}</li>
+                        <li>4. {{$t('devicesWell')}}</li>
+                        <li>5. {{$t('blueMal')}}&emsp;<span @click="setBluetooth" class="green">{{$t('goReboot')}}</span></li>
+                        <li v-show="systemInfo">6. {{$t('locationEnabled')}}&emsp;<span @click="setLocation" class="green">{{$t('goEnable')}}</span></li>
+                    </ul>
+                    <div class="result-flex flex flex-ac flex-jcc">
+                        <button @click="hideDescInfo" class="btn register-btn">{{$t('gotIt')}}</button>
+                    </div>
+                </div>
             </div>
         </div>
     </transition>
     <v-addDevice v-on:addDeviceShow="onBackReset" ref="device"></v-addDevice>
     <v-importDevice v-on:importShow="onBackReset" :importId="importId" ref="import"></v-importDevice>
+    <v-blueFail v-on:blueFailShow="onBackReset" ref="blueFail"></v-blueFail>
 </div>
 
 

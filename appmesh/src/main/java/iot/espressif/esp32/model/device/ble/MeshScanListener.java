@@ -1,6 +1,7 @@
 package iot.espressif.esp32.model.device.ble;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.ScanResult;
 
 import libs.espressif.ble.ScanListener;
 
@@ -14,7 +15,7 @@ public abstract class MeshScanListener implements ScanListener {
     }
 
     @Override
-    public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+    public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord, ScanResult scanResult) {
         MeshBleDevice meshBleDevice = new MeshBleDevice(device, rssi, scanRecord, mManufacturerID);
         if (meshBleDevice.getMeshVersion() >= 0) {
             onMeshDeviceScanned(meshBleDevice);

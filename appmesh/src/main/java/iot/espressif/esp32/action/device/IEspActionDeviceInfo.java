@@ -23,7 +23,10 @@ public interface IEspActionDeviceInfo extends IEspActionDevice {
     String KEY_PROTOCOL = "protocol_version";
     String KEY_POSITION = "position";
     String KEY_MESH_ID = "mesh_id";
-    String KEY_TRIGGER = "trigger";
+    String KEY_TRIGGER = "mlink_trigger";
+    String KEY_GROUP = "group";
+    String KEY_RSSI = "rssi";
+    String KEY_LAYER = "layer";
 
     String REQUEST_GET_DEVICE_INFO = "get_device_info";
     String REQUEST_SET_STATUS = "set_status";

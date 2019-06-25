@@ -13,7 +13,7 @@
             </div>
             <div class="content-info no-padding-bottom">
                 <div class="overflow-touch">
-                    <div v-for="item in list" @click="showAuto(item)"class="item">
+                    <div v-for="item in list" @click="showAuto(item)"class="item item-device">
                         <div class="item-icon-circle">
                             <i :class="getIcon(item.tid)"
                                :style="{'color': getColor(item.characteristics, item.tid)}"></i>

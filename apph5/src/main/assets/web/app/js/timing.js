@@ -131,7 +131,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/timing.html", "./calendar", "./t
                         MESH_CALENDAR + '": ' + JSON.stringify(self.timingInfo) + ',"callback": "saveDateResult"}';
                 MINT.Indicator.open();
                 setTimeout(function() {
-                    espmesh.requestDevicesMulticastAsync(data);
+                    espmesh.requestDevicesMulticast(data);
                 }, 1000)
             },
             saveDateResult: function(res) {

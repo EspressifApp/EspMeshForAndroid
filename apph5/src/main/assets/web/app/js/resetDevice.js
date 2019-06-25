@@ -1,5 +1,6 @@
-define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./importDevice"],
-    function(v, MINT, Util, resetDevice, addDevice, importDevice) {
+define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice", "./importDevice",
+    "./blueFail"],
+    function(v, MINT, Util, resetDevice, addDevice, importDevice, blueFail) {
 
     var ResetDevice = v.extend({
 
@@ -9,6 +10,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
             return {
                 addFlag: false,
                 showDesc: false,
+                showBlue: false,
+                blueEnable: false,
                 flagUl: false,
                 scanDeviceList: [],
                 scanOldList: [],
@@ -27,6 +30,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                 showHeight: false,
                 isSelectedMacs: [],
                 showFooterInfo: true,
+                systemInfo: true,
             }
         },
         computed: {
@@ -71,12 +75,16 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                     });
                 }
                 return list;
-            },
+            }
+
         },
         methods:{
             show: function() {
                 var self = this;
                 window.onLoadMacs = self.onLoadMacs;
+                if (self.$store.state.systemInfo != "Android") {
+                    self.systemInfo = false;
+                }
                 self.getLoadMacs();
                 self.getPair();
                 self.scanDeviceList = [];
@@ -90,6 +98,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                 self.showHeight = false;
                 self.flagUl = false;
                 self.showFooterInfo = true;
+                self.blueEnable = self.$store.state.blueInfo;
+                self.showBlue = false;
                 self.initResetSlider();
                 setTimeout(function() {
                     self.onBackReset();
@@ -114,12 +124,30 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                     this.onBackReset();
                 }
             },
+            showBlueFail: function() {
+                var self = this;
+                setTimeout(function() {
+                    self.showBlue = true;
+                    self.$refs.blueFail.show();
+                })
+
+            },
+            setBluetooth: function() {
+                espmesh.gotoSystemSettings("bluetooth");
+            },
+            setLocation: function() {
+                 espmesh.gotoSystemSettings("location");
+            },
             getIcon: function (tid) {
                 return Util.getIcon(tid);
+            },
+            getRssiIcon: function(rssi) {
+                return Util.getRssiIcon(rssi);
             },
             hideFlag: function() {
                 if (this.flagUl) {
                     this.flagUl = false;
+                    this.showBlue = false;
                     this.onBackReset();
                 }
             },
@@ -212,6 +240,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                     self.startBleScan();
                     window.onScanBLE = self.onConScanBLE;
                 })
+                self.showBlue = false;
                 window.onBackPressed = self.hide;
             },
             addDevice: function () {
@@ -296,7 +325,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
             startBleScan: function() {
                 var self = this;
                 if (self.$store.state.blueInfo) {
-                    espmesh.startBleScan();
+                    espmesh.startBleScan(JSON.stringify({"settings":{"scan_mode":2}}));
                 } else {
                     MINT.Toast({
                         message: self.$t('bleConDesc'),
@@ -311,7 +340,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                     var name = item.name;
                     if(Util.isMesh(name, item.version)) {
                         var flag = true,
-                            obj = {mac: item.mac, name: name, rssi: item.rssi, bssid: item.bssid,
+                            obj = {mac: item.mac, name: Util.setName(name, item.bssid), rssi: item.rssi, bssid: item.bssid,
                                 position: self.getPairInfo(item.mac), tid: item.tid, only_beacon: item.only_beacon};
                         $.each(self.scanDeviceList, function(j, itemSub) {
                             if (item.mac == itemSub.mac) {
@@ -339,6 +368,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                 } else {
                     if (self.showDesc) {
                         window.onBackPressed = self.hideDescInfo;
+                    } else if (self.showBlue) {
+                         window.onBackPressed = self.$refs.blueFail.hide;
                     } else {
                         window.onBackPressed = self.hide;
                     }
@@ -346,14 +377,22 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
             },
             onBluetoothStateChanged: function(blue) {
                 blue = JSON.parse(blue);
-                if (blue.enable && this.addFlag && !this.$refs.device.addFlag) {
-                    espmesh.startBleScan();
+                if (blue.enable || blue.enable == "true") {
+                    blue.enable = true;
+                } else {
+                    blue.enable = false;
                 }
+                if (blue.enable && this.addFlag && !this.$refs.device.addFlag) {
+                    espmesh.startBleScan(JSON.stringify({"settings":{"scan_mode":2}}));
+                }
+                this.$store.commit("setBlueInfo", blue.enable);
+                this.blueEnable = blue.enable;
             }
         },
         components: {
             "v-addDevice": addDevice,
-            "v-importDevice": importDevice
+            "v-importDevice": importDevice,
+            "v-blueFail": blueFail
         }
 
 

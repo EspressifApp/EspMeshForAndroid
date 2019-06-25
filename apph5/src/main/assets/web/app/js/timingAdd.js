@@ -163,7 +163,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/timingAdd.html"], function(v, MI
                             ',"callback": "saveResult"}';
                 MINT.Indicator.open();
                 setTimeout(function() {
-                    espmesh.requestDevicesMulticastAsync(data);
+                    espmesh.requestDevicesMulticast(data);
                 }, 1000)
             },
             saveResult: function(res) {

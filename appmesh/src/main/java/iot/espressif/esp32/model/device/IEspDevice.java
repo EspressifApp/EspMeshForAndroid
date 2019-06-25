@@ -4,6 +4,8 @@ import java.net.InetAddress;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
 import iot.espressif.esp32.model.device.properties.EspDeviceState;
 
@@ -203,20 +205,6 @@ public interface IEspDevice {
     void setRootDeviceMac(String rootMac);
 
     /**
-     * Set the device's group address
-     *
-     * @param groupMac
-     */
-    void setGroupMac(String groupMac);
-
-    /**
-     * Get the device's group address
-     *
-     * @return address of device's group
-     */
-    String getGroupMac();
-
-    /**
      * Get mesh layer level
      *
      * @return mesh layer level
@@ -358,11 +346,18 @@ public interface IEspDevice {
 
     int getTrigger();
 
-    void setEvents(String events);
-
-    String getEvents();
-
     void setPosition(String position);
 
     String getPosition();
+
+    void setGroups(Collection<String> groupIds);
+
+    @Nonnull
+    Collection<String> getGroupIds();
+
+    boolean isInGroup(String groupId);
+
+    int getRssi();
+
+    void setRssi(int rssi);
 }

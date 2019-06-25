@@ -134,7 +134,7 @@ define(["vue", "MINT", "txt!../../pages/attr.html"],
                     var data = '{"' + MESH_MAC + '": "' + self.device.mac +
                         '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
                         '"characteristics":' + JSON.stringify(meshs) + '}';
-                    espmesh.requestDeviceAsync(data);
+                    espmesh.requestDevice(data);
                     self.$store.commit("setList", self.deviceList);
                 }
 

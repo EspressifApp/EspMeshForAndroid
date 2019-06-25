@@ -1,20 +1,17 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package libs.espressif.security;
 
 import java.math.BigInteger;
 import java.security.AlgorithmParameterGenerator;
 import java.security.AlgorithmParameters;
+import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -24,6 +21,7 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.interfaces.DHPrivateKey;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.spec.DHPrivateKeySpec;
 import javax.crypto.spec.DHPublicKeySpec;
 
 public class EspDH {
@@ -40,14 +38,53 @@ public class EspDH {
         mP = p;
         mG = g;
         mLength = length;
-        generateKeys();
+        Key[] keys = generateKeys(p, g, length);
+        mPrivateKey = (DHPrivateKey) keys[0];
+        mPublicKey = (DHPublicKey) keys[1];
     }
 
-    private BigInteger[] generatePG() {
-        AlgorithmParameterGenerator paramGen = null;
+    public BigInteger getP() {
+        return mP;
+    }
+
+    public BigInteger getG() {
+        return mG;
+    }
+
+    public DHPrivateKey getPrivateKey() {
+        return mPrivateKey;
+    }
+
+    public DHPublicKey getPublicKey() {
+        return mPublicKey;
+    }
+
+    public byte[] getSecretKey() {
+        return mSecretKey;
+    }
+
+    public void generateSecretKey(BigInteger y) {
         try {
-            paramGen = AlgorithmParameterGenerator.getInstance("DH");
-            paramGen.init(mLength, new SecureRandom());
+            DHPublicKeySpec pbks = new DHPublicKeySpec(y, mP, mG);
+            KeyFactory keyFact = KeyFactory.getInstance("DH");
+            PublicKey publicKey = keyFact.generatePublic(pbks);
+
+            // Prepare to generate the secret key with the private key and public key of the other party
+            KeyAgreement ka = KeyAgreement.getInstance("DH");
+            ka.init(mPrivateKey);
+            ka.doPhase(publicKey, true);
+
+            // Generate the secret key
+            mSecretKey = ka.generateSecret();
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static BigInteger[] generatePG(int length) {
+        try {
+            AlgorithmParameterGenerator paramGen = AlgorithmParameterGenerator.getInstance("DH");
+            paramGen.init(length, new SecureRandom());
             AlgorithmParameters params = paramGen.generateParameters();
             DHParameterSpec dhSpec = params.getParameterSpec(DHParameterSpec.class);
             BigInteger pv = dhSpec.getP();
@@ -61,63 +98,54 @@ public class EspDH {
         return null;
     }
 
-    private boolean generateKeys() {
+    public static Key[] generateKeys(BigInteger p, BigInteger g, int length) {
         try {
             // Use the values to generate a key pair
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
-            DHParameterSpec dhSpec = new DHParameterSpec(mP, mG, mLength);
+            DHParameterSpec dhSpec = new DHParameterSpec(p, g, length);
             keyGen.initialize(dhSpec);
             KeyPair keypair = keyGen.generateKeyPair();
 
             // Get the generated public and private keys
-            mPrivateKey = (DHPrivateKey) keypair.getPrivate();
-            mPublicKey = (DHPublicKey) keypair.getPublic();
+            Key[] result = new Key[2];
+            result[0] = keypair.getPrivate();
+            result[1] = keypair.getPublic();
 
-            return true;
+            return result;
         } catch (NoSuchAlgorithmException
                 | InvalidAlgorithmParameterException
                 | ClassCastException e) {
             e.printStackTrace();
 
-            return false;
+            return null;
         }
     }
 
-    public BigInteger getP() {
-        return mP;
+    public static DHPrivateKey generatePrivateKey(BigInteger x, BigInteger p, BigInteger g)
+            throws GeneralSecurityException {
+        DHPrivateKeySpec ks = new DHPrivateKeySpec(x, p, g);
+        KeyFactory factory = KeyFactory.getInstance("DH");
+        return (DHPrivateKey) factory.generatePrivate(ks);
     }
 
-    public BigInteger getG() {
-        return mG;
+    public static DHPublicKey generatePublicKey(BigInteger y, BigInteger p, BigInteger g)
+            throws GeneralSecurityException {
+        DHPublicKeySpec ks = new DHPublicKeySpec(y, p, g);
+        KeyFactory factory = KeyFactory.getInstance("DH");
+        return (DHPublicKey) factory.generatePublic(ks);
     }
 
-    public DHPrivateKey getPriveteKey() {
-        return mPrivateKey;
-    }
+    public static byte[] generateSecretKey(BigInteger x, BigInteger y, BigInteger p, BigInteger g)
+            throws GeneralSecurityException {
+        PrivateKey privateKey = generatePrivateKey(x, p, g);
+        PublicKey publicKey = generatePublicKey(y, p, g);
 
-    public DHPublicKey getPublicKey() {
-        return mPublicKey;
-    }
+        // Prepare to generate the secret key with the private key and public key of the other party
+        KeyAgreement ka = KeyAgreement.getInstance("DH");
+        ka.init(privateKey);
+        ka.doPhase(publicKey, true);
 
-    public byte[] getSecretKey() {
-        return mSecretKey;
-    }
-
-    public void generateSecretKey(BigInteger y) throws InvalidKeySpecException {
-        try {
-            DHPublicKeySpec ks = new DHPublicKeySpec(y, mP, mG);
-            KeyFactory keyFact = KeyFactory.getInstance("DH");
-            PublicKey publicKey = keyFact.generatePublic(ks);
-
-            // Prepare to generate the secret key with the private key and public key of the other party
-            KeyAgreement ka = KeyAgreement.getInstance("DH");
-            ka.init(mPrivateKey);
-            ka.doPhase(publicKey, true);
-
-            // Generate the secret key
-            mSecretKey = ka.generateSecret();
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            e.printStackTrace();
-        }
+        // Generate the secret key
+        return ka.generateSecret();
     }
 }

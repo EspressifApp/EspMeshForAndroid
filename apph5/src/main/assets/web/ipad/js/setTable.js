@@ -43,7 +43,7 @@ define(["vue", "MINT", "txt!../../pages/setTable.html",],
                         scope: 'topo',
                         disabled: false
                     });
-                    espmesh.saveDeviceTable("{column: "+COL_NUM+", row: "+ROW_NUM+"}");
+                    espmesh.saveDeviceTable(JSON.stringify({"column": COL_NUM, "row": ROW_NUM}));
                     espmesh.removeAllTableDevices();
                     ISCROLL_TABLE.refresh();
                     self.hide();

@@ -14,8 +14,6 @@ public class BlufiNotiData {
 
     private int mFrameCtrlValue;
 
-    private int mSequence;
-
     private ByteArrayOutputStream mDataOS;
 
     public BlufiNotiData() {

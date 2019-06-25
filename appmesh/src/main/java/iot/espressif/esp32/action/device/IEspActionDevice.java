@@ -16,13 +16,14 @@ public interface IEspActionDevice extends IEspAction {
     String KEY_IDF_VERSION = "idf_version";
     String KEY_MDF_VERSION = "mdf_version";
     String KEY_MLINK_VERSION = "mlink_version";
+    String KEY_GROUP = "group";
 
     String HEADER_MESH_LAYER = "Mesh-Layer";
     String HEADER_NODE_COUNT = "Mesh-Node-Num";
     String HEADER_NODE_MAC = "Mesh-Node-Mac";
     String HEADER_PARENT_MAC = "Mesh-Parent-Mac";
     String HEADER_MESH_ID = "Mesh-Id";
-    String HEADER_GROUP_MAC = "Mesh-Group-Mac";
+    String HEADER_NODE_GROUP = "Mesh-Node-Group";
 
     int DELAY_DEFAULT = 2000;
 

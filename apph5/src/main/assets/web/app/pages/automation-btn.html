@@ -52,7 +52,7 @@
                 <div v-show="!isMuch" class="control-wrapper">
                     <h4>{{$t('btnHold')}}({{$t('fineTuning')}})</h4>
                     <div class="dog">
-                        <div class="dog-info longPress" :data-value="item.id" v-for="item in longPress">
+                        <div class="dog-info longPress dog-info-lg" :data-value="item.id" v-for="item in longPress">
                             <div @click="delExist(subItem, item.id)" class="dog-btn" v-for="subItem in pressList[item.id]">{{subItem}}</div>
                             <span>{{item.name}}</span>
                         </div>

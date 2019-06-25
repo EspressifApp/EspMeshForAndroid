@@ -52,6 +52,7 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "
         state: {
             deviceList: [],
             groupList: [],
+            roomList: [],
             mixList: [],
             deviceInfo: "",
             userName: "",
@@ -61,13 +62,13 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "
             siteList: [],
             wifiInfo: "",
             blueInfo: false,
-            rssiInfo: -80,
+            rssiInfo: -100,
             showScanBle: true,
             deviceIp: "",
             systemInfo: "",
             appInfo: "",
             newAppInfo: "",
-            isNewVersion: false,
+            isNewVersion: false
         },
         mutations: {
             setList: function(state, list){
@@ -75,6 +76,9 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "
             },
             setGroupList: function(state, list){
                 state.groupList = list;
+            },
+            setRoomList: function(state, list){
+                state.roomList = list;
             },
             setRecentList: function(state, list){
                 state.mixList = list;

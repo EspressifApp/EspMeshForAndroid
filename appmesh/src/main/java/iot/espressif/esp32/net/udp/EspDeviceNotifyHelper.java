@@ -43,7 +43,7 @@ public class EspDeviceNotifyHelper implements EspUdpServer.DataReceivedListener 
 
     public EspDeviceNotifyHelper() {
         mUdpServer = new EspUdpServer();
-        WifiManager wifiManager = (WifiManager) EspApplication.getInstance().getApplicationContext()
+        WifiManager wifiManager = (WifiManager) EspApplication.getEspApplication().getApplicationContext()
                 .getSystemService(Context.WIFI_SERVICE);
         assert wifiManager != null;
         mMulticastLock = wifiManager.createMulticastLock(getClass().getSimpleName());

@@ -5,6 +5,8 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.utils.DeviceUtil;
@@ -31,7 +33,11 @@ public class EspActionDeviceReboot implements IEspActionDeviceReboot {
         params.setTryCount(1);
         EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
         byte[] content = getRequestJSON( 0).toString().getBytes();
-        EspHttpResponse response = DeviceUtil.httpLocalRequest(device, content, params, tokenH);
+        Map<String, String> headers = new HashMap<>();
+        if (tokenH != null) {
+            headers.put(tokenH.getName(), tokenH.getValue());
+        }
+        EspHttpResponse response = DeviceUtil.httpLocalRequest(device, content, params, headers);
         if (response == null) {
             return false;
         }

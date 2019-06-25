@@ -104,7 +104,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/sendIP.html"],
                     console.log(data);
                     MINT.Indicator.open();
                     setTimeout(function() {
-                       espmesh.requestDevicesMulticastAsync(data);
+                       espmesh.requestDevicesMulticast(data);
                     }, 1000);
                 });
             },
@@ -125,7 +125,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/sendIP.html"],
                       ',"callback": "onSendIP"}}';
                 console.log(data);
                 setTimeout(function() {
-                    espmesh.requestDevicesMulticastAsync(data);
+                    espmesh.requestDevicesMulticast(data);
                 }, 1000);
             },
             onSendIP: function(res) {

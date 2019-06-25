@@ -20,6 +20,81 @@ import javax.crypto.NoSuchPaddingException;
 public class EspRSA {
     private static final String ALGORITHM = "RSA";
 
+    private RSAPublicKey mPublicKey;
+    private RSAPrivateKey mPrivateKey;
+
+    private Cipher mEncryptCipher;
+    private Cipher mDecryptCipher;
+
+    public EspRSA(byte[] publicKey, byte[] privateKey) {
+        try {
+            if (publicKey != null) {
+                mPublicKey = getPublicKey(publicKey);
+            }
+            if (privateKey != null) {
+                mPrivateKey = getPrivateKey(privateKey);
+            }
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("Generate RSA Key error");
+        }
+
+        try {
+            initCipher();
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("Generate RSA Cipher error");
+        }
+    }
+
+    public EspRSA(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
+        mPublicKey = publicKey;
+        mPrivateKey = privateKey;
+
+        try {
+            initCipher();
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("Generate RSA Cipher error");
+        }
+    }
+
+    private void initCipher() throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
+        if (mPublicKey != null) {
+            mEncryptCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            mEncryptCipher.init(Cipher.ENCRYPT_MODE, mPublicKey);
+        }
+
+        if (mPrivateKey != null) {
+            mDecryptCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            mDecryptCipher.init(Cipher.DECRYPT_MODE, mPrivateKey);
+        }
+    }
+
+    public byte[] encrypt(byte[] data) {
+        try {
+            return mEncryptCipher.doFinal(data);
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public byte[] decrypt(byte[] data) {
+        try {
+            return mDecryptCipher.doFinal(data);
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     private static RSAPublicKey getPublicKey(byte[] keyData)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
         KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);

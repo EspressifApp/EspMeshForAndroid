@@ -6,9 +6,13 @@ import android.util.SparseArray;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
 import iot.espressif.esp32.model.device.properties.EspDeviceState;
@@ -28,24 +32,26 @@ class EspDevice implements IEspDevice {
     private EspDeviceState mState;
     private String mParentDeviceMac;
     private String mRootDeviceMac;
-    private String mGroupMac;
     private int mMeshLayerLevel;
     private String mMeshId;
     private String mProtocol;
     private int mProtocolPort = -1;
     private Map<String, Object> mCacheMap;
     private String mPosition;
+    private int mRssi = RSSI_NULL;
 
     private String mIdfVersion;
     private String mMdfVersion;
     private int mMlinkVersion;
     private int mTrigger;
-    private String mEvents;
+
+    private final Set<String> mGroups;
 
     EspDevice() {
         mCharaArray = new SparseArray<>();
         mCacheMap = new Hashtable<>();
         mMeshLayerLevel = LAYER_UNKNOW;
+        mGroups = new HashSet<>();
     }
 
     @Override
@@ -179,16 +185,6 @@ class EspDevice implements IEspDevice {
     @Override
     public void setRootDeviceMac(String rootMac) {
         mRootDeviceMac = rootMac;
-    }
-
-    @Override
-    public void setGroupMac(String groupMac) {
-        mGroupMac = groupMac;
-    }
-
-    @Override
-    public String getGroupMac() {
-        return mGroupMac;
     }
 
     @Override
@@ -342,14 +338,37 @@ class EspDevice implements IEspDevice {
         return mTrigger;
     }
 
+    @Nonnull
     @Override
-    public void setEvents(String events) {
-        mEvents = events;
+    public Collection<String> getGroupIds() {
+        synchronized (mGroups) {
+            return new ArrayList<>(mGroups);
+        }
     }
 
     @Override
-    public String getEvents() {
-        return mEvents;
+    public void setGroups(Collection<String> groupIds) {
+        synchronized (mGroups) {
+            mGroups.clear();
+            mGroups.addAll(groupIds);
+        }
+    }
+
+    @Override
+    public boolean isInGroup(String groupId) {
+        synchronized (mGroups) {
+            return mGroups.contains(groupId);
+        }
+    }
+
+    @Override
+    public int getRssi() {
+        return mRssi;
+    }
+
+    @Override
+    public void setRssi(int rssi) {
+        mRssi = rssi;
     }
 
     @Override
@@ -360,7 +379,7 @@ class EspDevice implements IEspDevice {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof IEspDevice)) {
+        if (!(obj instanceof IEspDevice)) {
             return false;
         }
 

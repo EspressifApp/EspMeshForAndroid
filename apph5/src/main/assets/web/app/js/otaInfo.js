@@ -99,9 +99,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                     deviceList = this.$store.state.deviceList;
                 self.otaType = 1;
                 $.each(deviceList, function(i, item) {
-                    if (item.mlink_version > 1) {
-                        self.otaType = 2;
-                        return false;
+                    if (self.macs.indexOf(item.mac) != -1) {
+                        if (item.mlink_version > 1) {
+                            self.otaType = 2;
+                            return false;
+                        }
                     }
                 })
             },
@@ -110,6 +112,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                 this.hideSuccess();
                 this.stopTime();
                 this.stopOTA();
+                console.log("stopOTA");
                 this.$store.commit("setShowScanBle", true);
                 this.$emit("otaShow");
             },

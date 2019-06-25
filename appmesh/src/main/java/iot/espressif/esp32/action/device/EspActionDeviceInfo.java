@@ -7,8 +7,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,25 +42,19 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
             device.setParentDeviceMac(parentHeader.getValue());
         }
 
-        EspHttpHeader layerHeader = response.findHeader(HEADER_MESH_LAYER);
-        if (layerHeader != null) {
-            try {
-                int layer = Integer.parseInt(layerHeader.getValue());
-                device.setMeshLayerLevel(layer);
-            } catch (NumberFormatException nfe) {
-                nfe.printStackTrace();
-            }
-        }
-
-        EspHttpHeader groupHeader = response.findHeader(HEADER_GROUP_MAC);
-        if (groupHeader != null) {
-            device.setGroupMac(groupHeader.getValue());
-        }
-
         try {
             int statusCode = respJSON.getInt(KEY_STATUS_CODE);
             if (statusCode != STATUS_CODE_SUC) {
                 return false;
+            }
+
+            if (!respJSON.isNull(KEY_GROUP)) {
+                JSONArray groupArray = respJSON.getJSONArray(KEY_GROUP);
+                List<String> groupList = new ArrayList<>(groupArray.length());
+                for (int i = 0; i < groupArray.length(); i++) {
+                    groupList.add(groupArray.getString(i));
+                }
+                device.setGroups(groupList);
             }
 
             int tid = respJSON.getInt(KEY_TID);
@@ -78,6 +74,23 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
 
             int trigger = respJSON.optInt(KEY_TRIGGER);
             device.setTrigger(trigger);
+
+            int layer = IEspDevice.LAYER_UNKNOW;
+            EspHttpHeader layerHeader = response.findHeader(HEADER_MESH_LAYER);
+            if (layerHeader != null) {
+                try {
+                    layer = Integer.parseInt(layerHeader.getValue());
+                    device.setMeshLayerLevel(layer);
+                } catch (NumberFormatException nfe) {
+                    nfe.printStackTrace();
+                }
+            } else {
+                layer = respJSON.optInt(KEY_LAYER, IEspDevice.LAYER_UNKNOW);
+            }
+            device.setMeshLayerLevel(layer);
+
+            int rssi = respJSON.optInt(KEY_RSSI, IEspDevice.RSSI_NULL);
+            device.setRssi(rssi);
 
             String idfVersion = respJSON.optString(KEY_IDF_VERSION);
             device.setIdfVersion(idfVersion);
@@ -295,8 +308,12 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
         for (int i = 0; i < tryCount && !allDeviceSet.isEmpty(); i++) {
             byte[] content = json.toString().getBytes();
 
+            Map<String, String> headers = new HashMap<>();
+            if (tokenH != null) {
+                headers.put(tokenH.getName(), tokenH.getValue());
+            }
             List<EspHttpResponse> respList = DeviceUtil.httpLocalMulticastRequest(
-                    allDeviceSet, content, params, true, tokenH);
+                    allDeviceSet, content, params, headers);
             Map<String, EspHttpResponse> map = DeviceUtil.getMapWithDeviceResponses(respList);
             mLog.i("Get device info map size = " + map.size());
 
@@ -316,7 +333,7 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
                 String[] macArray = new String[sucDevMacs.size()];
                 sucDevMacs.toArray(macArray);
                 intent.putExtra(DeviceConstants.KEY_DEVICE_MACS, macArray);
-                EspApplication.getInstance().sendLocalBroadcast(intent);
+                EspApplication.getEspApplication().sendLocalBroadcast(intent);
             }
 
         }
@@ -336,7 +353,11 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
         params.setSOTimeout(2000);
         params.setTryCount(3);
         EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
-        EspHttpResponse response = DeviceUtil.httpLocalRequest(device, json.toString().getBytes(), params, tokenH);
+        Map<String, String> headers = new HashMap<>();
+        if (tokenH != null) {
+            headers.put(tokenH.getName(), tokenH.getValue());
+        }
+        EspHttpResponse response = DeviceUtil.httpLocalRequest(device, json.toString().getBytes(), params, headers);
         return setDeviceInfoWithResponse(response, device);
     }
 
@@ -366,9 +387,13 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
 
         EspHttpParams params = new EspHttpParams();
         EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
+        Map<String, String> headers = new HashMap<>();
+        if (tokenH != null) {
+            headers.put(tokenH.getName(), tokenH.getValue());
+            headers.put(DeviceUtil.HEADER_ROOT_RESP, String.valueOf(true));
+        }
 
-        return DeviceUtil.httpLocalMulticastRequest(devices, json.toString().getBytes(), params,
-                false, tokenH, DeviceUtil.HEADER_ROOT_RESP);
+        return DeviceUtil.httpLocalMulticastRequest(devices, json.toString().getBytes(), params, headers);
     }
 
     @Override
@@ -382,7 +407,11 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
         }
 
         EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
-        EspHttpResponse response = DeviceUtil.httpLocalRequest(device, json.toString().getBytes(), null, tokenH);
+        Map<String, String> headers = new HashMap<>();
+        if (tokenH != null) {
+            headers.put(tokenH.getName(), tokenH.getValue());
+        }
+        EspHttpResponse response = DeviceUtil.httpLocalRequest(device, json.toString().getBytes(), null, headers);
         JSONObject respJSON = getResponseJSON(response);
         if (respJSON == null) {
             return false;
@@ -426,7 +455,11 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
         }
 
         EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
-        EspHttpResponse response = DeviceUtil.httpLocalRequest(device, json.toString().getBytes(), null, tokenH);
+        Map<String, String> headers = new HashMap<>();
+        if (tokenH != null) {
+            headers.put(tokenH.getName(), tokenH.getValue());
+        }
+        EspHttpResponse response = DeviceUtil.httpLocalRequest(device, json.toString().getBytes(), null, headers);
         return setDeviceStatusWithResponse(response, device);
     }
 
@@ -450,8 +483,12 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
         }
 
         EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
+        Map<String, String> headers = new HashMap<>();
+        if (tokenH != null) {
+            headers.put(tokenH.getName(), tokenH.getValue());
+        }
         List<EspHttpResponse> responseList = DeviceUtil.httpLocalMulticastRequest(devices,
-                json.toString().getBytes(), null, true, tokenH);
+                json.toString().getBytes(), null, headers);
         Map<String, EspHttpResponse> responseMap = DeviceUtil.getMapWithDeviceResponses(responseList);
         for (IEspDevice device : devices) {
             EspHttpResponse response = responseMap.get(device.getMac());

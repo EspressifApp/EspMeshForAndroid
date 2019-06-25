@@ -1,12 +1,12 @@
 package iot.espressif.esp32.app;
 
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -17,12 +17,10 @@ import libs.espressif.utils.RandomUtil;
 public class EspApplication extends Application {
     private static EspApplication instance;
     private final Object mCacheLock = new Object();
-    private String mVersionName;
-    private int mVersionCode;
     private HashMap<String, Object> mCacheMap;
     private boolean mSupportBLE;
 
-    public static EspApplication getInstance() {
+    public static EspApplication getEspApplication() {
         if (instance == null) {
             throw new NullPointerException("EspApplication instance is null, please register in AndroidManifest.xml first");
         }
@@ -49,16 +47,6 @@ public class EspApplication extends Application {
 
         mSupportBLE = getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
 
-        try {
-            PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
-            mVersionName = pi.versionName;
-            mVersionCode = pi.versionCode;
-        } catch (NameNotFoundException e) {
-            e.printStackTrace();
-            mVersionName = "Not found version";
-            mVersionCode = -1;
-        }
-
         MeshObjectBox.getInstance().init(this);
     }
 
@@ -67,14 +55,6 @@ public class EspApplication extends Application {
 
         mCacheMap.clear();
         mCacheMap = null;
-    }
-
-    public String getVersionName() {
-        return mVersionName;
-    }
-
-    public int getVersionCode() {
-        return mVersionCode;
     }
 
     public void putCache(String key, Object value) {
@@ -146,5 +126,15 @@ public class EspApplication extends Application {
     public void sendLocalBroadcast(Intent intent) {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
         manager.sendBroadcast(intent);
+    }
+
+    public void registerLocalReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+        manager.registerReceiver(receiver, filter);
+    }
+
+    public void unregisterLocalReceiver(BroadcastReceiver receiver) {
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+        manager.unregisterReceiver(receiver);
     }
 }

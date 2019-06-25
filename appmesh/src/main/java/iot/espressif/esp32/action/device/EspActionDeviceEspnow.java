@@ -6,6 +6,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.device.other.Espnow;
@@ -29,6 +31,8 @@ public class EspActionDeviceEspnow implements IEspActionDeviceEspnow {
         }
 
         byte[] postBytes = postJSON.toString().getBytes();
-        DeviceUtil.httpLocalMulticastRequest(devices, postBytes, null, false, DeviceUtil.HEADER_ROOT_RESP);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(DeviceUtil.HEADER_ROOT_RESP, String.valueOf(true));
+        DeviceUtil.httpLocalMulticastRequest(devices, postBytes, null, headers);
     }
 }

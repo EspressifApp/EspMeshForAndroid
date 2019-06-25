@@ -1,14 +1,14 @@
 
 <div class="init-width">
     <transition name="moves">
-        <div v-show="showFlag" class="add-group add-info operate-way">
+        <div v-show="showFlag" class="add-group add-info operate-way" :class="{'operate-bg': operateCurrent == 1}">
             <div class="title-info">
                 <h4 class="app-title">
                     <span @click="hide"><i class="icon-left back"></i></span>
                     {{group.name}}</h4>
                 <i @click="showOperate" class="icon-more right-top"></i>
             </div>
-            <div class="content-info flex-wrapper no-padding-bottom" :id="lightId">
+            <div class="content-info flex-wrapper no-padding-bottom group-wrapper" :class="{'operate-way-info': operateCurrent == 1}"  :id="lightId">
                 <div v-show="operateCurrent == 0" id="light-group-wrapper" class="light-wrapper">
                     <div class="selected-radio">
                         <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
@@ -34,15 +34,9 @@
                         </div>
                     </div>
                 </div>
-                <div v-show="operateCurrent == 1" class="on-off flex">
-                    <span  class="flex-1" :class="{'active': !getStatusByGroup(groupMacs)}"
-                           @click="close(0)">OFF</span>
-                    <span class="flex-1"  :class="{'active': getStatusByGroup(groupMacs)}"
-                           @click="close(1)">ON</span>
-                </div>
                 <div v-show="operateCurrent == 1" id="color-group-wrapper" class="color-wrapper">
                     <v-color :colorId="colorId" :temperatureId="temperatureId"
-                             :macs="groupMacs" v-on:colorShow="hide" :colorType="operateType" ref="color"></v-color>
+                             :macs="groupMacs" :isRoom="false" v-on:colorShow="hide" :colorType="operateType" ref="color"></v-color>
                 </div>
                 <div v-show="operateCurrent == 2" id="scene-group-wrapper" class="scene-wrapper">
                     <ul class="scene-info">
