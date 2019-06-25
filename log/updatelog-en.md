@@ -1,5 +1,9 @@
 # Update Log
 
+## v1.0.6
+- Optimize UI
+- Fix bugs
+
 ## v1.0.5
 - Chang database greenDao to ObjectBox
 
