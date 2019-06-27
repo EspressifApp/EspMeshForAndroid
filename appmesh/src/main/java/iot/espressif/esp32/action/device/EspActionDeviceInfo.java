@@ -291,7 +291,7 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
             return;
         }
 
-        int timeout = 30000;
+        int timeout = 30_000;
         int tryCount = 3;
 
         EspHttpParams params = new EspHttpParams();

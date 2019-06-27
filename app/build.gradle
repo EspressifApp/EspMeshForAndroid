@@ -6,8 +6,8 @@ android {
         applicationId "h5.espressif.esp32"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 44
-        versionName "1.0.6"
+        versionCode 45
+        versionName "1.0.7"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

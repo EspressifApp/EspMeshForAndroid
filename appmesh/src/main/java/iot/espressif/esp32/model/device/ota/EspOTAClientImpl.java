@@ -496,7 +496,7 @@ class EspOTAClientImpl extends EspOTAClient {
                 return Collections.emptyMap();
             }
 
-            int timeout = 30000;
+            int timeout = 30_000;
             int tryCount = 3;
             EspHttpParams params = new EspHttpParams();
             params.setSOTimeout(timeout);

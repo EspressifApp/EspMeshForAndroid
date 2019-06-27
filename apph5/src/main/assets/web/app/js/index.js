@@ -1,10 +1,10 @@
 define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./resetDevice",
 "./operateDevice", "./addGroup", "./load", "./aboutDevice", "./otaInfo", "./automation",
  "./ibeacon", "./scanDevice", "./remind", "./attr", "./setDevicePair", "./joinDevice", "./command",
- "./sendIP", "./blueFail", "./wifiFail", "./config"],
+ "./sendIP", "./blueFail", "./wifiFail", "./config", "./newVersion"],
     function(v, MINT, Util, index, footer, resetDevice, operateDevice, addGroup, load, aboutDevice,
         otaInfo, automation, ibeacon, scanDevice, remind, attr, setDevicePair, joinDevice, command,
-        sendIP, blueFail, wifiFail, config) {
+        sendIP, blueFail, wifiFail, config, newVersion) {
 
     var Index = v.extend({
 
@@ -1282,22 +1282,23 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                     }
                }
                self.$store.commit("setList", self.deviceList);
-
             },
             onCheckAppVersion: function(res) {
                 var self = this;
+                console.log(res);
                 var appInfo = self.$store.state.appInfo;
+                console.log(JSON.stringify(appInfo))
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res)
                     if (res.status == 0) {
                         if (res.version > appInfo.version_code) {
                             self.$store.commit("setIsNewVersion", true);
                             self.$store.commit("setNewAppInfo", res);
+                            self.$refs.newVersion.show();
                         }
                     }
                 }
             },
-
             onAddQueueTask: function() {
             },
         },
@@ -1337,7 +1338,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
             "v-sendIP": sendIP,
             "v-blueFail": blueFail,
             "v-wifiFail": wifiFail,
-            "v-config": config
+            "v-config": config,
+            "v-newVersion": newVersion
         }
 
     });

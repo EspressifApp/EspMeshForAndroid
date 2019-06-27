@@ -45,6 +45,7 @@ public class EspActionDownload implements IEspActionDownload {
 
             URL URL = new URL(url);
             mDownloadConn = (HttpURLConnection) URL.openConnection();
+            mDownloadConn.setInstanceFollowRedirects(true);
             mDownloadConn.setConnectTimeout(10000);
             mDownloadConn.setReadTimeout(30000);
             for (EspHttpHeader header : headers) {

@@ -287,8 +287,8 @@ public class AppApiForJS {
 
     /*
     {
-        "name":"mesh.apk"
-        "version":40
+        "url":"download url"
+        "total_size":110000
     }
      */
     @JavascriptInterface

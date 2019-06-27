@@ -5,21 +5,27 @@
             <div class="mask"></div>
             <div class="new-version-content">
                 <div class="new-version-title">
-                    <span class="version-line"></span>
-                    <span class="version-desc" :class="{'version-progress-fail': isFail}">{{title}}</span>
-                    <span class="version-line"></span>
-                    <span @click="hide" class="new-close icon-cross"></span>
-                </div>
-                <div v-show="isStart" class="version-btn-wrapper version-progress">
-                    <div class="version-progress-num">{{downloadSize}}MB/{{totalSize}}MB</div>
-                    <div class="version-progress-wrapper">
-                        <mt-progress :value="progressSize" :bar-height="5"></mt-progress>
+                    <div class="title-content">
+                        <span class="version-title" :class="{'version-progress-fail': isFail}">{{title}}</span>
+                        <span @click="hide" class="new-close icon-cross"></span>
                     </div>
+                    <img src="images/rocket.png">
                 </div>
-                <div v-show="!isStart" class="version-btn-wrapper">
-                    <button @click="appVersionUpdate" class="version-btn">{{btnTitle}}</button>
+                <div class="version-btn-wrapper">
+                    <div v-show="!isStart" class="update-desc">
+                        <p class="update-content">更新内容</p>
+                        <ul>
+                            <li v-for="item in appDesc">{{item}}</li>
+                        </ul>
+                    </div>
+                    <div v-show="isStart" class="version-progress">
+                        <div class="version-progress-num">{{downloadSize}}MB/{{totalSize}}MB</div>
+                        <div class="version-progress-wrapper">
+                            <mt-progress :value="progressSize" :bar-height="7"></mt-progress>
+                        </div>
+                    </div>
+                    <button v-show="!isStart" @click="appVersionUpdate" class="version-btn">{{btnTitle}}</button>
                 </div>
-
             </div>
         </div>
     </transition>

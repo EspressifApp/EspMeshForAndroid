@@ -13,6 +13,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/newVersion.html"],
                 totalSize: 0,
                 downloadSize: 0,
                 progressSize: 0,
+                newAppInfo: "",
+                appDesc: [],
                 title: this.$t('newVersionTitle'),
                 btnTitle: this.$t('updateVersionTitle'),
             }
@@ -28,9 +30,23 @@ define(["vue", "MINT", "Util", "txt!../../pages/newVersion.html"],
                 this.totalSize = 0;
                 this.downloadSize = 0;
                 this.progressSize = 0;
+                this.newAppInfo = this.$store.state.newAppInfo;
                 this.title = this.$t('newVersionTitle');
                 this.btnTitle = this.$t('updateVersionTitle');
+                this.appDesc = [];
                 this.flag = true;
+                var notes = Util.Base64.decode(this.newAppInfo.notes);
+                if (notes.indexOf("\n") != -1) {
+                    this.appDesc = notes.split("\n");
+                } else {
+                    this.appDesc.push(notes);
+                }
+                if (this.newAppInfo.total_size > 0) {
+                    this.totalSize = this.calculateKb(this.newAppInfo.total_size );
+                } else {
+                     this.totalSize = "??";
+                }
+
                 window.onApkDownloading = this.onApkDownloading;
                 window.onApkDownloadResult = this.onApkDownloadResult;
             },
@@ -45,8 +61,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/newVersion.html"],
             appVersionUpdate: function() {
                 this.title = this.$t('newVersionTitle');
                 this.isFail = false;
-                var newAppInfo = this.$store.state.newAppInfo;
-                espmesh.appVersionUpdate(JSON.stringify({"name": newAppInfo.name, "version": newAppInfo.version}));
+                espmesh.appVersionUpdate(JSON.stringify({"name": this.newAppInfo.name, "version": this.newAppInfo.version,
+                    url: this.newAppInfo.url, total_size: this.newAppInfo.total_size}));
                 this.isStart = true;
                 if (this.$store.state.systemInfo != "Android") {
                     this.hide();
@@ -55,11 +71,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/newVersion.html"],
             onBackReset: function () {
                 window.onBackPressed = this.hide;
             },
+            calculateKb: function(size) {
+                return (size / 1024 / 1024).toFixed(2)
+            },
             onApkDownloading: function(res) {
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
-                    this.totalSize = (res.total_size / 1024 / 1024).toFixed(2);
-                    this.downloadSize = (res.download_size / 1024 / 1024).toFixed(2);
+                    this.totalSize = this.calculateKb(res.total_size);
+                    this.downloadSize = this.calculateKb(res.download_size);
                     console.log(this.totalSize);
                     console.log(this.downloadSize);
                     this.progressSize = (this.downloadSize / this.totalSize * 100).toFixed(0);

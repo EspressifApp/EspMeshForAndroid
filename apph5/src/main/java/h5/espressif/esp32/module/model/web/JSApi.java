@@ -243,8 +243,11 @@ public class JSApi {
      * @param info:
     {
         "status":0, // -1 is get App version online failed
-        "name":"file name",
-        "version":30
+        "version_name":"1.0.6",
+        "version":44,
+        "total_size":11192913,
+        "url":"https://github.com/EspressifApp/EspMeshForAndroid/releases/download/v1.0.6/mesh-1.0.6-44.apk",
+        "notes":"release notes" // Base64 encode
     }
      */
     public static String onCheckAppVersion(String info) {

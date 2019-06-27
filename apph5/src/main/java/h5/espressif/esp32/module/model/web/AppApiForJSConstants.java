@@ -45,6 +45,7 @@ interface AppApiForJSConstants {
     String KEY_ADDRESS = "address";
     String KEY_TOTAL_SIZE = "total_size";
     String KEY_DOWNLOAD_SIZE = "download_size";
+    String KEY_URL = "url";
     String KEY_CALLBACK = "callback";
     String KEY_CONTENT = "content";
     String KEY_KEY = "key";
@@ -63,6 +64,7 @@ interface AppApiForJSConstants {
     String KEY_FILTERS = "filters";
     String KEY_SETTINGS = "settings";
     String KEY_SCAN_MODE = "scan_mode";
+    String KEY_NOTES= "notes";
 
     String PREF_DEVICE_TAB = "pref_device_tab";
     String PREF_TAB_DEVICES = "pref_tab_devices";

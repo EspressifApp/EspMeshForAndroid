@@ -19,7 +19,7 @@ public class EspActionDeviceOTA implements IEspActionDeviceOTA {
             return null;
         }
 
-        return espDirPath + "/upgrade/";
+        return espDirPath + "/upgrade";
     }
 
     @Override

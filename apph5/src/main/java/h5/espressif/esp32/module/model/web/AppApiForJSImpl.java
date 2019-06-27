@@ -9,6 +9,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.provider.Settings;
+import android.util.Base64;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,13 +46,13 @@ import h5.espressif.esp32.module.action.EspActionJSON;
 import h5.espressif.esp32.module.action.IEspActionDeviceConfigure2;
 import h5.espressif.esp32.module.main.EspWebActivity;
 import h5.espressif.esp32.module.main.MainDeviceNotifyHelper;
-import h5.espressif.esp32.module.model.customer.Customer;
 import h5.espressif.esp32.module.model.other.HttpLongSocket;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import iot.espressif.esp32.action.common.EspActionDownloadFromIotEsp;
+import iot.espressif.esp32.action.common.EspActionUpgradeAPK;
+import iot.espressif.esp32.action.common.IEspActionUpgradeApk;
 import iot.espressif.esp32.action.device.EspActionDeviceInfo;
 import iot.espressif.esp32.action.device.EspActionDeviceOTA;
 import iot.espressif.esp32.action.device.IEspActionDevice;
@@ -183,6 +184,10 @@ class AppApiForJSImpl implements AppApiForJSConstants {
                 Runnable runnable = () -> requestDevicesMulticast(argument, false);
                 mTaskQueue.add(runnable);
                 break;
+            }
+            case "requestDeviceLongSocket": {
+                Runnable runnable = () -> requestDeviceLongSocket(argument);
+                mTaskQueue.add(runnable);
             }
             default: {
                 suc = false;
@@ -1698,18 +1703,22 @@ class AppApiForJSImpl implements AppApiForJSConstants {
     }
 
     void checkLatestApk() {
-        Observable.just(new EspActionDownloadFromIotEsp())
+        Observable.just(new EspActionUpgradeAPK())
                 .subscribeOn(Schedulers.io())
                 .map(action -> {
-                    String iotKey = Customer.INSTANCE.getIotKey();
-                    EspRomQueryResult queryResult = action.doActionQueryLatestVersion(iotKey);
-                    if (queryResult != null) {
-                        int version = Integer.parseInt(queryResult.getVersion());
-                        String fileName = queryResult.getFileNames().get(0);
+                    IEspActionUpgradeApk.ReleaseInfo releaseInfo = action.doActionGetLatestRelease();
+                    if (releaseInfo != null) {
+                        String notes = releaseInfo.getNotes();
+                        if (notes != null) {
+                            notes = Base64.encodeToString(notes.getBytes(), Base64.NO_WRAP);
+                        }
                         return new JSONObject()
                                 .put(KEY_STATUS, 0)
-                                .put(KEY_NAME, fileName)
-                                .put(KEY_VERSION, version);
+                                .put(KEY_VERSION, releaseInfo.getVersionCode())
+                                .put(KEY_VERSION_NAME, releaseInfo.getVersionName())
+                                .put(KEY_TOTAL_SIZE, releaseInfo.getApkSize())
+                                .put(KEY_URL, releaseInfo.getDownloadUrl())
+                                .put(KEY_NOTES, notes);
                     } else {
                         return new JSONObject()
                                 .put(KEY_STATUS, -1);
@@ -1730,22 +1739,23 @@ class AppApiForJSImpl implements AppApiForJSConstants {
     }
 
     void downloadApkAndInstall(String request) {
-        String version;
-        String fileName;
+        String url;
+        long size;
 
         try {
             JSONObject json = new JSONObject(request);
-            version = json.getString(KEY_VERSION);
-            fileName = json.getString(KEY_NAME);
+            url = json.getString(KEY_URL);
+            size = json.optLong(KEY_TOTAL_SIZE, -1);
         } catch (JSONException e) {
             e.printStackTrace();
             return;
         }
 
-        String apkDir = EspApplication.getEspApplication().getEspRootSDPath() + "apk/";
+        String apkDir = EspApplication.getEspApplication().getEspRootSDPath() + "/apk";
         String apkName = "mesh.apk";
+        long apkSize = size;
 
-        Observable.just(new EspActionDownloadFromIotEsp())
+        Observable.just(new EspActionUpgradeAPK())
                 .subscribeOn(Schedulers.io())
                 .filter(action -> {
                     File dir = new File(apkDir);
@@ -1755,7 +1765,7 @@ class AppApiForJSImpl implements AppApiForJSConstants {
                     action.setDownloadCallback((totalSize, downloadSize) -> {
                         try {
                             JSONObject dlJSON = new JSONObject()
-                                    .put(KEY_TOTAL_SIZE, totalSize)
+                                    .put(KEY_TOTAL_SIZE, totalSize < 0 ? apkSize : totalSize)
                                     .put(KEY_DOWNLOAD_SIZE, downloadSize);
 
                             evaluateJavascript(JSApi.onApkDownloading(dlJSON.toString()));
@@ -1763,8 +1773,7 @@ class AppApiForJSImpl implements AppApiForJSConstants {
                             e.printStackTrace();
                         }
                     });
-                    String iotKey = Customer.INSTANCE.getIotKey();
-                    return action.doActionDownloadFromIotEsp(iotKey, version, fileName, new File(apkDir, apkName));
+                    return action.doActionDownloadAPK(url, new File(apkDir, apkName));
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new EspRxObserver<Boolean>() {

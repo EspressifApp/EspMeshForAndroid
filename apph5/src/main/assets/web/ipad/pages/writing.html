@@ -106,8 +106,8 @@
         </div>
         <transition name="moves">
             <div v-show="colorFlag" class="operate-way">
-                <div @click="hideColor" class="mask"></div>
-                <div class="color-wrapper">
+                <div @click="hideColor" class="event-mask"></div>
+                <div class="text-wrapper">
                     <div class="flex flex-m">
                         <span v-for="item in colorList" @click="selectColor(item)"
                               class="flex flex-ac flex-jcc" :style="{'background': item}">

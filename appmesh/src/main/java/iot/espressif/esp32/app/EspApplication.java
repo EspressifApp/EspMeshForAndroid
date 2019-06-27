@@ -118,7 +118,7 @@ public class EspApplication extends Application {
     public String getEspRootSDPath() {
         String path = null;
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            path = Environment.getExternalStorageDirectory().toString() + "/Espressif/Esp32/";
+            path = Environment.getExternalStorageDirectory().getPath() + "/Espressif/Esp32";
         }
         return path;
     }

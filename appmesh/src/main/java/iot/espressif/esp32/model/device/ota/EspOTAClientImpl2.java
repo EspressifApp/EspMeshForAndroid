@@ -415,9 +415,9 @@ class EspOTAClientImpl2 extends EspOTAClient {
             return true;
         }
 
-        final long timeout = 600000; // 10 minutes
+        final long timeout = 600_000; // 10 minutes
         final long startTime = SystemClock.elapsedRealtime();
-        final long checkInterval = 30000;
+        final long checkInterval = 30_000; // 30 seconds
         while (SystemClock.elapsedRealtime() - startTime < timeout) {
             if (!mOtaRunning) {
                 return false;

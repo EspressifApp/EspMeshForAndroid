@@ -460,8 +460,8 @@ ul {
 .content-info .item-device:active,
 .user .item:active,
 .operate-wrapper li:not(.name):active{
-    background: rgba(0, 0, 0, 0.02);
-    -webkit-tap-highlight-color:transparent;
+	background: rgba(0, 0, 0, 0.02);
+	-webkit-tap-highlight-color:transparent;
 }
 .content-info .item-power:active  {
 
@@ -1150,8 +1150,8 @@ ul {
 	color: #606060;
 }
 .item .item-name .item-img {
-    width: 22px;
-    height: 14px;
+	width: 22px;
+	height: 14px;
 }
 .content-info .item .item-power {
 	flex: 0 0 90px;
@@ -1222,7 +1222,7 @@ ul {
 .flex-wrapper .item .desc {
 	color: #999;
 	font-size: 12px;
-    margin-top: 3px;
+	margin-top: 3px;
 }
 .item .item-power-small {
 	flex: 0 0 15px;
@@ -1453,8 +1453,8 @@ ul {
 	border-radius: 100%;
 }
 .picker-wrapper .black-bg {
-    color: rgba(255, 255, 255, .5);
-    border: 3px solid rgba(255, 255, 255, .3);
+	color: rgba(255, 255, 255, .5);
+	border: 3px solid rgba(255, 255, 255, .3);
 	background: rgba(0, 0, 0, .1) !important;
 	box-shadow: none !important;
 }
@@ -1640,8 +1640,8 @@ ul {
 	margin-right: 10px;
 }
 .operate-info .name .title img {
-    width: 30px;
-    margin-right: 10px;
+	width: 30px;
+	margin-right: 10px;
 }
 .operate-info .name .desc {
 	flex: 0 0 90px;
@@ -1677,7 +1677,7 @@ ul {
 	height: calc(100% - 80px);
 }
 operate-bg .group-wrapper .operate-way-info {
-    height: 87%;
+	height: 87%;
 	height: calc(100% - 60px);
 }
 .span-radio {
@@ -2080,7 +2080,7 @@ operate-bg .group-wrapper .operate-way-info {
 	font-size: 45px;
 	text-align: center;
 	background: #ededed;
-    box-shadow: 0px 0px 8px #ededed;
+	box-shadow: 0px 0px 8px #ededed;
 	color: #4d4d4d;
 }
 .about-icon .icon-name {
@@ -2669,7 +2669,7 @@ operate-bg .group-wrapper .operate-way-info {
 	width: 120px;
 }
 .con-device img.button-image {
-    width: 160px;
+	width: 160px;
 }
 .con-btn {
 	margin-top: 10px;
@@ -3400,7 +3400,7 @@ operate-bg .group-wrapper .operate-way-info {
 	width: 13vw;
 }
 .button-sensor-wrapper .btn-round-no {
-    font-size: 12px;
+	font-size: 12px;
 }
 .button-sensor-wrapper .btn-content span.num {
 	position: absolute;
@@ -3668,7 +3668,6 @@ operate-bg .group-wrapper .operate-way-info {
 	text-align: center;
 	-webkit-transform: translateY(-50%);
 	transform: translateY(-50%);
-	overflow: hidden;
 }
 .new-version-wrapper .mask {
 	height: 100%;
@@ -3678,11 +3677,34 @@ operate-bg .group-wrapper .operate-way-info {
 .new-version-title {
 	position: relative;
 	text-align: center;
-	padding: 20px 0;
 	max-width: 400px;
 	margin: 0 auto;
-	background: -webkit-linear-gradient(left bottom, #8d68ec, #00c0ef); /* Safari 5.1 - 6.0 */
-	background: linear-gradient(to top right, #8d68ec , #00c0ef); /* 标准的语法（必须放在最后） */
+}
+.new-version-title .title-content {
+	border-radius: 8px 8px 0 0;
+	margin-top: 30px;
+	height: 110px;
+	text-align: center;
+	background-image: url(../../images/bg-color.png);
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+}
+.new-version-title .title-content .version-title {
+	position: absolute;
+	width: 100%;
+	left: 0;
+	bottom: 20px;
+	font-size: 16px;
+	font-weight: bold;
+	color: #fff;
+	text-shadow: 0 0 1px #fff;
+}
+.new-version-title img {
+	position: absolute;
+	top: -30px;
+	left: 50%;
+	margin-left: -25px;
+	width: 50px;
 }
 .new-version-title .new-close {
 	position: absolute;
@@ -3694,7 +3716,7 @@ operate-bg .group-wrapper .operate-way-info {
 	text-align: center;
 	line-height: 50px;
 	color: #fff;
-	font-size: 20px;
+	font-size: 16px;
 }
 .version-line {
 	display: block;
@@ -3711,34 +3733,44 @@ operate-bg .group-wrapper .operate-way-info {
 	margin: 10px 0;
 }
 .version-btn {
-	width: 50%;
-	padding: 8px 0;
+	width: 100%;
+	margin-top: 30px;
+	padding: 10px 0;
+	font-size: 14px;
 	color: #fff;
 	border-radius: 30px;
 	border: none;
-	margin: 35px auto;
-	background: -webkit-linear-gradient(left bottom, #00c0ef, #8d68ec); /* Safari 5.1 - 6.0 */
-	background: linear-gradient(to top right, #00c0ef , #8d68ec); /* 标准的语法（必须放在最后） */
+	background: #00acee;
 }
 .version-btn-wrapper{
 	max-width: 400px;
+	padding: 15px;
 	margin: 0 auto;
 	background: #fff !important;
+	box-sizing: border-box;
+	border-radius: 0 0 8px 8px;
+}
+.version-btn-wrapper ul {
+	margin-left: 25px;
+	color: #9d9d9d;
+	text-align: left;
+}
+.version-btn-wrapper .update-content {
+	margin: 5px 0 20px;
+	padding: 0;
+	text-align: left;
+	font-size: 14px;
+	font-weight: 500;
 }
 .version-progress {
 	position: relative;
 	text-align: center;
-	padding: 15px 20px;
 	box-sizing: border-box;
+	margin: 30px 0;
 }
 .version-progress-wrapper {
-	padding: 30px 0;
 }
 .version-progress .version-progress-num {
-	position: absolute;
-	left: 0;
-	top: 26px;
-	width: 100%;
 	text-align: center;
 }
 .version-progress-fail {
@@ -3906,7 +3938,7 @@ operate-bg .group-wrapper .operate-way-info {
 	line-height: 30px;
 }
 .add-room-wrapper .item-title {
-    font-size: 14px;
+	font-size: 14px;
 }
 .room-item input {
 	border: none;
@@ -4031,7 +4063,7 @@ operate-bg .group-wrapper .operate-way-info {
 	transition: all .3s linear;
 }
 .room-info-content .room-info-btn button.active {
-    color: #3ec2fc;
+	color: #3ec2fc;
 	text-shadow: -.5px -.5px white, .5px .5px #e7e7e7;
 }
 .room-wrapper .room-device,
@@ -4039,12 +4071,12 @@ operate-bg .group-wrapper .operate-way-info {
 	-webkit-flex: 1;
 	-ms-flex: 1;
 	flex: 1;
-    height: 60%;
-    height: calc(100% - 170px);
+	height: 60%;
+	height: calc(100% - 170px);
 	box-sizing: border-box;
 }
 .room-device-wrapper .room-device {
-    height: calc(100% - 50px);
+	height: calc(100% - 50px);
 }
 .room-device-wrapper .room-active {
 	height: calc(100% - 100px);
@@ -4105,8 +4137,8 @@ operate-bg .group-wrapper .operate-way-info {
 	height: 37px;
 }
 .room-device-wrapper .room-device .item-power-small {
-    font-size: 20px;
-    text-align: right;
+	font-size: 20px;
+	text-align: right;
 }
 @media (max-height: 615px){
 	.content-wrapper {
@@ -4130,24 +4162,24 @@ operate-bg .group-wrapper .operate-way-info {
 	}
 }
 @media (max-height: 570px){
-    .picker-wrapper {
-        height: 44%;
-    }
-    .white-color {
-        width: 16vh;
-        height: 16vh;
-        font-size: 36px;
-    }
-    .range-wrapper .range-title {
-        padding: 4px 0 2px;
-        padding: 2vh 0 0.7vh;
-    }
-    .range-wrapper .range-info {
-        padding: 10px 0 6px;
-    }
-    .color-wrapper, .temperature-wrapper {
-        margin-top: 60px;
-    }
+	.picker-wrapper {
+		height: 44%;
+	}
+	.white-color {
+		width: 16vh;
+		height: 16vh;
+		font-size: 36px;
+	}
+	.range-wrapper .range-title {
+		padding: 4px 0 2px;
+		padding: 2vh 0 0.7vh;
+	}
+	.range-wrapper .range-info {
+		padding: 10px 0 6px;
+	}
+	.color-wrapper, .temperature-wrapper {
+		margin-top: 60px;
+	}
 }
 @media (max-height: 480px){
 	.content-wrapper {
@@ -4169,7 +4201,7 @@ operate-bg .group-wrapper .operate-way-info {
 		min-height: 35%;
 		max-height: 45%;
 	}
-    .picker-wrapper {
-        height: 41%;
-    }
+	.picker-wrapper {
+		height: 41%;
+	}
 }

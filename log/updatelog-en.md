@@ -1,6 +1,6 @@
 # Update Log
 
-## v1.0.6
+## v1.0.7
 - Optimize UI
 - Fix bugs
 
