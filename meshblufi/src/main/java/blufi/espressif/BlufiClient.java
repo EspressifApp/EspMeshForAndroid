@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 
 import blufi.espressif.params.BlufiConfigureParams;
-import blufi.espressif.params.BlufiParameter;
 
 public class BlufiClient {
     private BlufiClientImpl mImpl;
@@ -40,5 +39,9 @@ public class BlufiClient {
 
     public void configure(final BlufiConfigureParams params) {
         mImpl.configure(params);
+    }
+
+    public void sendMDFCustomData(byte[] data) {
+        mImpl.sendMDFCustomData(data);
     }
 }

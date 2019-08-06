@@ -7,37 +7,32 @@
             <div class="ibeacon-content">
                 <div class="info-content">
                     <div class="info-item">
-                        <span class="info-disc-span">状态</span>
-                        <mt-radio
-                                v-model="scanInfo.enable"
-                                :options="scanClass">
-                        </mt-radio>
-                    </div>
-                    <div class="info-item">
                         <span class="info-disc-span">类型</span>
-                        <mt-radio
-                                v-model="scanInfo.type"
+                        <mt-checklist
+                                v-model="selectTypes"
                                 :options="scanType">
-                        </mt-radio>
+                        </mt-checklist>
                     </div>
                     <div class="info-item">
                         <span class="info-disc-span">通知值(%)</span>
-                        <input v-model="scanInfo.notice_threshold" class="form-control">
+                        <input v-model="notice_threshold" class="form-control">
                     </div>
                     <div class="info-item">
                         <span class="info-disc-span">过滤ESP设备</span>
                         <mt-radio
-                                v-model="scanInfo.esp_module_filter"
+                                v-model="esp_module_filter"
                                 :options="scanFilter">
                         </mt-radio>
                     </div>
-                    <div class="info-item">
-                        <span class="info-disc-span">蓝牙扫描间隔</span>
-                        <input v-model="scanInfo.ble_scan_interval" class="form-control">
-                    </div>
-                    <div class="info-item">
-                        <span class="info-disc-span">蓝牙扫描时间</span>
-                        <input v-model="scanInfo.g_ble_scan_window" class="form-control">
+                    <div v-show="isShowBle()">
+                        <div class="info-item">
+                            <span class="info-disc-span">蓝牙扫描间隔</span>
+                            <input v-model="ble_scan_interval" class="form-control">
+                        </div>
+                        <div class="info-item">
+                            <span class="info-disc-span">蓝牙扫描时间</span>
+                            <input v-model="ble_scan_window" class="form-control">
+                        </div>
                     </div>
                 </div>
             </div>

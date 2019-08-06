@@ -45,6 +45,8 @@ class EspDevice implements IEspDevice {
     private int mMlinkVersion;
     private int mTrigger;
 
+    private long mTsfTime;
+
     private final Set<String> mGroups;
 
     EspDevice() {
@@ -369,6 +371,16 @@ class EspDevice implements IEspDevice {
     @Override
     public void setRssi(int rssi) {
         mRssi = rssi;
+    }
+
+    @Override
+    public long getTsfTime() {
+        return mTsfTime;
+    }
+
+    @Override
+    public void setTsfTime(long tsfTime) {
+        mTsfTime = tsfTime;
     }
 
     @Override

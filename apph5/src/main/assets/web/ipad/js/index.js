@@ -962,14 +962,22 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                 espmesh.requestDevice(data);
             },
             initEvent: function () {
-                var self = this,
-                    eventMacs = self.getAllMacs();
+                var self = this;
                 MINT.Indicator.close();
-                MINT.Indicator.open(self.$t('loadEvent'));
-                var data = '{"' + MESH_MAC + '": ' + JSON.stringify(eventMacs) +
-                    ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' +
-                    GET_EVENT +'","callback": "onInitEvent"}';
-                espmesh.requestDevicesMulticast(data);
+                var macs = [], self = this;
+                $.each(self.deviceList, function(i, item){
+                    if (!Util._isEmpty(item.mlink_trigger) && item.mlink_trigger != 0) {
+                        macs.push(item.mac);
+                    }
+                });
+                if (macs.length > 0) {
+                    MINT.Indicator.open(self.$t('loadEvent'));
+                    var data = '{"' + MESH_MAC + '": ' + JSON.stringify(eventMacs) +
+                        ',"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' +
+                        GET_EVENT +'","callback": "onInitEvent"}';
+                    espmesh.requestDevicesMulticast(data);
+                }
+
             },
             addFirstMenu: function (item, coordinate) {
                 var hueValue = 0,
@@ -1702,7 +1710,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                     var conScanDeviceList = self.$store.state.conScanDeviceList;
                     devices = JSON.parse(devices);
                     $.each(devices, function(i, item) {
-                        if (item.rssi >= rssiValue && Util.isMesh(item.name, item.version)) {
+                        if (item.rssi >= rssiValue && Util.isMesh(item.name, item.version, item.beacon)) {
                             rssiList.push(item);
                         }
                     })

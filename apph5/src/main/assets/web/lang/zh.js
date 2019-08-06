@@ -30,6 +30,7 @@ define(function(){
         "loadCon": "设备组网中...",
         "search": "搜索名称或位置",
         "searchMAC": "搜索mac或位置",
+        "searchByMac": "搜索mac",
         "searchGroup": "搜索名称",
         "editName": "编辑名称",
         "edit": "编辑配对",

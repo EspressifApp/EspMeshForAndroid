@@ -35,6 +35,7 @@ public class EspActionJSON implements IEspActionJSON {
                     .put(KEY_MLINK_VERSION, device.getMlinkVersion())
                     .put(KEY_TRIGGER, device.getTrigger())
                     .put(KEY_RSSI, device.getRssi())
+                    .put(KEY_TSF_TIME, device.getTsfTime())
                     .put(KEY_MESH_ID, device.getMeshId());
             String ip = "";
             JSONArray stateArray = new JSONArray();

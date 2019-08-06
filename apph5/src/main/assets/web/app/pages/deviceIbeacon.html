@@ -1,0 +1,34 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    IBeacon{{$t('nav.device')}}
+                </h4>
+            </div>
+            <div class="content-info attr flex-wrapper">
+                <div class="overflow-touch">
+                    <div @click="showIbeacon(item)" v-for="item in list" class="item">
+                        <div :class="getBxColor(item.layer)" class="item-icon-circle">
+                            <i :class="getIcon(item.tid)"
+                               :style="{'color': getColor(item.characteristics, item.tid)}"></i>
+                        </div>
+                        <div class="item-name">
+                            <span>{{item.name}}</span>
+                            <span class="desc">
+                                {{item.version}}&nbsp;&nbsp;&nbsp;
+                                <img v-show="item.rssi <= 0" class="item-img" :src="getRssiIcon(item.rssi)"/>
+                            </span>
+                        </div>
+                        <div class="item-power-small">
+                            <i class="icon-right font-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <v-ibeacon v-on:ibeanShow="hideParent" :deviceInfo="deviceInfo" v-if="deviceInfo" ref="ibeacon"></v-ibeacon>
+</div>

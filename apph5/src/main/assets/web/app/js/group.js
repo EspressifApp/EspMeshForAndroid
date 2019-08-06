@@ -273,15 +273,15 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                     });
                 } else{
                     self.hideOperate();
-                     MINT.MessageBox.prompt(self.$t('editNameInput'), self.$t('editGroupTitle'),
-                         {inputValue: self.groupObj.name, inputPlaceholder: self.$t('addGroupInput'),
-                         confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj)  {
-                         self.groupObj.name = obj.value;
-                         espmesh.saveGroups(JSON.stringify([self.groupObj]));
-                         self.changeStore();
-                         self.groupList.push(self.groupObj);
-                         self.$store.commit("setGroupList", self.groupList);
-                     });
+                    MINT.MessageBox.prompt(self.$t('editNameInput'), self.$t('editGroupTitle'),
+                        {inputValue: self.groupObj.name, inputPlaceholder: self.$t('addGroupInput'),
+                        confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj)  {
+                        self.groupObj.name = obj.value;
+                        espmesh.saveGroups(JSON.stringify([self.groupObj]));
+                        self.changeStore();
+                        self.groupList.push(self.groupObj);
+                        self.$store.commit("setGroupList", self.groupList);
+                    });
                 }
 
 

@@ -23,6 +23,9 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                     todayXData: [],
                     monthYData: [],
                     monthXData: [],
+                    realTimeYData: [],
+                    realTimeXData: [],
+                    scanTimerId: "",
                 }
             },
             methods:{
@@ -37,10 +40,21 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                     self.todayYData = [];
                     self.monthXData = [];
                     self.monthYData = [];
+                    self.realTimeYData = [];
+                    self.realTimeXData = [];
                     self.addFlag = true;
                     setTimeout(function() {
                         self.getData();
-                    }, 500);
+                    }, 500)
+                    self.scanTimerId = setInterval(function() {
+                        if (self.addFlag) {
+                            self.getData();
+                        } else {
+                            clearInterval(self.scanTimerId);
+                            self.scanTimerId = "";
+                        }
+
+                    }, 10000);
                     MINT.Indicator.open();
                 },
                 getData: function() {
@@ -80,28 +94,51 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                 getZeroTime: function(date) {
                     return (date.getTime() - this.getOneTime(date));
                 },
-                getLineToday: function(date) {
-                    var self = this,
-                        hours = date.getHours() + 1;
-                    self.todayYData = [];
-                    self.todayXData = [];
-                    var startTime = self.getZeroTime(date);
-                    for(var i = 0; i <= hours; i++) {
-                        if (i == 0) {
-                            self.todayYData.push(0);
-                        } else {
-                            var time = self.getHoursTime(1),
-                                endTime = startTime + time;
-                            self.todayYData.push(self.getBlockData(self.todayData, startTime, endTime));
-                            startTime = endTime;
-                        }
-                        self.todayXData.push(i + ":00");
-
+                getRealTimeData: function(date) {
+                    var self = this;
+                    var endTime = date.getTime();
+                    var time = 10 * 1000;
+                    var startTime = endTime - time;
+                    if (self.realTimeYData.length >= 25) {
+                        self.realTimeYData.splice(0, 1);
                     }
+                    self.realTimeYData.push(self.getBlockData(self.todayData, startTime, endTime));
+                    if (self.realTimeXData.length >= 25) {
+                        self.realTimeXData.splice(0, 1);
+                    }
+                    self.realTimeXData.push(date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds());
                     if (Util._isEmpty(self.todayChart)) {
                         self.initLineEcharts("line-chart");
                     } else {
                         self.todayChart.setOption({
+                            xAxis:[{
+                                data: self.realTimeXData
+                            }],
+                            series: [{
+                                data: self.realTimeYData
+                            }]
+                        })
+                    }
+                },
+                getLineToday: function(date) {
+                    var self = this,
+                        hours = date.getHours();
+                    self.todayYData = [];
+                    self.todayXData = [];
+                    var startTime = self.getZeroTime(date);
+                    for(var i = 0; i <= hours; i++) {
+
+                        var time = self.getHoursTime(1),
+                            endTime = startTime + time;
+                        self.todayYData.push(self.getBlockData(self.todayData, startTime, endTime));
+                        startTime = endTime;
+                        self.todayXData.push(i + ":00");
+
+                    }
+                    if (Util._isEmpty(self.monthChart)) {
+                        self.initBarEcharts("bar-chart");
+                    } else {
+                        self.monthChart.setOption({
                             xAxis:[{
                                 data: self.todayXData
                             }],
@@ -157,19 +194,23 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                 hide: function () {
                     this.addFlag = false;
                     espmesh.stopScanSniffer();
+                    if (!Util._isEmpty(this.scanTimerId)) {
+                        clearInterval(this.scanTimerId);
+                        this.scanTimerId = "";
+                    }
                     this.$emit("reportsInfoShow");
                 },
                 getPeople: function(startTime, endTime, callback) {
                    espmesh.loadSniffers(JSON.stringify({"min_time": startTime, "max_time": endTime,
-                            "del_duplicate": false, "callback": callback}));
+                            "del_duplicate": true, "callback": callback}));
                 },
                 onTodayData: function(res) {
                     this.todayData = [];
                     if (!Util._isEmpty(res)) {
                         this.todayData = JSON.parse(res);
                     }
+                    this.getRealTimeData(this.newDate);
                     this.getLineToday(this.newDate);
-                    this.getBarMonth(this.newDate);
                 },
                 onYesterdayData: function(res) {
                     this.yesterdayData = [];
@@ -194,7 +235,7 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                     self.todayChart = echarts.init(document.getElementById(id));
                     var option = {
                         title: {
-                            text: '当日人流量变化趋势',
+                            text: '当日人流量实时变化',
                             textStyle: {
                                 fontWeight: 'normal',              //标题颜色
                                 color: '#858585',
@@ -236,7 +277,7 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                                 axisTick: {
                                     show: false
                                 },
-                                data : self.todayXData
+                                data : self.realTimeXData
                             }
                         ],
                         yAxis : [
@@ -269,7 +310,7 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                                 stack: '总量',
                                 lineStyle:{
                                     normal:{
-                                        color: "#0d63e5"  //连线颜色
+                                        color: "#00c0ef"  //连线颜色
                                     }
                                 },
                                 smooth: true,
@@ -282,15 +323,15 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                                             x2: 0,
                                             y2: 1,
                                             colorStops: [{
-                                                offset: 0, color: '#0d63e5' // 0% 处的颜色
+                                                offset: 0, color: '#00c0ef' // 0% 处的颜色
                                             }, {
-                                                offset: 1, color: '#0d63e5' // 100% 处的颜色
+                                                offset: 1, color: '#00c0ef' // 100% 处的颜色
                                             }],
                                             globalCoord: false // 缺省为 false
                                         }
                                     }
                                 },
-                                data: self.todayYData
+                                data: self.realTimeYData
                             }
 
 
@@ -303,7 +344,7 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                     self.monthChart = echarts.init(document.getElementById(id));
                     var option = {
                         title: {
-                            text: '当月人流量变化趋势',
+                            text: '当日人流量变化统计',
                             textStyle: {
                                 fontWeight: 'normal',              //标题颜色
                                 color: '#858585',
@@ -325,7 +366,7 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                         xAxis : [
                             {
                                 type : 'category',
-                                data : self.monthXData ,
+                                data : self.todayXData ,
                                 axisLine:{
                                     lineStyle:{
                                         color:'#858585',
@@ -340,7 +381,8 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                                     }
                                 },
                                 axisTick: {
-                                    show: false
+                                    show: true,
+                                    alignWithLabel: true
                                 },
                             }
                         ],
@@ -376,7 +418,7 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                                     show: true,
                                     position: "top",
                                 },
-                                data: self.monthYData
+                                data: self.todayYData
                             }
                         ]
                     };

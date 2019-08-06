@@ -5,33 +5,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import iot.espressif.esp32.action.device.IEspActionDeviceInfo;
 import iot.espressif.esp32.db.box.MeshObjectBox;
 import iot.espressif.esp32.db.model.DeviceDB;
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
 
 public class DevicePropertiesCache {
-
-    private static final String KEY_TID = IEspActionDeviceInfo.KEY_TID;
-    private static final String KEY_NAME = IEspActionDeviceInfo.KEY_NAME;
-    private static final String KEY_CHARACTERISTICS = IEspActionDeviceInfo.KEY_CHARACTERISTICS;
-    private static final String KEY_CID = IEspActionDeviceInfo.KEY_CID;
-    private static final String KEY_FORMAT = IEspActionDeviceInfo.KEY_FORMAT;
-    private static final String KEY_PERMS = IEspActionDeviceInfo.KEY_PERMS;
-    private static final String KEY_MIN = IEspActionDeviceInfo.KEY_MIN;
-    private static final String KEY_MAX = IEspActionDeviceInfo.KEY_MAX;
-    private static final String KEY_STEP = IEspActionDeviceInfo.KEY_STEP;
-
-    private static final String FORMAT_INT = EspDeviceCharacteristic.FORMAT_INT;
-    private static final String FORMAT_DOUBLE = EspDeviceCharacteristic.FORMAT_DOUBLE;
-    private static final String FORMAT_STRING = EspDeviceCharacteristic.FORMAT_STRING;
-    private static final String FORMAT_JSON = EspDeviceCharacteristic.FORMAT_JSON;
-
     // Key=tid, Value=EspDeviceCharacteristic
-    private Map<Integer, List<EspDeviceCharacteristic>> mAssetMap;
+    private Map<Integer, PropertiesModel> mAssetMap;
     // Key=DeviceMac, Value=DeviceDB
-    Map<String, DeviceDB> mMacDeviceDBMap;
+    private Map<String, DeviceDB> mMacDeviceDBMap;
 
     public DevicePropertiesCache() {
         mAssetMap = getAssetCharacteristicMap();
@@ -50,26 +33,27 @@ public class DevicePropertiesCache {
             device.setMlinkVersion(db.mlink_version);
             device.setTrigger(db.trigger);
 
-            List<EspDeviceCharacteristic> cs = mAssetMap.get(db.tid);
-            if (cs != null) {
-                for (EspDeviceCharacteristic c : cs) {
+            PropertiesModel propertiesModel = mAssetMap.get(db.tid);
+            if (propertiesModel != null && propertiesModel.characteristics != null) {
+                for (EspDeviceCharacteristic c : propertiesModel.characteristics) {
                     device.addOrReplaceCharacteristic(c.cloneInstance());
                 }
             }
         }
     }
 
-    private Map<Integer, List<EspDeviceCharacteristic>> getAssetCharacteristicMap() {
-        Map<Integer, List<EspDeviceCharacteristic>> result = new HashMap<>();
+    private Map<Integer, PropertiesModel> getAssetCharacteristicMap() {
+        Map<Integer, PropertiesModel> result = new HashMap<>();
 
         PropertiesModel propertiesModel = getTid1();
-        result.put(propertiesModel.tid, propertiesModel.characteristics);
+        result.put(propertiesModel.tid, propertiesModel);
 
         propertiesModel = getTid22();
-        result.put(propertiesModel.tid, propertiesModel.characteristics);
+        result.put(propertiesModel.tid, propertiesModel);
 
         propertiesModel = getTid23();
-        result.put(propertiesModel.tid, propertiesModel.characteristics);
+        result.put(propertiesModel.tid, propertiesModel);
+
         return result;
     }
 

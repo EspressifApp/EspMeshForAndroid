@@ -105,7 +105,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     }, 200)
                     self.showFlag = true;
                 },
-                onValuesChange(picker, values) {
+                onValuesChange: function(picker, values) {
 
                 },
                 getEvent: function() {

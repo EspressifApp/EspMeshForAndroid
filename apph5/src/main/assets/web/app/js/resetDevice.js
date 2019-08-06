@@ -338,7 +338,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/resetDevice.html", "./addDevice"
                 var self = this;
                 $.each(devices, function(i, item) {
                     var name = item.name;
-                    if(Util.isMesh(name, item.version)) {
+                    if(Util.isMesh(name, item.version, item.beacon)) {
                         var flag = true,
                             obj = {mac: item.mac, name: Util.setName(name, item.bssid), rssi: item.rssi, bssid: item.bssid,
                                 position: self.getPairInfo(item.mac), tid: item.tid, only_beacon: item.only_beacon};

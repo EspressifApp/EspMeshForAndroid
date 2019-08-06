@@ -161,6 +161,7 @@ define(["vue","MINT", "Util", "txt!../../pages/colorPicker.html"], function(v, M
                         slide: function(event, ui) {
                             var type = $(this).attr("data-type");
                             self.changValue(type, ui.value);
+                            //self.changRange(type);
                         },
                         stop: function(event, ui) {
                             var type = $(this).attr("data-type");
@@ -263,8 +264,14 @@ define(["vue","MINT", "Util", "txt!../../pages/colorPicker.html"], function(v, M
                     data += '"' + MESH_GROUP + '": ' + JSON.stringify([self.$store.state.deviceInfo.roomKey]) +
                     ',"isGroup": true,';
                 }
+                if (!Util._isEmpty(self.$store.state.tsfTime) && self.$store.state.tsfTime != 0) {
+                    var tsfTime = (new Date().getTime()  * 1000) - self.$store.state.tsfTime +
+                                        (self.$store.state.delayTime) * 1000;
+                    data += '"tsf_time": "'+ tsfTime +'",';
+                }
+
                 data += '"'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' +
-                    MESH_REQUEST + '": "' + SET_STATUS + '",' + '"characteristics":' + JSON.stringify(meshs) + '}';
+                    MESH_REQUEST + '": "' + SET_STATUS + '","characteristics":' + JSON.stringify(meshs) + '}';
                 console.log(data);
                 espmesh.addQueueTask(JSON.stringify({"method":"requestDevicesMulticast","argument": data}));
                 this.setDeviceStatus(cid, value);
@@ -314,6 +321,9 @@ define(["vue","MINT", "Util", "txt!../../pages/colorPicker.html"], function(v, M
                             h = clr.h;
                             isChange = true;
                             self.currentHue = h * 360;
+//                            if (self.pickerShow) {
+//                                self.editDeviceH(h);
+//                            }
                         };
                     };
                     cp.onchange = onchange(cp);

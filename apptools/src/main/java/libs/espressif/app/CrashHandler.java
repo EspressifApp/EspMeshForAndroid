@@ -1,8 +1,5 @@
 package libs.espressif.app;
 
-import android.content.Context;
-import android.util.Log;
-
 public class CrashHandler implements Thread.UncaughtExceptionHandler {
     private Thread.UncaughtExceptionHandler mDefaultHandler;
 

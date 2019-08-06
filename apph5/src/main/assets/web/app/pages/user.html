@@ -3,7 +3,7 @@
         <div class="title-info">
             <h4 class="app-title">{{$t('nav.user')}}</h4>
         </div>
-        <div class="content-info flex-wrapper user no-padding-bottom">
+        <div class="content-info flex-wrapper no-search user no-padding-bottom">
             <div class="overflow-touch">
                 <div class="item item-lg margin-top-15 ">
                     <div class="item-icon-circle icon-lg">
@@ -28,21 +28,43 @@
                         <!--<i class="ivu-icon ivu-icon-chevron-right font-lg"></i>-->
                     </div>
                 </div>
-                <!--<div @click="typeFun" class="item">-->
-                <!--<div class="item-icon">-->
-                <!--<i class="icon-speakerphone icon-blue"></i>-->
-                <!--</div>-->
-                <!--<div class="item-name item-bettwen">-->
-                <!--<span>{{$t('nav.device')}}</span>-->
-                <!--<mt-badge size="small">{{$store.state.deviceList.length}}</mt-badge>-->
-                <!--</div>-->
-                <!--<div class="item-power-small">-->
-                <!--<i class="icon-right font-lg"></i>-->
-                <!--</div>-->
-                <!--</div>-->
+                <div @click="scanFun" class="item margin-top-15">
+                    <div class="item-icon">
+                        <i class="icon-statistics icon-green" style="font-size: 20px;"></i>
+                    </div>
+                    <div class="item-name">
+                        <span>{{$t('statistical')}}</span>
+                    </div>
+                    <div class="item-power-small">
+                        <i class="icon-right font-lg"></i>
+                    </div>
+                </div>
+                <div @click="ibeaconFun" class="item">
+                    <div class="item-icon">
+                        <i class="icon-iBeacon icon-green"></i>
+                    </div>
+                    <div class="item-name item-bettwen">
+                        <span>Ibeacon</span>
+                        <mt-badge size="small">{{$store.state.deviceList.length}}</mt-badge>
+                    </div>
+                    <div class="item-power-small">
+                        <i class="icon-right font-lg"></i>
+                    </div>
+                </div>
+                <div @click="blueFun" class="item">
+                    <div class="item-icon">
+                        <i class="icon-bluetooth icon-green"></i>
+                    </div>
+                    <div class="item-name">
+                        <span>蓝牙设备</span>
+                    </div>
+                    <div class="item-power-small">
+                        <i class="icon-right font-lg"></i>
+                    </div>
+                </div>
                 <div  @click="selectFun"  class="item margin-top-15">
                     <div class="item-icon">
-                        <i class="icon-ionic icon-green" style="font-size: 30px;"></i>
+                        <i class="icon-guanlian icon-light-blue"></i>
                     </div>
                     <div class="item-name">
                         <span>{{$t('association')}}</span>
@@ -54,7 +76,7 @@
                 </div>
                 <div @click="pairFun"  class="item">
                     <div class="item-icon">
-                        <i class="icon-radar icon-green"></i>
+                        <i class="icon-radar icon-light-blue"></i>
                     </div>
                     <div class="item-name">
                         <span>{{$t('pair')}}</span>
@@ -63,18 +85,7 @@
                         <i class="icon-right font-lg"></i>
                     </div>
                 </div>
-                <!--<div @click="scanFun" class="item">-->
-                <!--<div class="item-icon">-->
-                <!--<i class="icon-statistics icon-green" style="font-size: 20px;"></i>-->
-                <!--</div>-->
-                <!--<div class="item-name">-->
-                <!--<span>{{$t('statistical')}}</span>-->
-                <!--</div>-->
-                <!--<div class="item-power-small">-->
-                <!--<i class="icon-right font-lg"></i>-->
-                <!--</div>-->
-                <!--</div>-->
-                <div @click="bugFun" class="item margin-top-15">
+                <div @click="bugFun" class="item">
                     <div class="item-icon rotate-180">
                         <i class="icon-network icon-light-blue"></i>
                     </div>
@@ -85,6 +96,7 @@
                         <i class="icon-right font-lg"></i>
                     </div>
                 </div>
+
                 <div @click="setFun" class="item">
                     <div class="item-icon">
                         <i class="icon-gear icon-light-blue"></i>
@@ -114,11 +126,12 @@
     </div>
     <v-set v-on:setShow="onBackUser" ref="set"></v-set>
     <v-userinfo v-on:userInfoShow="onBackUser" ref="info"></v-userinfo>
-    <!--<v-deviceType v-on:deviceTypeShow="onBackUser" ref="type"></v-deviceType>-->
+    <v-deviceIbeacon v-on:deviceIbeaconShow="onBackUser" ref="ibeacon"></v-deviceIbeacon>
     <v-selectDevice v-on:selectDeviceShow="onBackUser" ref="select"></v-selectDevice>
-    <!--<v-scan v-on:scanShow="onBackUser" ref="scan"></v-scan>-->
+    <v-scan v-on:scanShow="onBackUser" ref="scan"></v-scan>
     <v-pair v-on:pairShow="onBackUser" ref="pair"></v-pair>
     <!--<v-pairList v-on:pairListShow="onBackUser" ref="pairList"></v-pairList>-->
     <v-debug v-on:debugShow="onBackUser" ref="debug"></v-debug>
+    <v-blueList v-on:blueListShow="onBackUser" ref="blueList"></v-blueList>
     <!--<v-timingList v-on:timingListShow="onBackUser" ref="timingList"></v-timingList>-->
 </div>

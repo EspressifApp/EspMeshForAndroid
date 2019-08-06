@@ -34,19 +34,6 @@ define(["vue","MINT", "Util", "txt!../../pages/scan.html", "../js/reports", "../
                 onBackScan: function () {
                     window.onBackPressed = this.hide;
                 },
-                getClass: function() {
-                    var self = this,
-                        val = "";
-                    if (!Util._isEmpty(self.scanInfo.enable)) {
-                        $.each(SNIFFER_CLASS, function(i, item) {
-                            if (item.value == self.scanInfo.enable) {
-                                val = item.label;
-                                return false;
-                            }
-                        });
-                    }
-                    return val;
-                },
                 getType: function() {
                     var self = this,
                         val = "";
@@ -79,8 +66,8 @@ define(["vue","MINT", "Util", "txt!../../pages/scan.html", "../js/reports", "../
                 getWindow: function() {
                     var self = this,
                         val = "";
-                    if (!Util._isEmpty(self.scanInfo.g_ble_scan_window)) {
-                        val = self.scanInfo.g_ble_scan_window
+                    if (!Util._isEmpty(self.scanInfo.ble_scan_window)) {
+                        val = self.scanInfo.ble_scan_window
                     }
                     return val;
                 },
@@ -116,7 +103,9 @@ define(["vue","MINT", "Util", "txt!../../pages/scan.html", "../js/reports", "../
                     return mac;
                 },
                 showInfo: function() {
-                    this.$refs.info.show();
+                    if(this.deviceList.length > 0) {
+                        this.$refs.info.show();
+                    }
                 },
                 showReports: function () {
                     this.$refs.reports.show();
@@ -143,7 +132,8 @@ define(["vue","MINT", "Util", "txt!../../pages/scan.html", "../js/reports", "../
                     return rgb;
                 },
                 onGetScan: function(res) {
-                    if (!Util._isEmpty(res) && !Util._isEmpty(this.scanInfo.enable)) {
+                    console.log();
+                    if (!Util._isEmpty(res)) {
                         this.scanInfo = JSON.parse(res).result;
                     } else {
                         this.scanInfo = {"enable": "", "type": "", "notice_threshold": "", "esp_module_filter": "",

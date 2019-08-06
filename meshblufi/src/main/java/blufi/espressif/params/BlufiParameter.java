@@ -51,7 +51,7 @@ public interface BlufiParameter {
             public static final int SUBTYPE_SOFTAP_AUTH_MODE = 0x07;
             public static final int SUBTYPE_SOFTAP_CHANNEL = 0x08;
             public static final int SUBTYPE_USERNAME = 0x09;
-            public static final int SUBTYPE_CA_CERTIFICATION = 0x0a;
+            public static final int SUBTYPE_MDF_CUSTOM = 0x0a;
             public static final int SUBTYPE_CLIENT_CERTIFICATION = 0x0b;
             public static final int SUBTYPE_SERVER_CERTIFICATION = 0x0c;
             public static final int SUBTYPE_CLIENT_PRIVATE_KEY = 0x0d;

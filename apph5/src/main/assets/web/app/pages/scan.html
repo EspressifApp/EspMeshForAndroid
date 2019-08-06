@@ -17,9 +17,8 @@
                 <!--<div >Rssi</div>-->
                 <!--<div class="show-line"></div>-->
                 <!--</div>-->
-                <div class="ibeacon-middle">
-                    <p><span>{{$t('status')}}:&emsp;</span>{{getClass()}}</p>
-                    <p><span>{{$t('type')}}:&emsp;</span>{{getType()}}</p>
+                <div @click="showInfo" class="ibeacon-middle">
+                    <p><span>{{$t('status')}}:&emsp;</span>{{getType()}}</p>
                     <p><span>通知值(%):&emsp;</span>{{getNotice()}}</p>
                     <p><span>过滤ESP设备:&emsp;</span>{{getFilter()}}</p>
                     <p><span>蓝牙扫描间隔:&emsp;</span>{{getInterval()}}</p>

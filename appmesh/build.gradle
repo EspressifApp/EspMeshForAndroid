@@ -9,8 +9,6 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -32,8 +30,6 @@ dependencies {
     implementation lib.rxjava
     implementation lib.rxandroid
     implementation lib.jmdns
-    implementation lib.slf4j_api
-    implementation lib.slf4j_simple
 
     implementation project(':apptools')
     implementation project(':meshblufi')

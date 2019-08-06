@@ -49,7 +49,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-devices.html", "..
                 }
             },
             methods:{
-                onValuesChange(picker, values) {
+                onValuesChange: function(picker, values) {
 
                 },
                 show: function() {

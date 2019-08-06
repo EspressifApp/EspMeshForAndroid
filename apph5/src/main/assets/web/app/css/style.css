@@ -73,7 +73,15 @@ a{
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
-
+.icon-guanlian:before {
+  content: "\e905";
+}
+.icon-iBeacon:before {
+  content: "\e949";
+}
+.icon-up:before {
+  content: "\e948";
+}
 .icon-door:before {
 	content: "\e947";
 }
@@ -105,7 +113,7 @@ a{
 	content: "\e904";
 }
 .icon-radar:before {
-	content: "\e905";
+	content: "\e94a";
 }
 .icon-gear:before {
 	content: "\e906";
@@ -2307,6 +2315,7 @@ operate-bg .group-wrapper .operate-way-info {
 	display: flex;
 	flex-flow: column;
 	align-items: center;
+	text-align: center;
 }
 .ibeacon-device-icon{
 	display: flex;
@@ -2320,7 +2329,7 @@ operate-bg .group-wrapper .operate-way-info {
 	margin-bottom: 5px;
 }
 .ibeacon-device-icon i {
-	font-size: 50px;
+	font-size: 40px;
 }
 .ibeacon-device span {
 	margin: 5px auto;
@@ -2540,8 +2549,35 @@ operate-bg .group-wrapper .operate-way-info {
 	font-size: 25px;
 	color: #ef7400;
 }
-.item-icon .icon-android-alert {
-	font-size: 35px;
+.item-icon .scancontent-icon {
+	font-size: 28px;
+}
+.item-icon .scancontent-icon.icon-bluetooth {
+	color: #00acee;
+}
+.item-icon .scancontent-icon.icon-wifi {
+	font-size: 25px;
+	color: #44ee9a;
+}
+.add-ul.scan-more li {
+    padding-left: 12px;
+}
+.add-ul.scan-more li i {
+    display: inline-block;
+    width: 26px;
+    text-align: center;
+}
+.scan-more .icon-rss {
+    font-size: 17px;
+}
+.scan-more .icon-up {
+    display: inline-block;
+    -webkit-transition: all .3s linear;
+    transition: all .3s linear;
+}
+.scan-more .sort-down {
+	-webkit-transform: rotate(180deg);
+	transform: rotate(180deg);
 }
 .info-wrapper {
 	flex: 1;
@@ -3992,7 +4028,8 @@ operate-bg .group-wrapper .operate-way-info {
 	height: 100%;
 }
 .room-wrapper .mint-navbar::-webkit-scrollbar { display: none }
-.room-wrapper .mint-navbar {
+.room-wrapper .mint-navbar,
+.debug-navbar .mint-navbar{
 	width: 100%;
 	overflow: hidden;
 	overflow-x: auto;
@@ -4002,6 +4039,24 @@ operate-bg .group-wrapper .operate-way-info {
 	max-width: 25%;
 	font-size: 16px;
 	font-weight: bold;
+	overflow: hidden;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+}
+.debug-navbar .mint-navbar .mint-tab-item {
+	min-width: 35%;
+	max-width: 35%;
+	font-size: 16px;
+	font-weight: bold;
+	margin: 0 10px;
+	box-sizing: border-box;
+}
+.room-wrapper .mint-navbar .mint-tab-item-label,
+.debug-navbar .mint-navbar .mint-tab-item-label {
+	width: 100%;
+	overflow: hidden;
+	text-overflow:ellipsis;
+	white-space: nowrap;
 }
 .room-wrapper .mint-tab-container {
 	margin-top: 0;
@@ -4048,6 +4103,10 @@ operate-bg .group-wrapper .operate-way-info {
 	font-size: 14px;
 	font-weight: 500;
 
+}
+.room-info-content .room-title span.icon-more {
+    font-size: 22px;
+    font-weight: bold;
 }
 .room-info-content .room-desc {
 	margin-bottom: 8px;
@@ -4139,6 +4198,60 @@ operate-bg .group-wrapper .operate-way-info {
 .room-device-wrapper .room-device .item-power-small {
 	font-size: 20px;
 	text-align: right;
+}
+.ibeacon-content .mint-checkbox-core::after {
+}
+.ibeacon-content .mint-checkbox-core {
+	box-sizing: border-box;
+}
+.ibeacon-content .mint-checklist-label {
+	padding: 0;
+}
+.ibeacon-content .info-item {
+	justify-content: space-between;
+}
+.ibeacon-content .mint-checkbox-input:checked + .mint-checkbox-core {
+    background-color: #3ec2fc;
+    border-color: #3ec2fc;
+}
+.blue-connect {
+	padding: 20px 15px;
+}
+.textarea-control {
+	height: 220px;
+	background: #fff;
+	width: 100%;
+	padding: 5px;
+	border: none;
+	font-size: 14px;
+	box-shadow: 0 0 5px #fff;
+	box-sizing: border-box;
+	resize: none;
+	word-break: break-all;
+}
+.blue-connect .btn-register-wrapper {
+	margin-top: 40px;
+}
+.blue-connect .btn-ble {
+	width: 23%;
+	min-width: 23%;
+	padding: 0;
+	height: 36px;
+	border: none;
+	background: #3ec2fc;
+	box-sizing: border-box;
+	margin-right: 1%;
+}
+.blue-connect .btn-ble-color {
+	width: 12vw;
+	height: 12vw;
+	border-radius: 100%;
+	border: none;
+	margin: 0 auto;
+}
+.blue-connect .btn-ble-color .icon-ok-circled {
+	font-size: 20px;
+	color: #fff;
 }
 @media (max-height: 615px){
 	.content-wrapper {

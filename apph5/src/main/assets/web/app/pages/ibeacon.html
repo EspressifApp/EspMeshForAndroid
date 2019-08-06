@@ -13,7 +13,7 @@
                     </div>
                     <div class="ibeacon-device">
                         <div class="ibeacon-device-icon">
-                            <i class="icon-light" :style="{'color': getColor()}"></i>
+                            <i :class="getIcon()" :style="{'color': getColor()}"></i>
                         </div>
                         <span>{{ibeaconInfo.name}}</span>
                         <span>{{deviceInfo.mac}}</span>
@@ -29,11 +29,10 @@
                 <!--<div >Rssi</div>-->
                 <!--<div class="show-line"></div>-->
                 <!--</div>-->
-                <div class="ibeacon-middle">
+                <div @click="showInfo" class="ibeacon-middle">
                     <p><span>Major:&emsp;</span>{{ibeaconInfo.major}}</p>
                     <p><span>Minor:&emsp;</span>{{ibeaconInfo.minor}}</p>
                     <p><span>UUID:&emsp;</span>{{ibeaconInfo.uuid}}</p>
-                    <p><span>发送间隔:&emsp;</span>{{ibeaconInfo.frequency}}</p>
                     <p><span>发送功率:&emsp;</span>{{ibeaconInfo.power}}</p>
                 </div>
                 <div class="ibeacon-footer">

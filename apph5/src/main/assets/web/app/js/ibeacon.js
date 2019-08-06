@@ -22,8 +22,11 @@ define(["vue","MINT", "Util", "txt!../../pages/ibeacon.html", "./ibeaconInfo"],
                     var self = this;
                     self.onBackIbean();
                     self.addFlag = true;
+                    self.rssi = 0;
+                    self.meter = 0;
                     MINT.Indicator.open();
                     window.onGetIbeacon = this.onGetIbeacon;
+                    window.onScanBLE = self.onConScanBLE;
                     setTimeout(function(){
                         self.getIbeacon();
                     },500);
@@ -53,6 +56,10 @@ define(["vue","MINT", "Util", "txt!../../pages/ibeacon.html", "./ibeaconInfo"],
                     espmesh.stopBleScan();
                     this.$refs.ibeaconInfo.show();
                 },
+                getIcon: function() {
+                    console.log(this.deviceInfo.tid);
+                    return Util.getIcon(this.deviceInfo.tid);
+                },
                 getColor: function () {
                     var hueValue = 0, saturation = 0, luminance = 0, status = 0, rgb = "#6b6b6b";
                     $.each(this.deviceInfo.characteristics, function(i, item) {
@@ -79,15 +86,13 @@ define(["vue","MINT", "Util", "txt!../../pages/ibeacon.html", "./ibeaconInfo"],
                 },
                 onConScanBLE: function (devices) {
                     var self = this;
+                    console.log(devices);
                     if (!Util._isEmpty(devices)) {
                         devices = JSON.parse(devices);
                         $.each(devices, function(i, item) {
-                            var mac = item.mac;
-                            mac = Util.staMacForBleMac(mac);
-                            if (self.deviceInfo.mac == mac) {
+                            if (self.deviceInfo.mac == item.bssid) {
                                 self.rssi = item.rssi;
                                 self.meter = Util.distance(item.rssi);
-
                                 return  false;
                             }
                         })

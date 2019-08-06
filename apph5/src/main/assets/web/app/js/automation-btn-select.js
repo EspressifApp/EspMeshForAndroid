@@ -130,8 +130,12 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-select.html", "../
                         res = JSON.parse(res);
                         if (!Util._isEmpty(res.result)) {
                             var result = res.result;
-                            if (!Util._isEmpty(result.trigger)) {
-                                self.deviceEvents = result.trigger;
+                            if (!Util._isEmpty(result.trigger) || !Util._isEmpty(result.events)) {
+                                if(!Util._isEmpty(result.trigger)) {
+                                    self.deviceEvents = result.trigger;
+                                } else if(!Util._isEmpty(result.events)) {
+                                    self.deviceEvents = result.events;
+                                }
                                 if (!Util._isEmpty(self.deviceEvents)) {
                                    if (self.deviceEvents.length > 0) {
                                       self.existEvent = true;

@@ -119,7 +119,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                 var self = this, list = [];
                 devices = JSON.parse(devices);
                 $.each(devices, function(i, item) {
-                    if (Util.isMesh(item.name, item.version)) {
+                    if (Util.isMesh(item.name, item.version, item.beacon)) {
                         list.push(item);
                     }
                 })

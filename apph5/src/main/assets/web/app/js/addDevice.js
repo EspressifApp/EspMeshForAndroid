@@ -52,7 +52,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 retransmitEnable: null,
                 dataDrop: null,
                 meshPwd: null,
-                selected: "1"
+                selected: "2"
             }
         },
         computed: {
@@ -134,6 +134,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 self.retransmitEnable = null;
                 self.dataDrop = null;
                 self.meshPwd = null;
+                this.selected = "2";
                 setTimeout(function() {
                     self.configWifi();
                 }, 1000);
@@ -307,8 +308,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                     });
                     return false;
                 }
-                self.meshId = self.meshIdOne + ":" + self.meshIdTwo + ":" + self.meshIdThr + ":" + self.meshIdFour +
-                    ":" + self.meshIdFive + ":" + self.meshIdSex;
+                if (parseInt(self.meshIdOne) == 0 && parseInt(self.meshIdTwo) == 0 && parseInt(self.meshIdThr) == 0 &&
+                     parseInt(self.meshIdFour) == 0 && parseInt(self.meshIdFive) == 0 &&
+                     parseInt(self.meshIdSex) == 0) {
+                     self.meshId = "11:11:11:11:11:11";
+                } else {
+                    self.meshId = self.meshIdOne + ":" + self.meshIdTwo + ":" + self.meshIdThr + ":" + self.meshIdFour +
+                        ":" + self.meshIdFive + ":" + self.meshIdSex;
+                }
                 self.moreObj = {custom_data: self.customData, mesh_password: self.meshPwd, mesh_type: self.meshType, vote_percentage: self.votePercentage, vote_max_count: self.voteMaxCount,
                     backoff_rssi: self.backoffRssi, scan_min_count: self.scanMinCount, scan_fail_count: self.scanFailCount, monitor_ie_count: self.monitorCount,
                     root_healing_ms: self.rootHealing, root_conflicts_enable: self.rootEnable, fix_root_enable: self.fixEnable,

@@ -35,7 +35,12 @@ define(["vue", "MINT", "Util", "txt!../../pages/newVersion.html"],
                 this.btnTitle = this.$t('updateVersionTitle');
                 this.appDesc = [];
                 this.flag = true;
-                var notes = Util.Base64.decode(this.newAppInfo.notes);
+                var notes = "";
+                if (this.$store.state.systemInfo != "Android") {
+                    notes = this.newAppInfo.notes
+                } else {
+                    notes = Util.Base64.decode(this.newAppInfo.notes);
+                }
                 if (notes.indexOf("\n") != -1) {
                     this.appDesc = notes.split("\n");
                 } else {

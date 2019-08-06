@@ -126,6 +126,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                     }, 100)
                 } else {
                     self.loadList = [];
+                    self.$store.commit("setTsfTime", "");
                 }
             }
         },
@@ -228,7 +229,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
             loadHWDevices: function() {
                 espmesh.loadHWDevices();
             },
-            getBxColor: function(layer) {
+            getBxColor: function(layer, tsfTime) {
                 return Util.getBxColor(layer);
             },
             getRssiIcon: function(rssi) {
@@ -332,6 +333,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                         });
                         var id = parseInt(item, 16),
                              name = "mesh_id(" + item + ")";
+                        if (id == 0) {
+                            id = parseInt("111111111111", 16);
+                        }
                         list.push({id: id, name: self.getGroupName(oldGroups, id, name),
                             is_user: true, is_mesh: true, device_macs: meshMacs})
                     })
@@ -544,11 +548,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                     self.$refs.sendIP.show();
                 })
             },
-            showIbeacon: function() {
-                this.infoShow = false;
-                this.$store.commit("setShowScanBle", false);
-                this.$refs.ibeacon.show();
-            },
             showDel: function (e) {
                 $("#content-info .item").removeClass("active");
                 $(e.currentTarget).addClass("active");
@@ -660,47 +659,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 });
             },
             getColor: function (characteristics, tid) {
-                var self = this,
-                    hueValue = 0, saturation = 0, luminance = 0, status = 0, rgb = "#6b6b6b",
-                    mode = 0, temperature = 0, brightness = 0;
-                if (!Util._isEmpty(characteristics)) {
-                    $.each(characteristics, function(i, item) {
-                        if (item.cid == HUE_CID) {
-                            hueValue = item.value;
-                        }else if (item.cid == SATURATION_CID) {
-                            saturation = item.value;
-                        }else if (item.cid == VALUE_CID) {
-                            luminance = item.value;
-                        } else if (item.cid == STATUS_CID) {
-                            status = item.value;
-                        } else if (item.cid == MODE_CID) {
-                            mode = item.value;
-                        } else if (item.cid == TEMPERATURE_CID) {
-                            temperature = item.value;
-                        } else if (item.cid == BRIGHTNESS_CID) {
-                            brightness = item.value;
-                        }
-                    })
-                }
-                if (status == STATUS_ON) {
-                    if (mode == MODE_CTB) {
-                        rgb = Util.modeFun(temperature, brightness);
-                    } else {
-                        rgb = Raphael.hsb2rgb(hueValue / 360, saturation / 100, luminance / 100);
-                        var v = luminance / 100;
-                        if (v <= 0.4)  {
-                            v *= 1.2;
-                        }
-                        if(v <= 0.2) {
-                            v = 0.2;
-                        }
-                        rgb = "rgba("+Math.round(rgb.r)+", "+Math.round(rgb.g)+", "+Math.round(rgb.b)+", "+ v +")";
-                    }
-                }
-                if (tid < MIN_LIGHT || tid > MAX_LIGHT) {
-                    rgb = "#3ec2fc";
-                }
-                return rgb;
+                return Util.getColor(characteristics, tid);
             },
 
             editName: function () {
@@ -1151,6 +1110,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 }
             },
             onScanBLE: function (devices) {
+                console.log(devices);
                 var self = this,
                     scanList = [], rssiList = [], notExist = [],
                     rssiValue = self.$store.state.rssiInfo;
@@ -1158,7 +1118,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                     var conScanDeviceList = self.$store.state.conScanDeviceList;
                     devices = JSON.parse(devices);
                     $.each(devices, function(i, item) {
-                        if (item.rssi >= rssiValue && Util.isMesh(item.name, item.version)) {
+                        if (item.rssi >= rssiValue && Util.isMesh(item.name, item.version, item.beacon)) {
                             rssiList.push(item);
                         }
                     })
@@ -1166,9 +1126,17 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                         var names = {};
                         $.each(devices, function(i, item) {
                             if (self.listMacs.indexOf(item.mac) == -1) {
-                                notExist.push(item.mac);
-                                names[item.mac] = item.name;
-                                self.listMacs.push(item.mac);
+                                if (!Util._isEmpty(item.beacon)) {
+                                    if (item.beacon == BEACON_MDF) {
+                                        notExist.push(item.mac);
+                                        names[item.mac] = item.name;
+                                        self.listMacs.push(item.mac);
+                                    }
+                                } else {
+                                    notExist.push(item.mac);
+                                    names[item.mac] = item.name;
+                                    self.listMacs.push(item.mac);
+                                }
                             }
                         })
                         if (Util._isEmpty(conScanDeviceList) || conScanDeviceList.length <= 0) {

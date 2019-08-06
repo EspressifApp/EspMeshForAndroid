@@ -12,8 +12,8 @@ import iot.espressif.esp32.utils.DeviceUtil;
 import libs.espressif.utils.TimeUtil;
 
 public class Sniffer {
-    public static final int TYPE_WIFI = 1 << 1;
-    public static final int TYPE_BLE = 1 << 2;
+    public static final int TYPE_WIFI = 1;
+    public static final int TYPE_BLE = 2;
 
     private Long mId;
 
@@ -120,7 +120,7 @@ public class Sniffer {
     }
 
     public CharSequence getInfoSpan() {
-        String bssidStr = DeviceUtil.convertColonBssid(mBssid);
+        String bssidStr = DeviceUtil.convertToColonBssid(mBssid);
         String org = TextUtils.isEmpty(mOrganization) ? "Unknow" : mOrganization;
         String type = "Unknow";
         switch (mType) {

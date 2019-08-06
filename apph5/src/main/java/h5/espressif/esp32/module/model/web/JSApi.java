@@ -150,6 +150,7 @@ public class JSApi {
     {
         "mac":"BLE mac",
         "name":"BLE name",
+        "beacon":"MDF", // "MDF" or "MGW"
         "rssi":-55,
         "version":1,
         "bssid":"STA mac",
@@ -464,5 +465,13 @@ public class JSApi {
      */
     public static String onGetBufferForString(String buffer) {
         return String.format("onGetBufferForString(\'%s\')", buffer);
+    }
+
+    /**
+     *
+     * @param info: {"connected":true}
+     */
+    public static String onMeshBLEDeviceConnectionChanged(String info) {
+        return String.format("onMeshBLEDeviceConnectionChanged(\'%s\')", info);
     }
 }

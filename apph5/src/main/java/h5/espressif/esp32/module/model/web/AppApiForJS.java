@@ -695,4 +695,32 @@ public class AppApiForJS {
     public void updateDeviceGroup(String request) {
         mImpl.updateDeviceGroup(request);
     }
+
+    /**
+     * @param request:
+    {
+        "address":"AA:BB:CC:DD:EE:FF" // or "aabbccddeeff"
+    }
+     */
+    @JavascriptInterface
+    public void connectMeshBLEDevice(String request) {
+        mImpl.connectMeshBLEDevice(request);
+    }
+
+    @JavascriptInterface
+    public void disconnectMeshBLEDevice() {
+        mImpl.disconnectMeshBLEDevice();
+    }
+
+    /**
+     * @param request
+    {
+        "type":"json", // "json", "string" or "buffer"
+        "value":{} // {"key":"value"} , "string value" or [int1, int2]
+    }
+     */
+    @JavascriptInterface
+    public void postDataToMeshBLEDevice(String request) {
+        mImpl.postDataToMeshBLEDevice(request);
+    }
 }

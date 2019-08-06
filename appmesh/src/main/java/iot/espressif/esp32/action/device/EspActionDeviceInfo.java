@@ -92,6 +92,9 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
             int rssi = respJSON.optInt(KEY_RSSI, IEspDevice.RSSI_NULL);
             device.setRssi(rssi);
 
+            long tsfTime = respJSON.optLong(KEY_TSF_TIME, 0L);
+            device.setTsfTime(tsfTime);
+
             String idfVersion = respJSON.optString(KEY_IDF_VERSION);
             device.setIdfVersion(idfVersion);
 
@@ -139,7 +142,7 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
                 String format = array.getString(indexFormat);
                 EspDeviceCharacteristic characteristic = EspDeviceCharacteristic.newInstance(format);
                 if (characteristic == null) {
-                    mLog.w("doActionGetDeviceInfoLocal unknow format " + format);
+                    mLog.w("doActionGetDeviceInfoLocal unknown format " + format);
                     continue;
                 }
 

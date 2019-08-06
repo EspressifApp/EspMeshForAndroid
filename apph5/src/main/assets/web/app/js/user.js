@@ -1,6 +1,8 @@
 define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../js/set", "../js/userinfo",
-     "../js/pair", "../js/selectDevice", "../js/debug", "../js/timingList", "../js/scan"],
-    function(v, MINT, Util, user, footer, set, userinfo, pair, selectDevice, debug, timingList, scan) {
+     "../js/pair", "../js/selectDevice", "../js/debug", "../js/timingList", "../js/scan", "../js/deviceIbeacon",
+     "../js/blueList"],
+    function(v, MINT, Util, user, footer, set, userinfo, pair, selectDevice, debug, timingList, scan, deviceIbeacon,
+        blueList) {
 
     var User = v.extend({
 
@@ -34,8 +36,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../
             infoFun: function () {
                 this.$refs.info.show();
             },
-            typeFun: function () {
-                this.$refs.type.show();
+            ibeaconFun: function () {
+                this.$refs.ibeacon.show();
             },
             scanFun: function () {
                  this.$refs.scan.show();
@@ -51,6 +53,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../
             },
             bugFun: function () {
                 this.$refs.debug.show();
+            },
+            blueFun: function () {
+                this.$refs.blueList.show();
             },
             timingListFun: function () {
                 this.$refs.timingList.show();
@@ -87,7 +92,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../
             "v-pair": pair,
             "v-debug": debug,
             "v-timingList": timingList,
-            "v-scan": scan
+            "v-scan": scan,
+            "v-deviceIbeacon": deviceIbeacon,
+            "v-blueList": blueList
         }
 
     });

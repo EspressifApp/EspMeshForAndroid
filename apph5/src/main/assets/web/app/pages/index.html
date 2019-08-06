@@ -30,7 +30,7 @@
                          infinite-scroll-distance="30">
                         <div v-for="item in loadList" :id="item.mac" :key="item.mac" v-longtap="{fn: showOperate, mac: item.mac}"
                              @click.self="operateItem(item)" class="item item-device">
-                            <div @click.stop="operateItem(item)" :class="getBxColor(item.layer)" class="item-icon-circle">
+                            <div @click.stop="operateItem(item)" :class="getBxColor(item.layer, item.tsf_time)" class="item-icon-circle">
                                 <i :class="getIcon(item.tid)"
                                    :style="{'color': getColor(item.characteristics, item.tid)}"></i>
                                 <span v-show="linkShow(item)"><i class="icon-link"></i></span>
@@ -113,7 +113,6 @@
                     <li @click="showConfig" v-show="isShowConfig(deviceInfo.tid)"><span>配置</span></li>
                     <!--<li @click="showSendIp"><span>{{$t('setIP')}}</span></li>-->
                     <li @click="showCommand"><span>{{$t('command')}}</span></li>
-                    <!--<li @click="showIbeacon"><span>Ibeacon</span></li>-->
                     <li @click="hideOperate" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
                 </ul>
             </div>
@@ -122,7 +121,7 @@
     </transition>
     <v-resetDevice v-on:resetShow="onBackIndex" ref="device"></v-resetDevice>
     <v-joinDevice v-on:joinShow="onBackIndex" ref="join"></v-joinDevice>
-    <v-addGroup v-on:addGroupShow="onBackIndex" v-if="deviceList.length > 0"
+    <v-addGroup v-on:addGroupShow="onBackIndex"
                 :name="groupName" :addGroupId="addGroupId" ref="group"></v-addGroup>
     <v-operateDevice v-on:operateShow="onBackIndex" :isDevice="isDevice" :isRoom="false" :colorId="colorId" :temperatureId="temperatureId"
                      ref="operate"></v-operateDevice>
@@ -130,7 +129,6 @@
     <v-otaInfo v-on:otaShow="onBackIndex" :otaId="otaDeviceId" :macs="otaMacs" v-if="deviceInfo" ref="ota"></v-otaInfo>
     <v-automation v-on:autoShow="onBackIndex" :deviceInfo="deviceInfo" :autoId="autoId"
                   v-if="deviceInfo" ref="auto"></v-automation>
-    <v-ibeacon v-on:ibeanShow="onBackIndex" :deviceInfo="deviceInfo" v-if="deviceInfo" ref="ibeacon"></v-ibeacon>
     <v-scanDevice v-on:scanDeviceShow="onBackIndex" ref="scanDevice"></v-scanDevice>
     <v-attr v-on:attrShow="onBackIndex" ref="attr"></v-attr>
     <v-remind ref="remind"></v-remind>

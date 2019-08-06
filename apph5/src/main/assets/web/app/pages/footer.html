@@ -12,10 +12,10 @@
             <i class="icon-groups"></i>
             <span>{{$t('nav.group')}}</span>
         </li>
-        <!--<li @click="showRoom($event)" :class="{'active': current === room}">-->
-            <!--<i class="icon-door"></i>-->
-            <!--<span>{{$t('nav.room')}}</span>-->
-        <!--</li>-->
+        <li @click="showRoom($event)" :class="{'active': current === room}">
+            <i class="icon-door"></i>
+            <span>{{$t('nav.room')}}</span>
+        </li>
         <li @click="showUser($event)" :class="{'active': current === user}">
             <i class="icon-person"></i>
             <span>{{$t('nav.user')}}</span>

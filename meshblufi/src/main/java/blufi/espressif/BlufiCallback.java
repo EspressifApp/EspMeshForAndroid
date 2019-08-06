@@ -66,6 +66,15 @@ public abstract class BlufiCallback {
     }
 
     /**
+     * Callback the device send custom data to APP
+     *
+     * @param client blufi client
+     * @param data custom data
+     */
+    public void onReceivedCustomData(BlufiClient client, byte[] data) {
+    }
+
+    /**
      * Callback the error occur
      *
      * @param client blufi client

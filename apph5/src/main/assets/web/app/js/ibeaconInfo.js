@@ -60,28 +60,29 @@ define(["vue","MINT", "Util", "txt!../../pages/ibeaconInfo.html"],
                     }
                     return rgb;
                 },
-            },
-            onSetIbeaconInfo: function() {
-                var self = this;
-                if (!Util._isEmpty(res)) {
-                     res = JSON.parse(res).result;
-                     if (res.status_code == 0) {
-                         MINT.Toast({
-                             message: self.$t('editSuccessDesc'),
-                             position: 'bottom',
-                         });
-                         setTimeout(function() {
-                             self.hide();
-                         }, 1000);
-                     } else {
-                         MINT.Toast({
-                             message: self.$t('editFailDesc'),
-                             position: 'bottom',
-                         });
+                onSetIbeaconInfo: function(res) {
+                    var self = this;
+                    if (!Util._isEmpty(res)) {
+                         res = JSON.parse(res).result;
+                         if (res.status_code == 0) {
+                             MINT.Toast({
+                                 message: self.$t('editSuccessDesc'),
+                                 position: 'bottom',
+                             });
+                             setTimeout(function() {
+                                 self.hide();
+                             }, 1000);
+                         } else {
+                             MINT.Toast({
+                                 message: self.$t('editFailDesc'),
+                                 position: 'bottom',
+                             });
+                         }
                      }
-                 }
-                 MINT.Indicator.close();
+                     MINT.Indicator.close();
+               },
             },
+
 
         });
 

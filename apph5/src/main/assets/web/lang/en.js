@@ -29,6 +29,7 @@ define(function(){
         "loadCon": "Networking...",
         "search": "Search name or location",
         "searchMAC": "Search mac or location",
+        "searchByMac": "Search mac",
         "searchGroup": "Search name",
         "editName": "Name the device",
         "edit": "Edit Location",

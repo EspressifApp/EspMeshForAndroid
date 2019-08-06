@@ -360,4 +360,8 @@ public interface IEspDevice {
     int getRssi();
 
     void setRssi(int rssi);
+
+    long getTsfTime();
+
+    void setTsfTime(long tsfTime);
 }

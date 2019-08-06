@@ -65,6 +65,7 @@ interface AppApiForJSConstants {
     String KEY_SETTINGS = "settings";
     String KEY_SCAN_MODE = "scan_mode";
     String KEY_NOTES= "notes";
+    String KEY_CONNECTED = "connected";
 
     String PREF_DEVICE_TAB = "pref_device_tab";
     String PREF_TAB_DEVICES = "pref_tab_devices";

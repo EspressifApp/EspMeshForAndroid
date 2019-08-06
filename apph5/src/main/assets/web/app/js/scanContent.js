@@ -11,12 +11,39 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanContent.html"],
                 return {
                     addFlag: false,
                     snifferList: [],
+                    searchMac: "",
                     scanType: SNIFFER_TYPE,
+                    timeSort: true,
+                    rssiSort: false,
+                    moreFlag: false,
+                    isAsc: false,
                 }
             },
             computed: {
                 list: function () {
-                    return this.snifferList;
+                    var self = this;
+                    var searchList = [];
+                    if (Util._isEmpty(self.searchMac)) {
+                        searchList = self.snifferList;
+                    } else {
+                        $.each(self.snifferList, function(i, item) {
+                            if (item.mac.indexOf(self.searchMac) != -1) {
+                                searchList.push(item);
+                            }
+                        })
+                    }
+                    if (self.timeSort) {
+                        searchList.sort(Util.sortBy("time"));
+                        searchList.reverse();
+                    }
+                    if (self.rssiSort) {
+                        searchList.sort(Util.sortBy("rssi"));
+                        searchList.reverse();
+                    }
+                    if (this.isAsc) {
+                        searchList.reverse();
+                    }
+                    return searchList;
                 }
             },
             methods:{
@@ -28,7 +55,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanContent.html"],
                     self.addFlag = true;
                     self.snifferList = [];
                     MINT.Indicator.open();
+                    self.timeSort = true;
+                    self.rssiSort = false;
+                    self.moreFlag = false;
                     setTimeout(function() {
+                        console.log("loadSniffers");
                         espmesh.loadSniffers(JSON.stringify({"min_time": -1, "max_time": -1,
                                 "del_duplicate": false, "callback": "onScanLoadSniffers"}));
 
@@ -42,8 +73,32 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanContent.html"],
                         espmesh.stopScanSniffer();
                     },10)
                 },
+                showMore: function() {
+                    this.moreFlag = true;
+                },
+                hideMore: function() {
+                    this.moreFlag = false;
+                },
+                sortByTime: function() {
+                    this.timeSort = true;
+                    this.rssiSort = false;
+                    this.isAsc = !this.isAsc;
+                },
+                sortByRssi: function() {
+                    this.timeSort = false;
+                    this.rssiSort = true;
+                    this.isAsc = !this.isAsc;
+                },
                 clearDevice: function() {
-                    this.snifferList = [];
+                    var self = this;
+                    self.hideMore();
+                    MINT.MessageBox.confirm("确定要清除信息吗？", "清除信息",{
+                        confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
+                            setTimeout(function() {
+                                self.snifferList = [];
+                            }, 100)
+                    });
+
                 },
                 getType: function(value) {
                     var val = "";
@@ -83,6 +138,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanContent.html"],
                     }
                 },
                 onScanLoadSniffers: function(res) {
+                    console.log(res);
                     MINT.Indicator.close();
                     this.loadData(res);
                     espmesh.startScanSniffer();

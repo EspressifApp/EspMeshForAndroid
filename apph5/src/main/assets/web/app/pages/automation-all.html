@@ -13,7 +13,7 @@
         <div @click="selectAllDevice($event)" class="select-small-radio flex flex-ac flex-jce"><span  class="span-radio"
                    :class="{'active': (selected == count && selected != 0)}"><span></span></span></div>
     </div>
-    <div class="content-info flex-wrapper attr" :id="autoIdAll">
+    <div class="content-info attr flex-wrapper" :id="autoIdAll">
         <div class="overflow-touch overflow-wrapper">
             <div @click="selectMac(item.mac)" v-if="showCondition(item.mac, item.tid)" v-for="item in deviceList" class="item">
                 <div class="item-icon-circle">

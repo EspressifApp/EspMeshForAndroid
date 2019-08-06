@@ -54,6 +54,7 @@ class EspMeshApisImpl extends EspMeshApis {
         for (String staBssid : params.getWhiteList()) {
             bParams.addWhiteAddress(staBssid);
         }
+        bParams.setCustomData(params.getCustomData());
         return new EspActionDeviceConfigure().doActionConfigureBlufi(device, meshVersion, bParams, blufiCallback);
     }
 

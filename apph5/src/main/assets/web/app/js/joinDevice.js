@@ -288,7 +288,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/joinDevice.html", "./importDevic
             setScanList: function(devices) {
                 var self = this;
                 $.each(devices, function(i, item) {
-                    if(Util.isMesh(item.name, item.version)) {
+                    if(Util.isMesh(item.name, item.version, item.beacon)) {
                         var flag = true,
                             obj = {mac: item.mac, name: Util.setName(item.name, item.bssid),
                                 rssi: item.rssi, bssid: item.bssid, position: self.getPairInfo(item.mac),

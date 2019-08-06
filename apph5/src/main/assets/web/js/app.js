@@ -55,7 +55,7 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "
             roomList: [],
             mixList: [],
             deviceInfo: "",
-            userName: "",
+            userInfo: "",
             searchName:"",
             scanDeviceList: [],
             conScanDeviceList: [],
@@ -68,7 +68,9 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "
             systemInfo: "",
             appInfo: "",
             newAppInfo: "",
-            isNewVersion: false
+            isNewVersion: false,
+            delayTime: 0,
+            tsfTime: 0,
         },
         mutations: {
             setList: function(state, list){
@@ -124,6 +126,12 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "
             },
             setIsNewVersion: function(state, info) {
                 state.isNewVersion = info;
+            },
+            setDelayTime: function(state, info) {
+                state.delayTime = info;
+            },
+            setTsfTime: function(state, info) {
+                state.tsfTime = info;
             }
         }
     });

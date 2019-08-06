@@ -2,6 +2,9 @@ package iot.espressif.esp32.utils;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,14 +23,11 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import javax.annotation.Nonnull;
-
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import iot.espressif.esp32.action.IEspAction;
 import iot.espressif.esp32.action.device.IEspActionDevice;
 import iot.espressif.esp32.constants.DeviceConstants;
 import iot.espressif.esp32.model.callback.DeviceRequestCallable;
@@ -80,7 +80,7 @@ public class DeviceUtil {
         return null;
     }
 
-    private static void addMeshHeaders(@Nonnull Map<String, String> headers, int bssidSize, String bssid) {
+    private static void addMeshHeaders(@NonNull Map<String, String> headers, int bssidSize, String bssid) {
         boolean hasGroup = false;
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             if (HEADER_GROUP.equals(entry.getKey())) {
@@ -109,8 +109,8 @@ public class DeviceUtil {
      * @param headers http headers
      * @return http response, null if failed.
      */
-    public static EspHttpResponse httpLocalRequest(IEspDevice device, byte[] content,
-                                                   EspHttpParams params, Map<String, String> headers) {
+    public static EspHttpResponse httpLocalRequest(@NonNull IEspDevice device, @NonNull byte[] content,
+                                                   @Nullable EspHttpParams params, @Nullable Map<String, String> headers) {
         return httpLocalRequest(device.getProtocol(), device.getLanHostAddress(), device.getProtocolPort(),
                 device.getMac(), content, params, headers);
     }
@@ -125,8 +125,8 @@ public class DeviceUtil {
      * @param headers http headers
      * @return http response, null if failed.
      */
-    public static EspHttpResponse httpLocalRequest(
-            String protocol, String host, int port, String bssid, byte[] content,
+    public static EspHttpResponse httpLocalRequest(@NonNull String protocol, @NonNull String host, int port,
+                                                   @NonNull String bssid, @NonNull byte[] content,
             EspHttpParams params, Map<String, String> headers) {
         String url = getLocalUrl(protocol, host, FILE_REQUEST, port);
         Map<String, String> newHeaders = new HashMap<>();
@@ -145,8 +145,8 @@ public class DeviceUtil {
      * @param params  http params
      * @param headers http headers
      */
-    public static List<EspHttpResponse> httpLocalMulticastRequest(Collection<IEspDevice> devices,
-              byte[] content, EspHttpParams params, Map<String, String> headers) {
+    public static List<EspHttpResponse> httpLocalMulticastRequest(@NonNull Collection<IEspDevice> devices,
+              @NonNull byte[] content, @Nullable EspHttpParams params, @Nullable Map<String, String> headers) {
         HashMap<String, String> newHeaders = new HashMap<>();
         if (headers != null) {
             newHeaders.putAll(headers);
@@ -576,7 +576,7 @@ public class DeviceUtil {
      * @param bssid like aabbccddeeff
      * @return like aa:bb:cc:dd:ee:ff
      */
-    public static String convertColonBssid(String bssid) {
+    public static String convertToColonBssid(String bssid) {
         StringBuilder sb = new StringBuilder(18);
         for (int i = 0; i < bssid.length(); i += 2) {
             sb.append(bssid.substring(i, i + 2)).append(":");

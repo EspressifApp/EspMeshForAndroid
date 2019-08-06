@@ -1,5 +1,7 @@
 package h5.espressif.esp32.module.model.web;
 
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
@@ -70,6 +72,7 @@ import iot.espressif.esp32.db.model.OperationDB;
 import iot.espressif.esp32.db.model.SceneDB;
 import iot.espressif.esp32.db.model.SnifferDB;
 import iot.espressif.esp32.model.device.IEspDevice;
+import iot.espressif.esp32.model.device.ble.MeshBLEClient;
 import iot.espressif.esp32.model.device.ble.MeshBlufiClient;
 import iot.espressif.esp32.model.device.ota.EspOTAClient;
 import iot.espressif.esp32.model.device.other.Sniffer;
@@ -77,7 +80,6 @@ import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
 import iot.espressif.esp32.model.device.properties.EspDeviceState;
 import iot.espressif.esp32.model.group.IEspGroup;
 import iot.espressif.esp32.model.other.EspDownloadResult;
-import iot.espressif.esp32.model.other.EspRomQueryResult;
 import iot.espressif.esp32.model.other.EspRxObserver;
 import iot.espressif.esp32.model.user.EspLoginResult;
 import iot.espressif.esp32.model.user.EspRegisterResult;
@@ -91,6 +93,7 @@ import libs.espressif.net.EspHttpHeader;
 import libs.espressif.net.EspHttpParams;
 import libs.espressif.net.EspHttpResponse;
 import libs.espressif.net.EspHttpUtils;
+import libs.espressif.utils.DataUtil;
 import libs.espressif.utils.TextUtils;
 
 class AppApiForJSImpl implements AppApiForJSConstants {
@@ -116,9 +119,14 @@ class AppApiForJSImpl implements AppApiForJSConstants {
     private HttpLongSocket mHttpLongSocket;
     private Thread mHttpLongSocketReadThread;
 
+    private MeshBLEClient mMeshBLEClient;
+
     AppApiForJSImpl(EspWebActivity activity) {
         mActivity = activity;
         mApp = EspApplication.getEspApplication();
+
+        mMeshBLEClient = new MeshBLEClient(mActivity.getApplicationContext());
+        mMeshBLEClient.setGattCallback(new MeshBLEListener());
 
         mTaskQueue = new LinkedBlockingQueue<>();
         mTaskThread = new Thread(() -> {
@@ -159,6 +167,9 @@ class AppApiForJSImpl implements AppApiForJSConstants {
         mTaskThread.interrupt();
         mApp = null;
         mActivity = null;
+
+        mMeshBLEClient.close();
+        mMeshBLEClient = null;
     }
 
     void addQueueTask(String request) {
@@ -357,7 +368,7 @@ class AppApiForJSImpl implements AppApiForJSConstants {
                         respArray.put(response.getContentJSON());
                     }
                 })
-                .subscribe(new EspRxObserver<Map.Entry<List<IEspDevice>, EspHttpHeader>>(){
+                .subscribe(new EspRxObserver<Map.Entry<List<IEspDevice>, EspHttpHeader>>() {
                     @Override
                     public void onError(Throwable e) {
                         e.printStackTrace();
@@ -421,7 +432,9 @@ class AppApiForJSImpl implements AppApiForJSConstants {
 
             if (groupArray != null) {
                 JSONArray macArray = new JSONArray();
-                macArray.put(device.getMac());
+                if (device != null) {
+                    macArray.put(device.getMac());
+                }
                 return requestGroup(macArray, groupArray, postJSON.toString().getBytes(), headers);
             } else {
                 EspHttpResponse response = DeviceUtil.httpLocalRequest(device, postJSON.toString().getBytes(),
@@ -656,7 +669,7 @@ class AppApiForJSImpl implements AppApiForJSConstants {
             JSONArray whiteListArray = json.getJSONArray("white_list");
             for (int i = 0; i < whiteListArray.length(); i++) {
                 String mac = whiteListArray.getString(i);
-                params.addWhiteAddress(DeviceUtil.convertColonBssid(mac).toUpperCase());
+                params.addWhiteAddress(DeviceUtil.convertToColonBssid(mac).toUpperCase());
             }
 
             JSONArray meshIdArray = json.getJSONArray("mesh_id");
@@ -752,7 +765,7 @@ class AppApiForJSImpl implements AppApiForJSConstants {
         }
 
         synchronized (mBlufiLock) {
-            String deviceMac = DeviceUtil.convertColonBssid(bleAddress).toUpperCase();
+            String deviceMac = DeviceUtil.convertToColonBssid(bleAddress).toUpperCase();
             mBlufi = new EspActionDeviceConfigure2().doActionConfigureBlufi2(
                     deviceMac, version, params, new ConfigureProgressCB());
         }
@@ -2307,6 +2320,7 @@ class AppApiForJSImpl implements AppApiForJSConstants {
                 macList.add(macArray.getString(i));
             }
             json.remove(KEY_MACS);
+            json.remove(KEY_ROOT_RESP);
         } catch (JSONException e) {
             e.printStackTrace();
             return;
@@ -2382,20 +2396,24 @@ class AppApiForJSImpl implements AppApiForJSConstants {
 
     void gotoSystemSettings(String setting) {
         String action = null;
+        int request = -1;
         switch (setting) {
             case "wifi":
                 action = Settings.ACTION_WIFI_SETTINGS;
+                request = EspWebActivity.REQUEST_WIFI;
                 break;
             case "bluetooth":
                 action = Settings.ACTION_BLUETOOTH_SETTINGS;
+                request = EspWebActivity.REQUEST_BLUETOOTH;
                 break;
             case "location":
                 action = Settings.ACTION_LOCATION_SOURCE_SETTINGS;
+                request = EspWebActivity.REQUEST_LOCATION;
                 break;
         }
         if (action != null) {
             Intent intent = new Intent(action);
-            mActivity.startActivity(intent);
+            mActivity.startActivityForResult(intent, request);
         }
     }
 
@@ -2469,5 +2487,105 @@ class AppApiForJSImpl implements AppApiForJSConstants {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private class MeshBLEListener extends BluetoothGattCallback {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            JSONObject json = new JSONObject();
+            try {
+                json.put(KEY_ADDRESS, gatt.getDevice().getAddress());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (newState == BluetoothGatt.STATE_CONNECTED) {
+                    try {
+                        json.put(KEY_CONNECTED, true);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
+                    try {
+                        json.put(KEY_CONNECTED, false);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                try {
+                    json.put(KEY_CONNECTED, false);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            evaluateJavascript(JSApi.onMeshBLEDeviceConnectionChanged(json.toString()));
+        }
+    }
+
+    void connectMeshBLEDevice(String request) {
+        if (mMeshBLEClient == null) {
+            return;
+        }
+
+        String address;
+        try {
+            JSONObject json = new JSONObject(request);
+            address = json.getString(KEY_ADDRESS);
+            if (address.length() == 12) {
+                byte[] bytes = DataUtil.hexStringToBigEndianBytes(address);
+                address = String.format(Locale.ENGLISH, "%02X:%02X:%02X:%02X:%02X:%02X",
+                        bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        mMeshBLEClient.connect(address);
+    }
+
+    void disconnectMeshBLEDevice() {
+        if (mMeshBLEClient == null) {
+            return;
+        }
+
+        mMeshBLEClient.close();
+    }
+
+    void postDataToMeshBLEDevice(String request) {
+        if (mMeshBLEClient == null) {
+            return;
+        }
+
+        byte[] value;
+        try {
+            JSONObject json = new JSONObject(request);
+            String type = json.getString(KEY_TYPE);
+            switch (type) {
+                case "string":
+                    value = json.getString(KEY_VALUE).getBytes();
+                    break;
+                case "json":
+                    value = json.getJSONObject(KEY_VALUE).toString().getBytes();
+                    break;
+                case "buffer":
+                    JSONArray buffer = json.getJSONArray(KEY_VALUE);
+                    value = new byte[buffer.length()];
+                    for (int i = 0; i < buffer.length(); i++) {
+                        value[i] = (byte) buffer.getInt(i);
+                    }
+                    break;
+                default:
+                    mLog.w("postDataToMeshBLEDevice() unsupported type");
+                    return;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        mMeshBLEClient.write(value);
     }
 }

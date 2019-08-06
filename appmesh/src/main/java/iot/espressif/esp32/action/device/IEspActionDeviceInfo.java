@@ -27,6 +27,7 @@ public interface IEspActionDeviceInfo extends IEspActionDevice {
     String KEY_GROUP = "group";
     String KEY_RSSI = "rssi";
     String KEY_LAYER = "layer";
+    String KEY_TSF_TIME = "tsf_time";
 
     String REQUEST_GET_DEVICE_INFO = "get_device_info";
     String REQUEST_SET_STATUS = "set_status";

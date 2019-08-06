@@ -22,8 +22,10 @@ public class MeshConfigureParams {
 
     private Set<String> mWhiteList;
 
+    private byte[] mCustomData;
+
     private MeshConfigureParams(String apSsid, String apBssid, String apPassword, byte[] meshId,
-                                String meshPassword, Collection<String> whiteList) {
+                                String meshPassword, Collection<String> whiteList, byte[] customData) {
         mAPSsid = apSsid;
         mAPBssid = apBssid;
         mAPPassword = apPassword;
@@ -33,6 +35,7 @@ public class MeshConfigureParams {
         if (whiteList != null) {
             mWhiteList.addAll(whiteList);
         }
+        mCustomData = customData;
     }
 
     public String getAPSsid() {
@@ -59,6 +62,14 @@ public class MeshConfigureParams {
         return mWhiteList == null ? Collections.emptyList() : new ArrayList<>(mWhiteList);
     }
 
+    public void setCustomData(byte[] customData) {
+        mCustomData = customData;
+    }
+
+    public byte[] getCustomData() {
+        return mCustomData;
+    }
+
     public static class Builder {
         private String mAPSsid;
         private String mAPBssid;
@@ -68,6 +79,8 @@ public class MeshConfigureParams {
         private String mMeshPassword;
 
         private Collection<String> mWhiteList;
+
+        private byte[] mCustomData;
 
         /**
          * Set AP's SSID
@@ -120,6 +133,14 @@ public class MeshConfigureParams {
         }
 
         /**
+         * Set custom data
+         */
+        public Builder setCustomData(byte[] customData) {
+            mCustomData = customData;
+            return this;
+        }
+
+        /**
          * Build {@link MeshConfigureParams}
          */
         public MeshConfigureParams build() {
@@ -134,7 +155,7 @@ public class MeshConfigureParams {
             }
 
             return new MeshConfigureParams(mAPSsid, mAPBssid, mAPPassword, mMeshID, mMeshPassword,
-                    mWhiteList);
+                    mWhiteList, mCustomData);
         }
     }
 }

@@ -113,18 +113,22 @@
                               class="flex flex-ac flex-jcc" :style="{'background': item}">
                             <i v-show="currentRgb == item" class="icon-ok-circled"></i>
                         </span>
-                        <span @click="writeColor(oneList, 0, true)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                        <span @click="writeWord(oneList, 0, true)" class="flex flex-ac flex-jcc text-info"
                               :class="{'active': currentWrite == 0}" :style="{'background': currentRgb}">乐</span>
-                        <span @click="writeColor(twoList, 1, true)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                        <span @click="writeWord(twoList, 1, true)" class="flex flex-ac flex-jcc text-info"
                               :class="{'active': currentWrite == 1}" :style="{'background': currentRgb}">鑫</span>
-                        <span @click="writeColor(threeList, 2, true)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                        <span @click="writeWord(threeList, 2, true)" class="flex flex-ac flex-jcc text-info"
                               :class="{'active': currentWrite == 2}" :style="{'background': currentRgb}">欢</span>
-                        <span @click="writeColor(fourList, 3, true)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                        <span @click="writeWord(fourList, 3, true)" class="flex flex-ac flex-jcc text-info"
                               :class="{'active': currentWrite == 3}" :style="{'background': currentRgb}">迎</span>
-                        <span @click="writeColor(fiveList, 4, true)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                        <span @click="writeWord(fiveList, 4, true)" class="flex flex-ac flex-jcc text-info"
                               :class="{'active': currentWrite == 4}" :style="{'background': currentRgb}">您</span>
-                        <span @click="writeCycle(5)" style="font-size: 16px;" class="flex flex-ac flex-jcc"
+                        <span @click="writeCycle(5)"  class="flex flex-ac flex-jcc text-info"
                               :class="{'active': currentWrite == 5}" :style="{'background': currentRgb}">循环</span>
+                        <span @click="cycleLight(6)" class="flex flex-ac flex-jcc text-info"
+                              :class="{'active': currentWrite == 6}" :style="{'background': currentRgb}">跑马灯</span>
+                        <span @click="espFun(7)" class="flex flex-ac flex-jcc text-info"
+                              :class="{'active': currentWrite == 7}" :style="{'background': currentRgb}">流光</span>
                     </div>
 
                 </div>

@@ -9,7 +9,6 @@ import android.util.Base64;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -165,6 +164,15 @@ class BlufiClientImpl implements BlufiParameter {
                     e.printStackTrace();
                     onConfigureResult(BlufiCallback.CODE_CATCH_EXCEPTION);
                 }
+            }
+        });
+    }
+
+    void sendMDFCustomData(final byte[] data) {
+        mThreadPool.submit(new Runnable() {
+            @Override
+            public void run() {
+                __sendMDFCustomData(data);
             }
         });
     }
@@ -493,6 +501,9 @@ class BlufiClientImpl implements BlufiParameter {
             case Type.Data.SUBTYPE_WIFI_CONNECTION_STATE:
                 parseWifiState(data);
                 break;
+            case Type.Data.SUBTYPE_CUSTOM_DATA:
+                onReceivedCustomData(data);
+                break;
             case Type.Data.SUBTYPE_ERROR:
                 int errCode = data.length > 0 ? (data[0] & 0xff) : 0xff;
                 onError(errCode);
@@ -590,7 +601,7 @@ class BlufiClientImpl implements BlufiParameter {
                 response.setSoftAPSSID(softapSSID);
                 break;
             case BlufiParameter.Type.Data.SUBTYPE_STA_WIFI_BSSID:
-                String staBssid = DataUtil.bytesToString(data);
+                String staBssid = DataUtil.bigEndianBytesToHexString(data);
                 response.setStaBSSID(staBssid);
                 break;
             case BlufiParameter.Type.Data.SUBTYPE_STA_WIFI_SSID:
@@ -661,7 +672,7 @@ class BlufiClientImpl implements BlufiParameter {
             return;
         }
 
-        String devKeyStr = DataUtil.bytesToString(devicePublicKey);
+        String devKeyStr = DataUtil.bigEndianBytesToHexString(devicePublicKey);
         BigInteger devPbKeyBI = new BigInteger(devKeyStr, 16);
         espDH.generateSecretKey(devPbKeyBI);
         if (espDH.getSecretKey() == null) {
@@ -698,9 +709,9 @@ class BlufiClientImpl implements BlufiParameter {
             k = negSecDefGetPublicValue(espDH);
         } while (k == null);
 
-        byte[] pBytes = DataUtil.byteStringToBytes(p);
-        byte[] gBytes = DataUtil.byteStringToBytes(g);
-        byte[] kBytes = DataUtil.byteStringToBytes(k);
+        byte[] pBytes = DataUtil.hexStringToBigEndianBytes(p);
+        byte[] gBytes = DataUtil.hexStringToBigEndianBytes(g);
+        byte[] kBytes = DataUtil.hexStringToBigEndianBytes(k);
 
         ByteArrayOutputStream dataOS = new ByteArrayOutputStream();
 
@@ -1206,6 +1217,29 @@ class BlufiClientImpl implements BlufiParameter {
         }
 
         return result;
+    }
+
+    private void __sendMDFCustomData(byte[] data) {
+        int typeValue = getTypeValue(Type.Data.PACKAGE_VALUE, Type.Data.SUBTYPE_MDF_CUSTOM);
+        try {
+            post(mEncrypted, mChecksum, mRequireAck, typeValue, data);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void onReceivedCustomData(final byte[] data) {
+        if (mUserCallback == null) {
+            return;
+        }
+        mUIHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mUserCallback != null) {
+                    mUserCallback.onReceivedCustomData(mClient, data);
+                }
+            }
+        });
     }
 
     private void sleep(long timeout) {

@@ -2,6 +2,7 @@ package iot.espressif.esp32.model.device.ble;
 
 import android.bluetooth.BluetoothDevice;
 
+import java.util.Arrays;
 import java.util.List;
 
 import libs.espressif.ble.BleAdvData;
@@ -9,6 +10,17 @@ import libs.espressif.ble.EspBleUtils;
 
 public class MeshBleDevice {
     private static final int BLE_MANUFACTURER_ADV_TYPE = 0xff;
+
+    /**
+     * [MANUFACTURER_ID 2B][MDF 3B][#DATA 1B][STA_BSSID 6B][TID 2B]
+     *
+     * #DATA: bit[0] bit[1] = mesh version, bit[4] = only beacon
+     */
+    private static final String OUI_MDF = "MDF";
+    /**
+     * [MANUFACTURER_ID 2B][MGW 3B][#DATA 1B][STA_BSSID 6B]
+     */
+    private static final String OUI_MGW = "MGW";
 
     private int mManufacturerId = 0;
 
@@ -20,6 +32,8 @@ public class MeshBleDevice {
     private int mMeshVersion = -1;
     private boolean mOnlyBeacon = false;
     private int mTid = -1;
+
+    private String mOUI;
 
     public MeshBleDevice(BluetoothDevice device, int rssi, byte[] scanRecord) {
         this(device, rssi, scanRecord, 0);
@@ -83,6 +97,10 @@ public class MeshBleDevice {
         return mManufacturerId;
     }
 
+    public String getOUI() {
+        return mOUI;
+    }
+
     private void initVars() {
         mMeshVersion = -1;
         mOnlyBeacon = false;
@@ -108,8 +126,7 @@ public class MeshBleDevice {
             }
 
             byte[] manuData = advData.getData();
-            // Check data length
-            if (manuData.length < 14) {
+            if (manuData.length < 5) {
                 continue;
             }
             // Check manufacturer id
@@ -117,19 +134,31 @@ public class MeshBleDevice {
             if (mManufacturerId != 0 && advManuId != mManufacturerId) {
                 continue;
             }
-            // Check (MDF)
-            if ((manuData[2] & 0xff) != 0x4d
-                    || (manuData[3] & 0xff) != 0x44
-                    || (manuData[4] & 0xff) != 0x46) {
-                continue;
+            // Check OUI
+            byte[] oui = {manuData[2], manuData[3], manuData[4]};
+            if (Arrays.equals(oui, OUI_MDF.getBytes())) {
+                // MDF
+                if (manuData.length < 14) {
+                    continue;
+                }
+                mOUI = OUI_MDF;
+                mMeshVersion = manuData[5] & 0b11;
+                mOnlyBeacon = (manuData[5] & 0b10000) != 0;
+                mStaBssid = String.format("%02x%02x%02x%02x%02x%02x",
+                        manuData[6], manuData[7], manuData[8], manuData[9], manuData[10], manuData[11]);
+                mTid = (manuData[12] & 0xff) | ((manuData[13] & 0xff) << 8);
+                return;
+            } else if (Arrays.equals(oui, OUI_MGW.getBytes())) {
+                // MGW
+                if (manuData.length < 12) {
+                    continue;
+                }
+                mOUI = OUI_MGW;
+                mMeshVersion = manuData[5] & 0b11;
+                mStaBssid = String.format("%02x%02x%02x%02x%02x%02x",
+                        manuData[6], manuData[7], manuData[8], manuData[9], manuData[10], manuData[11]);
+                return;
             }
-
-            mMeshVersion = manuData[5] & 3;
-            mOnlyBeacon = ((manuData[5] >> 4) & 1) == 1;
-            mStaBssid = String.format("%02x%02x%02x%02x%02x%02x",
-                    manuData[6], manuData[7], manuData[8], manuData[9], manuData[10], manuData[11]);
-            mTid = (manuData[12] & 0xff) | ((manuData[13] & 0xff) << 8);
-            return;
         }
 
         initVars();

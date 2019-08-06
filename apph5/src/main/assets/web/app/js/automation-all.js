@@ -238,8 +238,13 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-all.html" ],
                         if (!Util._isEmpty(res.result)) {
                             var result = res.result;
                             var tag = res.tag;
-                            if (!Util._isEmpty(result.trigger)) {
-                                var deviceEvents = result.trigger;
+                            if (!Util._isEmpty(result.trigger) || !Util._isEmpty(result.events)) {
+                                var deviceEvents = [];
+                                if(!Util._isEmpty(result.trigger)) {
+                                    deviceEvents = result.trigger;
+                                } else if(!Util._isEmpty(result.events)) {
+                                    deviceEvents = result.events;
+                                }
                                 if (!Util._isEmpty(deviceEvents)) {
                                     self.existEvent = true;
                                     var executeMacs = self.getEventMacs(tag.cid, deviceEvents);

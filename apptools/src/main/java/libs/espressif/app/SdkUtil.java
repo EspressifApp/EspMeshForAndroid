@@ -137,6 +137,6 @@ public class SdkUtil {
      * @return true if P APIs are available for use.
      */
     public static boolean isAtLeastP_28() {
-        return SDK_INT >= 28;
+        return SDK_INT >= VERSION_CODES.P;
     }
 }

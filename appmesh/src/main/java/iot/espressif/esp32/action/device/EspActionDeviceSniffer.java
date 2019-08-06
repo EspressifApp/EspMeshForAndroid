@@ -73,59 +73,56 @@ public class EspActionDeviceSniffer implements IEspActionDeviceSniffer {
             DataUtil.printBytes(bytes);
             // [LTV][LTV]
             // L: 1 byte, the length of T + V
-            // T: 1 byte, sniffer type
-            // V: tlvtlvtlv...
+            // T: 1 byte, sniffer type, wifi or ble
+            // V: [ltv][ltv][ltv], rssi, bssid, time, name, etc.
             boolean readSnifferLen = true;
             int snifferLen = -1;
             boolean readSnifferType = false;
             int snifferType = -1;
-            boolean readSnifferBytes = false;
             byte[] snifferBytes = null;
             int snifferBytesIndex = -1;
             for (byte b : bytes) {
                 if (readSnifferLen) {
+                    // Read length
                     snifferLen = b & 0xff;
-                    mLog.i("Sniffer length = " + snifferLen);
                     readSnifferLen = false;
                     readSnifferType = true;
                     continue;
                 }
 
                 if (readSnifferType) {
+                    // Read sniffer type
                     snifferType = b & 0xff;
-                    mLog.i("Sniffer type = " + snifferType);
                     readSnifferType = false;
-                    readSnifferBytes = true;
                     continue;
                 }
 
-                if (readSnifferBytes) {
-                    if (snifferBytes == null) {
-                        snifferBytes = new byte[snifferLen - 1];
-                        snifferBytesIndex = 0;
-                    }
-
-                    snifferBytes[snifferBytesIndex] = b;
-                    snifferBytesIndex++;
-                    if (snifferBytesIndex < snifferBytes.length) {
-                        continue;
-                    }
-
-                    Sniffer sniffer = getSnifferWithData(snifferBytes);
-                    if (sniffer != null) {
-                        sniffer.setType(snifferType);
-                        long pkgTime = sysTime - sniffer.getUTCTime();
-                        sniffer.setUTCTime(TimeUtil.getUTCTime(pkgTime));
-                        sniffer.setDeviceMac(deviceMac);
-                        mLog.i("Sniffer: " + sniffer.toString());
-                        result.add(sniffer);
-                    }
-
+                // Read sniffer data
+                if (snifferBytes == null) {
+                    snifferBytes = new byte[snifferLen - 1];
                     snifferBytesIndex = 0;
-                    snifferBytes = null;
-                    readSnifferBytes = false;
-                    readSnifferLen = true;
                 }
+
+                snifferBytes[snifferBytesIndex] = b;
+                snifferBytesIndex++;
+                if (snifferBytesIndex < snifferBytes.length) {
+                    continue;
+                }
+
+                // Parse sniffer data
+                Sniffer sniffer = getSnifferWithData(snifferBytes);
+                if (sniffer != null) {
+                    sniffer.setType(snifferType);
+                    long pkgTime = sysTime - sniffer.getUTCTime();
+                    sniffer.setUTCTime(TimeUtil.getUTCTime(pkgTime));
+                    sniffer.setDeviceMac(deviceMac);
+                    mLog.i("Sniffer: " + sniffer.toString());
+                    result.add(sniffer);
+                }
+
+                snifferBytesIndex = 0;
+                snifferBytes = null;
+                readSnifferLen = true;
             }
         }
 

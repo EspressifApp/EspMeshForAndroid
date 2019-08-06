@@ -80,6 +80,8 @@ require(["IScroll", "jQuery", "FastClick", "jsPlumb", "Hammer", "vue", "Util", "
             systemInfo: "",
             blueInfo: false,
             eventsPositions: [],
+            delayTime: 3000,
+            tsfTime: 0,
         },
         mutations: {
             setList: function(state, list){
@@ -135,6 +137,12 @@ require(["IScroll", "jQuery", "FastClick", "jsPlumb", "Hammer", "vue", "Util", "
             },
             setEventsPositions: function(state, info) {
                 state.eventsPositions = info;
+            },
+            setDelayTime: function(state, info) {
+                state.delayTime = info;
+            },
+            setTsfTime: function(state, info) {
+                state.tsfTime = info;
             }
         }
     });

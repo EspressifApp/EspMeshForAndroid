@@ -21,9 +21,6 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.SystemClock;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
@@ -31,8 +28,12 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 
-import com.google.zxing.client.android.Intents;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,12 +44,11 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import h5.espressif.esp32.module.R;
 import h5.espressif.esp32.module.model.customer.Customer;
@@ -74,7 +74,11 @@ public class EspWebActivity extends AppCompatActivity {
     private static final String URL_PAD = "file:///android_asset/web/ipad.html";
 
     private static final int REQUEST_PERMISSION = 0x01;
-    private static final int REQUEST_QRCODE = 0x02;
+    private static final int REQUEST_QRCODE = IntentIntegrator.REQUEST_CODE;
+
+    public static final int REQUEST_WIFI = 0x03;
+    public static final int REQUEST_BLUETOOTH = 0x04;
+    public static final int REQUEST_LOCATION = 0x05;
 
     private static final int BLE_NOTIFY_INTERVAL = 1500;
 
@@ -96,7 +100,6 @@ public class EspWebActivity extends AppCompatActivity {
     private BroadcastReceiver mReceiver = new MainReceiver();
 
     private ScanCallback mBleCallback = new BleCallback();
-    private final Set<BluetoothDevice> mBleSet = new HashSet<>();
     private final Map<BluetoothDevice, BleInfo> mBleInfoMap = new HashMap<>();
     private final Thread mBleNotifyThread = new BleNotifyThread();
     private volatile boolean mBleScanning;
@@ -190,14 +193,27 @@ public class EspWebActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_QRCODE) {
-//            IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-            if (resultCode == RESULT_OK) {
-                String message = data.getStringExtra(Intents.Scan.RESULT);
-                mLog.d("QR code = " + message);
-                evaluateJavascript(JSApi.onQRCodeScanned(message));
+        switch (requestCode) {
+            case REQUEST_QRCODE: {
+                IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+                if (result.getContents() != null) {
+                    mLog.d("QR code = " + result.getContents());
+                    evaluateJavascript(JSApi.onQRCodeScanned(result.getContents()));
+                }
+                return;
             }
-            return;
+            case REQUEST_WIFI: {
+                notifyWifiChanged();
+                return;
+            }
+            case REQUEST_BLUETOOTH: {
+                notifyBluetoothChanged(BluetoothAdapter.getDefaultAdapter().getState());
+                return;
+            }
+            case REQUEST_LOCATION: {
+                notifyWifiChanged();
+                return;
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -406,9 +422,8 @@ public class EspWebActivity extends AppCompatActivity {
     }
 
     public void clearBle() {
-        synchronized (mBleSet) {
+        synchronized (mBleInfoMap) {
             mBleInfoMap.clear();
-            mBleSet.clear();
         }
     }
 
@@ -515,12 +530,11 @@ public class EspWebActivity extends AppCompatActivity {
 //                return;
 //            }
 
-            synchronized (mBleSet) {
+            synchronized (mBleInfoMap) {
                 BleInfo info = new BleInfo();
                 info.rssi = scanResult.getRssi();
                 info.scanRecord = scanResult.getScanRecord().getBytes();
                 mBleInfoMap.put(scanResult.getDevice(), info);
-                mBleSet.add(scanResult.getDevice());
             }
         }
     }
@@ -555,41 +569,47 @@ public class EspWebActivity extends AppCompatActivity {
                     break;
                 }
 
-                synchronized (mBleSet) {
-                    if (!mBleSet.isEmpty()) {
-                        JSONArray array = new JSONArray();
-                        for (BluetoothDevice ble : mBleSet) {
-                            try {
-                                String[] addrs = ble.getAddress().split(":");
-                                StringBuilder address = new StringBuilder();
-                                for (String str : addrs) {
-                                    address.append(str.toLowerCase());
-                                }
-                                BleInfo info = mBleInfoMap.get(ble);
-                                MeshBleDevice meshBle = new MeshBleDevice(ble, info.rssi, info.scanRecord);
-                                String mac = address.toString();
-                                JSONObject bleJSON = new JSONObject()
-                                        .put("mac", mac)
-                                        .put("name", ble.getName() == null ? JSONObject.NULL : ble.getName())
-                                        .put("rssi", meshBle.getRssi())
-                                        .put("version", meshBle.getMeshVersion())
-                                        .put("bssid", meshBle.getStaBssid() == null ? mac : meshBle.getStaBssid())
-                                        .put("tid", meshBle.getTid())
-                                        .put("only_beacon", meshBle.isOnlyBeacon());
-                                array.put(bleJSON);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
+                Map<BluetoothDevice, BleInfo> tempMap = Collections.emptyMap();
+                synchronized (mBleInfoMap) {
+                    if (!mBleInfoMap.isEmpty()) {
+                        tempMap = new HashMap<>(mBleInfoMap);
+                    }
+                }
+
+                JSONArray array = new JSONArray();
+                for (Map.Entry<BluetoothDevice, BleInfo> entry : tempMap.entrySet()) {
+                    try {
+                        BluetoothDevice ble = entry.getKey();
+                        BleInfo info = entry.getValue();
+                        String[] addrs = ble.getAddress().split(":");
+                        StringBuilder address = new StringBuilder();
+                        for (String str : addrs) {
+                            address.append(str.toLowerCase());
                         }
-
-                        evaluateJavascript(JSApi.onScanBLE(array.toString()));
+                        MeshBleDevice meshBle = new MeshBleDevice(ble, info.rssi, info.scanRecord);
+                        String mac = address.toString();
+                        JSONObject bleJSON = new JSONObject()
+                                .put("mac", mac)
+                                .put("name", ble.getName() == null ? JSONObject.NULL : ble.getName())
+                                .put("beacon", meshBle.getOUI() == null ? JSONObject.NULL : meshBle.getOUI())
+                                .put("rssi", meshBle.getRssi())
+                                .put("version", meshBle.getMeshVersion())
+                                .put("bssid", meshBle.getStaBssid() == null ? mac : meshBle.getStaBssid())
+                                .put("tid", meshBle.getTid())
+                                .put("only_beacon", meshBle.isOnlyBeacon());
+                        array.put(bleJSON);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+                }
+                if (array.length() > 0) {
+                    evaluateJavascript(JSApi.onScanBLE(array.toString()));
+                }
 
-                    // Keep cache ble 3 minutes
-                    if (SystemClock.elapsedRealtime() - mBleLastClearTime > 180000L) {
-                        clearBle();
-                        mBleLastClearTime = SystemClock.elapsedRealtime();
-                    }
+                // Keep cache ble 3 minutes
+                if (SystemClock.elapsedRealtime() - mBleLastClearTime > 180_000L) {
+                    clearBle();
+                    mBleLastClearTime = SystemClock.elapsedRealtime();
                 }
             }
         }

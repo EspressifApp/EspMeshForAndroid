@@ -210,7 +210,11 @@ define(["vue","MINT", "Util", "txt!../../pages/addRoom.html" ],
                         }
                     } else {
                         self.newRoomKey = key;
-                        self.delData(self.oldRoomMacs, "onDelSaveRoom");
+                        if (self.oldRoomMacs.length > 0) {
+                            self.delData(self.oldRoomMacs, "onDelSaveRoom");
+                        } else {
+                            self.removeRoom();
+                        }
                     }
                 },
                 setRoom: function(roomMacs) {
@@ -240,34 +244,41 @@ define(["vue","MINT", "Util", "txt!../../pages/addRoom.html" ],
                     var meshData = '{"' + MESH_MAC + '": ' + JSON.stringify(roomMacs) +
                             ',"'+DEVICE_IP+'": "' + self.$store.state.deviceIp +'","'+NO_RESPONSE+'": true,"' +
                         MESH_REQUEST + '": "' + REMOVE_GROUP + '","isGroup": false, "group":'+
-                        JSON.stringify([self.roomInfo.roomKey])+',"callback": '+callback+'}';
+                        JSON.stringify([self.roomInfo.roomKey])+',"callback": '+JSON.stringify(callback)+'}';
                     console.log(meshData);
                     espmesh.requestDevicesMulticast(meshData);
+                },
+                removeRoom: function() {
+                    var self = this;
+                    var delData = {name: ROOM_LIST, keys: [self.roomKey]};
+                    espmesh.removeValuesForKeysInFile(JSON.stringify(delData));
+                    $.each(self.deviceList, function(i, item) {
+                        var groups = item.group,
+                            index = groups.indexOf(self.roomKey);
+                        if (index != -1) {
+                            groups.splice(index, 1);
+                            item.group = groups;
+                            self.deviceList.splice(i, 1, item);
+                        }
+                    })
+                    self.$store.commit("setList", self.deviceList);
+                    self.roomKey = self.newRoomKey;
+                    self.setRoom(self.newRoomMacs);
                 },
                 onDelSaveRoom: function(res) {
                     var self = this;
                     console.log(res);
                     if (res != "{}" && !Util._isEmpty(res)) {
-                        var delData = {name: ROOM_LIST, keys: [self.roomKey]};
-                        espmesh.removeValuesForKeysInFile(JSON.stringify(delData));
-                        $.each(self.deviceList, function(i, item) {
-                            var groups = item.group,
-                                index = groups.indexOf(self.roomKey);
-                            if (index != -1) {
-                                groups.splice(index, 1);
-                                item.group = groups;
-                                self.deviceList.splice(i, 1, item);
-                            }
-                        })
-                        self.$store.commit("setList", self.deviceList);
-                        self.roomKey = self.newRoomKey;
-                        self.setRoom(self.newRoomMacs);
+                        self.removeRoom();
                     } else {
                         MINT.Toast({
                             message: "房间编辑失败",
                             position: 'bottom',
                             duration: 2000
                         });
+                        setTimeout(function() {
+                             MINT.Indicator.close();
+                        }, 100)
                     }
                 },
                 onSaveRoom: function(res) {

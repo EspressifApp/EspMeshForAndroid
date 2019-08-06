@@ -9,24 +9,51 @@ define(["vue", "MINT", "Util", "txt!../../pages/set.html", "../js/aboutUs", "../
             return {
                 flag: false,
                 isNewVersion: false,
+                time: 0,
+                rootMac: "",
             }
         },
         computed: {
             newVersion: function() {
                 this.isNewVersion = this.$store.state.isNewVersion;
                 return this.isNewVersion;
+            },
+            delayTime: function() {
+                this.time = this.$store.state.delayTime
+                return this.time;
             }
         },
         methods:{
             show: function () {
                 this.hideThis();
                 window.onCheckAppVersion = this.onCheckAppVersion;
-
+                window.onGetTsfTime = this.onGetTsfTime;
                 this.flag = true;
             },
             hide: function () {
                 this.flag = false;
+                MINT.Indicator.close();
                 this.$emit("setShow");
+            },
+            showDelay: function() {
+                var self= this;
+                MINT.MessageBox.prompt("请输入新的延时时间", "延时设置",
+                    {inputValue: this.time, inputType: 'number',
+                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj)  {
+                    self.time = parseInt(obj.value);
+                    self.$store.commit("setDelayTime", self.time);
+                    var deviceList = self.$store.state.deviceList, rootMac = "";
+                    $.each(deviceList, function(i, item) {
+                        if (item.layer == 1) {
+                            rootMac = item.mac;
+                            return false;
+                        }
+                    })
+                    var data = '{"' + MESH_MAC + '": "' + rootMac +
+                            '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + GET_TSF_TIME + '"' +
+                            ',"callback": "onGetTsfTime"}}';
+                    espmesh.requestDevice(data);
+                });
             },
             newVersionShow: function() {
                 if (this.isNewVersion) {
@@ -45,6 +72,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/set.html", "../js/aboutUs", "../
                 window.onBackPressed = this.hide;
             },
             updateApp: function() {
+            },
+            onGetTsfTime: function(res) {
+                console.log(res);
+                if (!Util._isEmpty(res) && res != "{}") {
+                    res = JSON.parse(res);
+
+                    this.$store.commit("setTsfTime", new Date().getTime() * 1000 - parseInt(res.result.tsf_time));
+                }
             },
             onCheckAppVersion: function(res) {
                 var self = this;

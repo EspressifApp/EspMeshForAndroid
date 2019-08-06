@@ -47,7 +47,7 @@ define(["vue","MINT", "Util", "txt!../../pages/config.html"],
                     }, 200)
                     self.showFlag = true;
                 },
-                onValuesChange(picker, values) {
+                onValuesChange: function(picker, values) {
 
                 },
                 getRoomName: function(key) {

@@ -1,0 +1,32 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{blueInfo.name}}
+                </h4>
+            </div>
+            <div class="content-info attr blue-connect">
+                <textarea v-model="customData" placeholder="请输入自定义数据" class="textarea-control"></textarea>
+                <div class="margin-top-30">
+                    <p>开关</p>
+                    <div class="">
+                        <button @click="selectSwitch(0)" class="btn btn-ble">OFF</button>
+                        <button @click="selectSwitch(1)" class="btn btn-ble">ON</button>
+                    </div>
+                    <p>色彩</p>
+                    <div class="flex flex-ac">
+                        <button @click="selectColor(item)" class="btn-ble-color" v-for="item in colorList" :style="{'background': item}">
+                            <span v-show="currentRgb == item" class="icon-ok-circled"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="btn-register-wrapper">
+                    <button type="submit" class="btn register-btn" @click="postData">确定</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

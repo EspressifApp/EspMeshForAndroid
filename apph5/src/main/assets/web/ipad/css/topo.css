@@ -2737,6 +2737,13 @@ h3 {
 	font-size: 32px;
 	color: #fff;
 	border-radius: 100%;
+	transition: all .3 linear;
+}
+.text-wrapper span.text-info {
+    font-size: 16px;
+}
+.text-wrapper span.text-info.active {
+	box-shadow: 0 0 10px #000;
 }
 @media (min-width: 768px) {
 

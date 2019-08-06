@@ -231,6 +231,49 @@ define(function(){
                 return "icon-light";
             }
         },
+        getColor: function (characteristics, tid) {
+            var self = this,
+                hueValue = 0, saturation = 0, luminance = 0, status = 0, rgb = "#6b6b6b",
+                mode = 0, temperature = 0, brightness = 0;
+            if (!self._isEmpty(characteristics)) {
+                $.each(characteristics, function(i, item) {
+                    if (item.cid == HUE_CID) {
+                        hueValue = item.value;
+                    }else if (item.cid == SATURATION_CID) {
+                        saturation = item.value;
+                    }else if (item.cid == VALUE_CID) {
+                        luminance = item.value;
+                    } else if (item.cid == STATUS_CID) {
+                        status = item.value;
+                    } else if (item.cid == MODE_CID) {
+                        mode = item.value;
+                    } else if (item.cid == TEMPERATURE_CID) {
+                        temperature = item.value;
+                    } else if (item.cid == BRIGHTNESS_CID) {
+                        brightness = item.value;
+                    }
+                })
+            }
+            if (status == STATUS_ON) {
+                if (mode == MODE_CTB) {
+                    rgb = self.modeFun(temperature, brightness);
+                } else {
+                    rgb = Raphael.hsb2rgb(hueValue / 360, saturation / 100, luminance / 100);
+                    var v = luminance / 100;
+                    if (v <= 0.4)  {
+                        v *= 1.2;
+                    }
+                    if(v <= 0.2) {
+                        v = 0.2;
+                    }
+                    rgb = "rgba("+Math.round(rgb.r)+", "+Math.round(rgb.g)+", "+Math.round(rgb.b)+", "+ v +")";
+                }
+            }
+            if (tid < MIN_LIGHT || tid > MAX_LIGHT) {
+                rgb = "#3ec2fc";
+            }
+            return rgb;
+        },
         getBxColor: function(layer) {
             switch(parseInt(layer)) {
                 case 1: return "bx-red"; break;
@@ -395,9 +438,23 @@ define(function(){
                 power = (iRssi - 49) / (10 * 4.5);
             return Math.pow(10, power).toFixed(2);
         },
-        isMesh: function(name, version) {
+        isMesh: function(name, version, beacon) {
             var flag = false;
-            if (version == 0 || (version == -1 && !this._isEmpty(name) && name.indexOf("MESH_") != -1)) {
+            if ((version == 0 || (version == -1 && !this._isEmpty(name) && name.indexOf("MESH_") != -1))) {
+                if (!this._isEmpty(beacon)) {
+                    if (beacon == BEACON_MDF) {
+                        flag = true;
+                    }
+                } else {
+                    flag = true;
+                }
+            }
+            return flag;
+        },
+        isBeacon: function(name, version, beacon) {
+            var flag = false;
+            if ((version == 0 || (version == -1 && !this._isEmpty(name) && name.indexOf("MESH_") != -1))
+                && beacon == BEACON_MGW) {
                 flag = true;
             }
             return flag;
