@@ -1,0 +1,44 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>附近设备</h4>
+                <span @click="showMore" class="icon-more right-top"></span>
+                <ul v-show="moreFlag" class="add-ul scan-more">
+                    <li @click.stop="sortByTime">
+                        <i class="icon-time"></i>&nbsp;
+                        <span>按时间排序</span>&nbsp;
+                        <span v-show="timeSort" class="icon-up" :class="{'sort-down': !isAsc}"></span>
+                    </li>
+                    <li @click.stop="sortByRssi">
+                        <i class="icon-rss"></i>&nbsp;
+                        <span>按信号排序</span>&nbsp;
+                        <span v-show="rssiSort" class="icon-up" :class="{'sort-down': !isAsc}"></span>
+                    </li>
+                    <li @click.stop="clearDevice">
+                        <i class="icon-clear"></i>&nbsp;
+                        <span>清除信息</span>
+                    </li>
+                </ul>
+            </div>
+            <div @click="hideMore" class="input-info">
+                <i class="icon-search"></i>
+                <input type="search" v-model="searchMac" class="form-control" :placeholder="$t('searchByMac')">
+            </div>
+            <div @click="hideMore" class="scancontent-info">
+                <div v-for="item in list" class='item-info'>
+                    <div class='item-icon flex flex-jcc flex-ac'>
+                        <i class="scancontent-icon" :class="item.type == 2 ? 'icon-bluetooth' : 'icon-wifi'"></i>
+                    </div>
+                    <div class='info-wrapper'>
+                        <div class='item-time'>[{{format("yyyy-MM-dd hh:mm:ss", item.time)}}]</div>
+                        <div class='item-org'>{{item.org}}</div>
+                        <div></div>
+                        <div class='item-mac'>MAC:&nbsp;{{item.mac}},&nbsp;Type:&nbsp;{{getType(item.type)}},&nbsp;Rssi:&nbsp;{{item.rssi}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

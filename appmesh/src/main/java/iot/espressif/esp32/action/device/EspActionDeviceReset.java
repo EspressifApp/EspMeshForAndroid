@@ -10,7 +10,6 @@ import java.util.Map;
 
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.utils.DeviceUtil;
-import libs.espressif.net.EspHttpHeader;
 import libs.espressif.net.EspHttpParams;
 import libs.espressif.net.EspHttpResponse;
 
@@ -31,12 +30,8 @@ public class EspActionDeviceReset implements IEspActionDeviceReset {
     public boolean doActionResetLocal(IEspDevice device) {
         EspHttpParams params = new EspHttpParams();
         params.setTryCount(3);
-        EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
         Map<String, String> headers = new HashMap<>();
-        if (tokenH != null) {
-            headers.put(tokenH.getName(), tokenH.getValue());
-        }
-        byte[] content = getRequestJSON( 0).toString().getBytes();
+        byte[] content = getRequestJSON(0).toString().getBytes();
         EspHttpResponse response = DeviceUtil.httpLocalRequest(device, content, params, headers);
         if (response == null) {
             return false;

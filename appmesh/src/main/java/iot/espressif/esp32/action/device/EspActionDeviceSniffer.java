@@ -3,6 +3,7 @@ package iot.espressif.esp32.action.device;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -173,8 +174,13 @@ public class EspActionDeviceSniffer implements IEspActionDeviceSniffer {
                         sniffer.setUTCTime(time);
                         break;
                     case TYPE_NAME:
-                        String name = new String(value);
-                        sniffer.setName(name);
+                        ByteArrayOutputStream nameOS = new ByteArrayOutputStream();
+                        for (int i = 0; i < value.length; i++) {
+                            if (value[i] != 0) {
+                                nameOS.write(value[i]);
+                            }
+                        }
+                        sniffer.setName(nameOS.toString());
                         break;
                     case TYPE_CHANNEL:
                         int channel = value[0] & 0xff;

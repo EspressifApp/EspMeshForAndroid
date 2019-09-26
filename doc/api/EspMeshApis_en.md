@@ -1,7 +1,7 @@
 [[简体中文]](EspMeshApis_zh_rCN.md)
 
-# EspMeshApi
-Class iot.espressif.esp32.api.EspMeshApi
+# EspMeshApis
+Class [iot.espressif.esp32.api.EspMeshApis](../../appmesh/src/main/java/iot/espressif/esp32/api/EspMeshApis.java)
 
 ```java
 /**

@@ -1,0 +1,41 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{name}}
+                </h4>
+                <span @click="save" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
+            </div>
+            <div class="selected-radio">
+                <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
+                <div @click="selectAllDevice($event)" class="select-all-radio flex flex-ac flex-jce">
+                    <span class="span-radio"
+                           :class="{'active': (selected == total && selected != 0)}"><span></span></span>
+                </div>
+            </div>
+            <div class="input-info">
+                <i class="icon-search"></i>
+                <input v-model="searchName" type="search" class="form-control" :placeholder="$t('searchGroup')">
+            </div>
+            <div class="content-info flex-wrapper" :id="addGroupId">
+                <div class="overflow-touch">
+                    <div  @click="selectMac(item.iotId)" v-for="item in list" class="item">
+                        <div class="item-icon-circle">
+                            <i class="icon-light"></i>
+                        </div>
+                        <div class="item-name up-date padding-left-10">
+                            <span :data-value="item.iotId">{{item.deviceName}}</span>
+                            <span :data-value="item.iotId" class="desc">{{getAliStatus(item.status)}}</span>
+                        </div>
+                        <div class="item-power-small">
+                            <span :data-value="item.iotId" class="span-radio" :class="{'active': isSelected(item.iotId)}"><span></span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

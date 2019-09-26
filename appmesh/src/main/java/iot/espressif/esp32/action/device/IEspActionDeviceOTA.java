@@ -2,7 +2,6 @@ package iot.espressif.esp32.action.device;
 
 import java.io.File;
 
-import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.other.EspDownloadResult;
 
 public interface IEspActionDeviceOTA extends IEspActionDevice {

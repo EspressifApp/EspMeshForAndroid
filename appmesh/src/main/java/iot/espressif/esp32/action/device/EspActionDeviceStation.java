@@ -124,7 +124,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
                                 }
                             })
                             .doOnNext(result::addAll)
-                            .subscribe(new EspRxObserver<List<IEspDevice>>(){
+                            .subscribe(new EspRxObserver<List<IEspDevice>>() {
                                 @Override
                                 public void onError(Throwable e) {
                                     e.printStackTrace();
@@ -144,7 +144,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
         int mdnsCount = 1;
         int udpCount = 3;
 
-        for (int i = 0; i < mdnsCount; i ++) {
+        for (int i = 0; i < mdnsCount; i++) {
             Observable.just(listener)
                     .subscribeOn(Schedulers.io())
                     .doOnNext(this::scanMDNS)

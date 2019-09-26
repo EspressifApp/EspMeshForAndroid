@@ -1,20 +1,36 @@
 apply plugin: 'com.android.application'
+apply from: 'dependency.gradle'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion conf.compile_sdk_version
     defaultConfig {
         applicationId "h5.espressif.esp32"
-        minSdkVersion 21
-        targetSdkVersion 28
-        versionCode 45
-        versionName "1.0.7"
+        minSdkVersion conf.min_sdk_version
+        targetSdkVersion conf.target_sdk_version
+        versionCode 46
+        versionName "1.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters "armeabi-v7a", "x86"//过滤除 armeabi 和 x86 以外的 so 文件
+        }
+        multiDexEnabled true
     }
+//    signingConfigs {
+//        debug {
+//            keyAlias 'xxx'
+//            keyPassword 'xxx'
+//            storeFile file('xxx')
+//            storePassword 'xxx'
+//        }
+//    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+//        debug {
+//            signingConfig signingConfigs.debug
+//        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -24,14 +40,17 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'androidx.multidex:multidex:2.0.1'
     implementation lib.appcompat
     implementation lib.material
     // RxJAVA
     implementation lib.rxjava
     implementation lib.rxandroid
+    // QR Code
+    implementation lib.zxing_android_embedded
+    // EventBus
+    implementation lib.eventbus
 
     // Modules
-    implementation project(':apph5')
     implementation project(':appmesh')
-    implementation project(':apptools')
 }

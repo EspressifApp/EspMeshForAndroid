@@ -1,12 +1,13 @@
 package iot.espressif.esp32.app;
 
-import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Environment;
+
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.multidex.MultiDexApplication;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -14,11 +15,12 @@ import java.util.Random;
 import iot.espressif.esp32.db.box.MeshObjectBox;
 import libs.espressif.utils.RandomUtil;
 
-public class EspApplication extends Application {
+public class EspApplication extends MultiDexApplication {
     private static EspApplication instance;
     private final Object mCacheLock = new Object();
     private HashMap<String, Object> mCacheMap;
     private boolean mSupportBLE;
+    private LocalBroadcastManager mBroadcastManager;
 
     public static EspApplication getEspApplication() {
         if (instance == null) {
@@ -43,6 +45,7 @@ public class EspApplication extends Application {
     }
 
     private void init() {
+        mBroadcastManager = LocalBroadcastManager.getInstance(this);
         mCacheMap = new HashMap<>();
 
         mSupportBLE = getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
@@ -116,25 +119,18 @@ public class EspApplication extends Application {
      * Get the application default phone storage dir path
      */
     public String getEspRootSDPath() {
-        String path = null;
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            path = Environment.getExternalStorageDirectory().getPath() + "/Espressif/Esp32";
-        }
-        return path;
+        return Environment.getExternalStorageDirectory().getPath() + "/Espressif/Esp32";
     }
 
     public void sendLocalBroadcast(Intent intent) {
-        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
-        manager.sendBroadcast(intent);
+        mBroadcastManager.sendBroadcast(intent);
     }
 
     public void registerLocalReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
-        manager.registerReceiver(receiver, filter);
+        mBroadcastManager.registerReceiver(receiver, filter);
     }
 
     public void unregisterLocalReceiver(BroadcastReceiver receiver) {
-        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
-        manager.unregisterReceiver(receiver);
+        mBroadcastManager.unregisterReceiver(receiver);
     }
 }

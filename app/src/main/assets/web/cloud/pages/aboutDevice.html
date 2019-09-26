@@ -1,0 +1,29 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{$t('aboutDevice')}}</h4>
+            <div class="about-device">
+                <div class="about-icon">
+                    <div class="icon-content">
+                        <i :style="{'color': getColor()}"
+                           :class="getIcon()"></i>
+                    </div>
+                    <div class="icon-name">
+                        {{deviceInfo.name}}
+                    </div>
+                </div>
+                <div class="about-content">
+                    <p><span>{{$t('deviceType')}}</span><span>{{getType()}}</span></p>
+                    <p><span>MESH ID</span><span>{{deviceInfo.mesh_id}}</span></p>
+                    <p><span>{{$t('macAddress')}}</span><span>{{deviceInfo.mac}}</span></p>
+                    <p><span>{{$t('deviceVersion')}}</span><span>{{deviceInfo.version}}</span></p>
+                    <p><span>{{$t('parentNode')}}</span><span>{{deviceInfo.mdf_version}}</span></p>
+                    <p><span>{{$t('rootNode')}}</span><span>{{deviceInfo.idf_version}}</span></p>
+                    <p><span>{{$t('deviceStatus')}}</span><span>{{getStatus()}}</span></p>
+                    <p><span>{{$t('deviceIP')}}</span><span>{{deviceInfo.host}}</span></p>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

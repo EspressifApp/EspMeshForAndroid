@@ -1,0 +1,20 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way operate-bg">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{name}}
+                </h4>
+            </div>
+            <div class="operate-way-info no-padding-bottom" id="content-info">
+                <div id="color-wrapper" class="color-wrapper">
+                    <v-colorCloud :colorId="colorId + 'cloud'" :temperatureId="temperatureId + 'cloud'" :colorType="operateType"
+                                  :macs="deviceMacs" :isRoom="isRoom" ref="colorCloud"></v-colorCloud>
+                </div>
+
+            </div>
+        </div>
+
+    </transition>
+</div>

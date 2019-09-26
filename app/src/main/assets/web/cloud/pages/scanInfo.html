@@ -1,0 +1,41 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>扫描设备</h4>
+            <span @click="setIbeacon" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
+            <div class="ibeacon-content">
+                <div class="info-content">
+                    <div class="info-item">
+                        <span class="info-disc-span">类型</span>
+                        <mt-checklist
+                                v-model="selectTypes"
+                                :options="scanType">
+                        </mt-checklist>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-disc-span">通知值(%)</span>
+                        <input v-model="notice_threshold" class="form-control">
+                    </div>
+                    <div class="info-item">
+                        <span class="info-disc-span">过滤ESP设备</span>
+                        <mt-radio
+                                v-model="esp_module_filter"
+                                :options="scanFilter">
+                        </mt-radio>
+                    </div>
+                    <div v-show="isShowBle()">
+                        <div class="info-item">
+                            <span class="info-disc-span">蓝牙扫描间隔</span>
+                            <input v-model="ble_scan_interval" class="form-control">
+                        </div>
+                        <div class="info-item">
+                            <span class="info-disc-span">蓝牙扫描时间</span>
+                            <input v-model="ble_scan_window" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

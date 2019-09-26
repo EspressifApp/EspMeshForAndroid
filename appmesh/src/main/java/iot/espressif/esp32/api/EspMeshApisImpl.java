@@ -1,6 +1,8 @@
 package iot.espressif.esp32.api;
 
 import android.bluetooth.BluetoothDevice;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -8,8 +10,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
-import blufi.espressif.params.BlufiConfigureParams;
-import blufi.espressif.params.BlufiParameter;
 import iot.espressif.esp32.action.device.EspActionDeviceConfigure;
 import iot.espressif.esp32.action.device.EspActionDeviceInfo;
 import iot.espressif.esp32.action.device.EspActionDeviceReboot;
@@ -23,7 +23,7 @@ import iot.espressif.esp32.model.device.ble.MeshScanListener;
 import iot.espressif.esp32.model.device.ota.EspOTAClient;
 import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
 import libs.espressif.ble.EspBleUtils;
-import libs.espressif.utils.TextUtils;
+import meshblufi.espressif.params.BlufiConfigureParams;
 
 class EspMeshApisImpl extends EspMeshApis {
     @Override
@@ -38,23 +38,13 @@ class EspMeshApisImpl extends EspMeshApis {
 
     @Override
     public MeshBlufiClient startConfigureNetwork(@NonNull BluetoothDevice device, int meshVersion,
-                                            @NonNull MeshConfigureParams params,
-                                            @Nullable MeshBlufiCallback blufiCallback) {
+                                                 @NonNull MeshConfigureParams params,
+                                                 @NonNull MeshBlufiCallback blufiCallback) {
         if (TextUtils.isEmpty(params.getAPSsid())) {
             throw new NullPointerException("AP SSID can't be empty");
         }
 
-        BlufiConfigureParams bParams = new BlufiConfigureParams();
-        bParams.setOpMode(BlufiParameter.OP_MODE_STA);
-        bParams.setStaSSID(params.getAPSsid());
-        bParams.setStaBSSID(params.getAPBssid());
-        bParams.setStaPassword(params.getAPPassword());
-        bParams.setMeshID(params.getMeshID());
-        bParams.setMeshPassword(params.getMeshPassword());
-        for (String staBssid : params.getWhiteList()) {
-            bParams.addWhiteAddress(staBssid);
-        }
-        bParams.setCustomData(params.getCustomData());
+        BlufiConfigureParams bParams = params.convertToBlufiConfigureParams();
         return new EspActionDeviceConfigure().doActionConfigureBlufi(device, meshVersion, bParams, blufiCallback);
     }
 
@@ -77,7 +67,7 @@ class EspMeshApisImpl extends EspMeshApis {
     public EspOTAClient startOTA(@NonNull File bin, @NonNull Collection<IEspDevice> devices,
                                  @Nullable EspOTAClient.OTACallback callback) {
         IEspDevice firstDev = devices.iterator().next();
-        EspOTAClient client =  new EspOTAClient.Builder(EspOTAClient.OTA_TYPE_HTTP_POST)
+        EspOTAClient client = new EspOTAClient.Builder(EspOTAClient.OTA_TYPE_HTTP_POST)
                 .setBin(bin)
                 .setDevices(devices)
                 .setProtocol(firstDev.getProtocol())
@@ -92,7 +82,7 @@ class EspMeshApisImpl extends EspMeshApis {
     public EspOTAClient startOTA(@NonNull String url, @NonNull Collection<IEspDevice> devices,
                                  @Nullable EspOTAClient.OTACallback callback) {
         IEspDevice firstDev = devices.iterator().next();
-        EspOTAClient client =  new EspOTAClient.Builder(EspOTAClient.OTA_TYPE_DOWNLOAD)
+        EspOTAClient client = new EspOTAClient.Builder(EspOTAClient.OTA_TYPE_DOWNLOAD)
                 .setBinUrl(url)
                 .setDevices(devices)
                 .setProtocol(firstDev.getProtocol())

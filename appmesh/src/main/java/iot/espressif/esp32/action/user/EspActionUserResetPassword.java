@@ -3,8 +3,6 @@ package iot.espressif.esp32.action.user;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URL;
-
 import iot.espressif.esp32.model.user.EspResetPasswordResult;
 import libs.espressif.net.EspHttpResponse;
 import libs.espressif.net.EspHttpUtils;

@@ -15,8 +15,6 @@ import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
 import iot.espressif.esp32.model.device.properties.EspDeviceState;
 import iot.espressif.esp32.model.group.IEspGroup;
 import libs.espressif.log.EspLog;
-import libs.espressif.security.EspMD5;
-import libs.espressif.utils.TextUtils;
 
 /**
  * Created by ae on 2018/2/24.
@@ -34,7 +32,6 @@ class EspUserImpl {
     private String mKey;
     private String mEmail;
     private String mName;
-    private byte[] mToken;
 
     public long getId() {
         return mId;
@@ -50,16 +47,6 @@ class EspUserImpl {
 
     public void setKey(String key) {
         mKey = key;
-
-        if (TextUtils.isEmpty(mKey)) {
-            mToken = null;
-        } else {
-            mToken = EspMD5.getMD5Byte(mKey.getBytes());
-        }
-    }
-
-    public byte[] getToken() {
-        return mToken;
     }
 
     public String getEmail() {
@@ -80,7 +67,6 @@ class EspUserImpl {
 
     public void clear() {
         mKey = null;
-        mToken = null;
         mEmail = null;
         mName = null;
         synchronized (mDeviceLock) {

@@ -1,5 +1,7 @@
 package iot.espressif.esp32.model.device.ble;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -10,7 +12,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import libs.espressif.utils.TextUtils;
+import iot.espressif.esp32.utils.DeviceUtil;
+import meshblufi.espressif.params.BlufiConfigureParams;
+import meshblufi.espressif.params.BlufiParameter;
 
 public class MeshConfigureParams {
     private String mAPSsid;
@@ -70,6 +74,22 @@ public class MeshConfigureParams {
         return mCustomData;
     }
 
+    public BlufiConfigureParams convertToBlufiConfigureParams() {
+        BlufiConfigureParams bParams = new BlufiConfigureParams();
+        bParams.setOpMode(BlufiParameter.OP_MODE_STA);
+        bParams.setStaSSID(getAPSsid());
+        bParams.setStaBSSID(getAPBssid());
+        bParams.setStaPassword(getAPPassword());
+        bParams.setMeshID(getMeshID());
+        bParams.setMeshPassword(getMeshPassword());
+        for (String staBssid : getWhiteList()) {
+            bParams.addWhiteAddress(staBssid);
+        }
+        bParams.setCustomData(getCustomData());
+
+        return bParams;
+    }
+
     public static class Builder {
         private String mAPSsid;
         private String mAPBssid;
@@ -99,7 +119,7 @@ public class MeshConfigureParams {
         }
 
         /**
-         * Set AP's
+         * Set AP's password
          */
         public Builder setAPPassword(@Nullable String APPassword) {
             mAPPassword = APPassword;
@@ -125,10 +145,15 @@ public class MeshConfigureParams {
 
         /**
          * Set the mesh devices' station bssid to join the mesh network.
-         * The station bssid can be got from {@link MeshBleDevice#getStaBssid()}
+         * The station bssid can be got from {@link MeshBleDevice#getStaBssid()}, format like aabbccddeeff
          */
         public Builder setWhiteList(@Nullable Collection<String> whiteList) {
-            mWhiteList = whiteList;
+            if (whiteList != null) {
+                mWhiteList = new ArrayList<>(whiteList.size());
+                for (String bssid : whiteList) {
+                    mWhiteList.add(DeviceUtil.convertToColonBssid(bssid));
+                }
+            }
             return this;
         }
 

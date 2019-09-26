@@ -33,7 +33,6 @@ import io.reactivex.disposables.Disposable;
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.utils.DeviceUtil;
 import libs.espressif.log.EspLog;
-import libs.espressif.net.EspHttpHeader;
 import libs.espressif.net.EspHttpParams;
 import libs.espressif.net.EspHttpResponse;
 import libs.espressif.net.EspHttpUtils;
@@ -455,7 +454,7 @@ class EspOTAClientImpl extends EspOTAClient {
                 if (fis != null) {
                     try {
                         fis.close();
-                    } catch (IOException ignore){
+                    } catch (IOException ignore) {
                     }
                 }
             }
@@ -500,11 +499,7 @@ class EspOTAClientImpl extends EspOTAClient {
             int tryCount = 3;
             EspHttpParams params = new EspHttpParams();
             params.setSOTimeout(timeout);
-            EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
             Map<String, String> httpHeaders = new HashMap<>();
-            if (tokenH != null) {
-                httpHeaders.put(tokenH.getName(), tokenH.getValue());
-            }
             Map<String, IEspDevice> deviceMap = new HashMap<>();
             for (IEspDevice device : devices) {
                 deviceMap.put(device.getMac(), device);
@@ -575,6 +570,7 @@ class EspOTAClientImpl extends EspOTAClient {
 
             return result;
         }
+
         private String getOtaRequestUrl(String protocol, String host, int port) {
             return String.format(Locale.ENGLISH, "%s://%s:%d/mesh_ota", protocol, host, port);
         }

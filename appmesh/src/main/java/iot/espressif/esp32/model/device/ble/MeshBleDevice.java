@@ -8,19 +8,12 @@ import java.util.List;
 import libs.espressif.ble.BleAdvData;
 import libs.espressif.ble.EspBleUtils;
 
-public class MeshBleDevice {
-    private static final int BLE_MANUFACTURER_ADV_TYPE = 0xff;
+public class MeshBleDevice implements IMeshBleDevice {
+    private static final int BLE_ADV_TYPE_MANUFACTURER = 0xff;
 
-    /**
-     * [MANUFACTURER_ID 2B][MDF 3B][#DATA 1B][STA_BSSID 6B][TID 2B]
-     *
-     * #DATA: bit[0] bit[1] = mesh version, bit[4] = only beacon
-     */
-    private static final String OUI_MDF = "MDF";
-    /**
-     * [MANUFACTURER_ID 2B][MGW 3B][#DATA 1B][STA_BSSID 6B]
-     */
-    private static final String OUI_MGW = "MGW";
+    private static final byte[] OUI_MDF_BYTES = OUI_MDF.getBytes();
+    private static final byte[] OUI_MGW_BYTES = OUI_MGW.getBytes();
+    private static final byte[] OUI_ALI_BYTES = OUI_ALI.getBytes();
 
     private int mManufacturerId = 0;
 
@@ -47,56 +40,69 @@ public class MeshBleDevice {
         parseMesh();
     }
 
+    @Override
     public void setDevice(BluetoothDevice device) {
         mDevice = device;
     }
 
+    @Override
     public BluetoothDevice getDevice() {
         return mDevice;
     }
 
+    @Override
     public void setRssi(int rssi) {
         mRssi = rssi;
     }
 
+    @Override
     public int getRssi() {
         return mRssi;
     }
 
+    @Override
     public void setScanRecord(byte[] scanRecord) {
         mScanRecord = scanRecord;
         parseMesh();
     }
 
+    @Override
     public byte[] getScanRecord() {
         return mScanRecord;
     }
 
+    @Override
     public String getStaBssid() {
         return mStaBssid;
     }
 
+    @Override
     public int getMeshVersion() {
         return mMeshVersion;
     }
 
+    @Override
     public boolean isOnlyBeacon() {
         return mOnlyBeacon;
     }
 
+    @Override
     public int getTid() {
         return mTid;
     }
 
+    @Override
     public void setManufacturerId(int manufacturerId) {
         mManufacturerId = manufacturerId;
         parseMesh();
     }
 
+    @Override
     public int getManufacturerId() {
         return mManufacturerId;
     }
 
+    @Override
     public String getOUI() {
         return mOUI;
     }
@@ -121,7 +127,7 @@ public class MeshBleDevice {
         List<BleAdvData> dataList = EspBleUtils.resolveScanRecord(mScanRecord);
         for (BleAdvData advData : dataList) {
             // Check manufacturer adv type(0xff)
-            if (advData.getType() != BLE_MANUFACTURER_ADV_TYPE) {
+            if (advData.getType() != BLE_ADV_TYPE_MANUFACTURER) {
                 continue;
             }
 
@@ -136,24 +142,22 @@ public class MeshBleDevice {
             }
             // Check OUI
             byte[] oui = {manuData[2], manuData[3], manuData[4]};
-            if (Arrays.equals(oui, OUI_MDF.getBytes())) {
-                // MDF
-                if (manuData.length < 14) {
+            if (Arrays.equals(oui, OUI_MDF_BYTES) || Arrays.equals(oui, OUI_ALI_BYTES)) {
+                if (manuData.length != 14) {
                     continue;
                 }
-                mOUI = OUI_MDF;
+                mOUI = new String(oui);
                 mMeshVersion = manuData[5] & 0b11;
                 mOnlyBeacon = (manuData[5] & 0b10000) != 0;
                 mStaBssid = String.format("%02x%02x%02x%02x%02x%02x",
                         manuData[6], manuData[7], manuData[8], manuData[9], manuData[10], manuData[11]);
                 mTid = (manuData[12] & 0xff) | ((manuData[13] & 0xff) << 8);
                 return;
-            } else if (Arrays.equals(oui, OUI_MGW.getBytes())) {
-                // MGW
-                if (manuData.length < 12) {
+            } else if (Arrays.equals(oui, OUI_MGW_BYTES)) {
+                if (manuData.length != 12) {
                     continue;
                 }
-                mOUI = OUI_MGW;
+                mOUI = new String(oui);
                 mMeshVersion = manuData[5] & 0b11;
                 mStaBssid = String.format("%02x%02x%02x%02x%02x%02x",
                         manuData[6], manuData[7], manuData[8], manuData[9], manuData[10], manuData[11]);

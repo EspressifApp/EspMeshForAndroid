@@ -41,10 +41,6 @@ public enum EspUser {
         mUser.setKey(key);
     }
 
-    public byte[] getToken() {
-        return mUser.getToken();
-    }
-
     public String getEmail() {
         return mUser.getEmail();
     }

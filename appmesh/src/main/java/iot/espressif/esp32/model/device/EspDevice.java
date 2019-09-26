@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,7 +17,6 @@ import javax.annotation.Nonnull;
 
 import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
 import iot.espressif.esp32.model.device.properties.EspDeviceState;
-import iot.espressif.esp32.utils.DeviceUtil;
 
 class EspDevice implements IEspDevice {
     private final SparseArray<EspDeviceCharacteristic> mCharaArray;
@@ -99,7 +99,7 @@ class EspDevice implements IEspDevice {
     @Override
     public String getName() {
         if (TextUtils.isEmpty(mName)) {
-            return DeviceUtil.getNameByBssid(mMac);
+            return mMac.toUpperCase(Locale.ENGLISH);
         }
         return mName;
     }

@@ -15,7 +15,13 @@ public abstract class MeshScanListener implements ScanListener {
     }
 
     @Override
-    public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord, ScanResult scanResult) {
+    public void onLeScan(ScanResult scanResult) {
+        if (scanResult.getScanRecord() == null) {
+            return;
+        }
+        BluetoothDevice device = scanResult.getDevice();
+        int rssi = scanResult.getRssi();
+        byte[] scanRecord = scanResult.getScanRecord().getBytes();
         MeshBleDevice meshBleDevice = new MeshBleDevice(device, rssi, scanRecord, mManufacturerID);
         if (meshBleDevice.getMeshVersion() >= 0) {
             onMeshDeviceScanned(meshBleDevice);

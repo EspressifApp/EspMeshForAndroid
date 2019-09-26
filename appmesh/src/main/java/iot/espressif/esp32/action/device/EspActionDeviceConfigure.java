@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import blufi.espressif.params.BlufiConfigureParams;
 import iot.espressif.esp32.app.EspApplication;
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.device.ble.MeshBlufiCallback;
@@ -25,6 +24,7 @@ import iot.espressif.esp32.utils.DeviceUtil;
 import libs.espressif.ble.EspBleUtils;
 import libs.espressif.log.EspLog;
 import libs.espressif.net.EspHttpResponse;
+import meshblufi.espressif.params.BlufiConfigureParams;
 
 public class EspActionDeviceConfigure extends EspActionDeviceBlufi implements IEspActionDeviceConfigure {
     private final EspLog mLog = new EspLog(getClass());
@@ -41,6 +41,21 @@ public class EspActionDeviceConfigure extends EspActionDeviceBlufi implements IE
 
         Context context = EspApplication.getEspApplication().getApplicationContext();
         BleCallback bleCallback = new BleCallback(blufi, userCallback) {
+            @Override
+            protected void onBlufiClientSetComplete() {
+                mLog.d("Set BlufiClient complete");
+                boolean setMtu = blufi.getBluetoothGatt().requestMtu(DEFAULT_MTU_LENGTH);
+                if (!setMtu) {
+                    blufi.getBlufiClient().negotiateSecurity();
+                }
+            }
+
+            @Override
+            public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+                super.onMtuChanged(gatt, mtu, status);
+                blufi.getBlufiClient().negotiateSecurity();
+            }
+
             @Override
             protected void onNegotiateSecurityComplete() {
                 blufi.getBlufiClient().configure(params);

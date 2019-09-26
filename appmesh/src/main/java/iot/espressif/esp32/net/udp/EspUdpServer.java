@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -50,7 +49,7 @@ public class EspUdpServer {
                     break;
                 }
 
-                DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
+                DatagramPacket packet = new DatagramPacket(new byte[1500], 1500);
                 try {
                     mSocket.receive(packet);
                 } catch (IOException e) {
@@ -66,8 +65,7 @@ public class EspUdpServer {
                 InetAddress address = packet.getAddress();
                 if (mReceivedListener != null) {
                     Observable.just(mReceivedListener)
-                            .subscribeOn(mReceivedListener.isCallOnMainThread() ?
-                                    AndroidSchedulers.mainThread() : Schedulers.io())
+                            .subscribeOn(Schedulers.io())
                             .doOnNext(listener -> listener.onDataReceived(address, data))
                             .subscribe();
                 }
@@ -84,8 +82,6 @@ public class EspUdpServer {
     }
 
     public interface DataReceivedListener {
-        boolean isCallOnMainThread();
-
         void onDataReceived(InetAddress address, byte[] data);
     }
 }

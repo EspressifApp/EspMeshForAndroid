@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,8 +31,6 @@ import iot.espressif.esp32.action.device.IEspActionDevice;
 import iot.espressif.esp32.constants.DeviceConstants;
 import iot.espressif.esp32.model.callback.DeviceRequestCallable;
 import iot.espressif.esp32.model.device.IEspDevice;
-import iot.espressif.esp32.model.user.EspUser;
-import libs.espressif.net.EspHttpHeader;
 import libs.espressif.net.EspHttpParams;
 import libs.espressif.net.EspHttpResponse;
 import libs.espressif.net.EspHttpUtils;
@@ -65,9 +62,9 @@ public class DeviceUtil {
      * protocol://host/file
      *
      * @param protocol url protocol
-     * @param host url host
-     * @param file url file
-     * @param port url port
+     * @param host     url host
+     * @param file     url file
+     * @param port     url port
      * @return url string
      */
     public static String getLocalUrl(String protocol, String host, String file, int port) {
@@ -127,7 +124,7 @@ public class DeviceUtil {
      */
     public static EspHttpResponse httpLocalRequest(@NonNull String protocol, @NonNull String host, int port,
                                                    @NonNull String bssid, @NonNull byte[] content,
-            EspHttpParams params, Map<String, String> headers) {
+                                                   EspHttpParams params, Map<String, String> headers) {
         String url = getLocalUrl(protocol, host, FILE_REQUEST, port);
         Map<String, String> newHeaders = new HashMap<>();
         if (headers != null) {
@@ -146,7 +143,7 @@ public class DeviceUtil {
      * @param headers http headers
      */
     public static List<EspHttpResponse> httpLocalMulticastRequest(@NonNull Collection<IEspDevice> devices,
-              @NonNull byte[] content, @Nullable EspHttpParams params, @Nullable Map<String, String> headers) {
+                                                                  @NonNull byte[] content, @Nullable EspHttpParams params, @Nullable Map<String, String> headers) {
         HashMap<String, String> newHeaders = new HashMap<>();
         if (headers != null) {
             newHeaders.putAll(headers);
@@ -351,8 +348,8 @@ public class DeviceUtil {
         return result;
     }
 
-    private static List<EspHttpResponse> multicast(String url, Collection<String> bssids, byte[] content,EspHttpParams params,
-                          Map<String, String> headers) {
+    private static List<EspHttpResponse> multicast(String url, Collection<String> bssids, byte[] content, EspHttpParams params,
+                                                   Map<String, String> headers) {
         if (headers == null) {
             headers = new HashMap<>();
         }
@@ -400,7 +397,7 @@ public class DeviceUtil {
         }
 
         LinkedList<Byte> tempList = new LinkedList<>();
-        while (!dataList.isEmpty()){
+        while (!dataList.isEmpty()) {
             Observable.just(dataList.poll())
                     .filter(aByte -> {
                         tempList.add(aByte);
@@ -552,16 +549,6 @@ public class DeviceUtil {
     }
 
     /**
-     * Get device name by bssid
-     *
-     * @param bssid the device bssid
-     * @return device name
-     */
-    public static String getNameByBssid(String bssid) {
-        return bssid.toUpperCase(Locale.ENGLISH);
-    }
-
-    /**
      * Check the two devices bssids is equal.
      *
      * @return equal or not
@@ -582,6 +569,21 @@ public class DeviceUtil {
             sb.append(bssid.substring(i, i + 2)).append(":");
         }
         sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
+    }
+
+    /**
+     * Convert aa:bb:cc:dd:ee:ff to aabbccddeeff
+     *
+     * @param bssid like aa:bb:cc:dd:ee:ff
+     * @return like aabbccddeeff
+     */
+    public static String convertToNoColonBssid(String bssid) {
+        String[] splits = bssid.split(":");
+        StringBuilder sb = new StringBuilder();
+        for (String s : splits) {
+            sb.append(s);
+        }
         return sb.toString();
     }
 
@@ -644,15 +646,6 @@ public class DeviceUtil {
         return true;
     }
 
-    public static EspHttpHeader getUserTokenHeader() {
-        if (EspUser.INSTANCE.isLogged()) {
-//            return new EspHttpHeader(IEspAction.KEY_TOKEN, DataUtil.bytesToString(EspUser.INSTANCE.getToken()));
-            return null;
-        } else {
-            return null;
-        }
-    }
-
     public static Map<String, EspHttpResponse> getMapWithDeviceResponses(Collection<EspHttpResponse> responses) {
         Map<String, EspHttpResponse> map = new HashMap<>();
         for (EspHttpResponse resp : responses) {
@@ -693,11 +686,7 @@ public class DeviceUtil {
                         .put(IEspActionDevice.KEY_REQUEST, request)
                         .put(IEspActionDevice.KEY_DELAY, delay);
                 byte[] content = json.toString().getBytes();
-                EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
                 Map<String, String> headers = new HashMap<>();
-                if (tokenH != null) {
-                    headers.put(tokenH.getName(), tokenH.getValue());
-                }
                 headers.put(HEADER_ROOT_RESP, String.valueOf(true));
                 DeviceUtil.httpLocalMulticastRequest(devices, content, params, headers);
             } catch (JSONException e) {

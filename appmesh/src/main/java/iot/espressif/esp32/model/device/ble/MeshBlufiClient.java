@@ -2,7 +2,7 @@ package iot.espressif.esp32.model.device.ble;
 
 import android.bluetooth.BluetoothGatt;
 
-import blufi.espressif.BlufiClient;
+import meshblufi.espressif.BlufiClient;
 
 public class MeshBlufiClient {
     private int mMeshVersion = -1;

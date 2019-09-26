@@ -1,6 +1,5 @@
 package iot.espressif.esp32.db.box;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.objectbox.Box;

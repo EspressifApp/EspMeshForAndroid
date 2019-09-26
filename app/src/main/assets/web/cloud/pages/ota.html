@@ -1,0 +1,35 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{deviceName}}固件升级</h4>
+            <div class="content-info no-padding-bottom ota-upgrade-wrapper">
+                <div class="overflow-touch" v-show="!isFail">
+                    <div class="ota-header flex flex-v">
+                        <div class="ota-icon">
+                            <i class="icon" :class="upgradeStatus == 4 ? 'icon-ok-circled' : 'icon-upgrade'"></i>
+                        </div>
+                        <div class="new"><span v-show="showNew != ''">V{{showNew}}</span></div>
+                        <div class="old"><span v-show="showCurrent != ''">当前版本 V{{showCurrent}}</span></div>
+                    </div>
+                    <div v-show="showUpgradeBtn" class="btn-register-wrapper">
+                        <button type="submit" class="btn register-btn" @click="startUpgrate">立即升级</button>
+                    </div>
+                </div>
+                <div class="overflow-touch" v-show="isFail">
+                    <div class="ota-header flex flex-v">
+                        <div class="ota-icon">
+                            <i class="icon icon-android-alert"></i>
+                        </div>
+                        <div class="old">{{failDesc}}</div>
+                    </div>
+                    <div class="btn-register-wrapper">
+                        <button type="submit" class="btn register-btn" @click="retry">{{failBtn}}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>
+
+

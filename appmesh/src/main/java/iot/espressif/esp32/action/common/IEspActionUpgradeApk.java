@@ -5,9 +5,6 @@ import androidx.annotation.NonNull;
 import java.io.File;
 import java.util.Locale;
 
-import iot.espressif.esp32.action.IEspAction;
-import iot.espressif.esp32.action.common.IEspActionDownload;
-
 public interface IEspActionUpgradeApk extends IEspActionDownload {
     String LATEST_RELEASE_URL = "https://api.github.com/repos/EspressifApp/EspMeshForAndroid/releases/latest";
 

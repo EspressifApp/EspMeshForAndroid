@@ -3,12 +3,18 @@ package iot.espressif.esp32.net.udp;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
 import iot.espressif.esp32.app.EspApplication;
 import iot.espressif.esp32.constants.DeviceConstants;
+import iot.espressif.esp32.model.event.DeviceOtaStatusEvent;
+import iot.espressif.esp32.model.event.DeviceSnifferEvent;
+import iot.espressif.esp32.model.event.DeviceStatusEvent;
+import iot.espressif.esp32.model.event.DeviceTopologyEvent;
 import libs.espressif.log.EspLog;
 
 public class EspDeviceNotifyHelper implements EspUdpServer.DataReceivedListener {
@@ -38,8 +44,6 @@ public class EspDeviceNotifyHelper implements EspUdpServer.DataReceivedListener 
     private Map<String, String> mStatusFlagMap;
     private Map<String, String> mSnifferFlagMap;
     private Map<String, String> mOtaFlagMap;
-
-    private DeviceNotifyListener mListener;
 
     public EspDeviceNotifyHelper() {
         mUdpServer = new EspUdpServer();
@@ -75,11 +79,6 @@ public class EspDeviceNotifyHelper implements EspUdpServer.DataReceivedListener 
     }
 
     @Override
-    public boolean isCallOnMainThread() {
-        return false;
-    }
-
-    @Override
     public void onDataReceived(InetAddress address, byte[] data) {
         String string = new String(data);
         mLog.i("ParseData = " + string);
@@ -101,7 +100,7 @@ public class EspDeviceNotifyHelper implements EspUdpServer.DataReceivedListener 
         String type = propertiesMap.get(KEY_TYPE);
         String flag = propertiesMap.get(KEY_FLAG);
 
-        if ( type == null || flag == null) {
+        if (type == null || flag == null) {
             return;
         }
         String[] macs = mac == null ? null : mac.split(",");
@@ -119,9 +118,7 @@ public class EspDeviceNotifyHelper implements EspUdpServer.DataReceivedListener 
                     String topoFlag = mTopoFlagMap.get(host);
                     if (!flag.equals(topoFlag)) {
                         mTopoFlagMap.put(host, flag);
-                        if (mListener != null) {
-                            mListener.onTopologyChanged(address, type, port);
-                        }
+                        EventBus.getDefault().post(new DeviceTopologyEvent(address, type, port));
                     }
                 }
                 break;
@@ -133,9 +130,7 @@ public class EspDeviceNotifyHelper implements EspUdpServer.DataReceivedListener 
                     String statusFlag = mStatusFlagMap.get(host);
                     if (!flag.equals(statusFlag)) {
                         mStatusFlagMap.put(host, flag);
-                        if (mListener != null) {
-                            mListener.onDeviceStatusChanged(address, macs);
-                        }
+                        EventBus.getDefault().post(new DeviceStatusEvent(address, macs));
                     }
                 }
                 break;
@@ -147,9 +142,7 @@ public class EspDeviceNotifyHelper implements EspUdpServer.DataReceivedListener 
                     String snifferFlag = mSnifferFlagMap.get(host);
                     if (!flag.equals(snifferFlag)) {
                         mSnifferFlagMap.put(host, flag);
-                        if (mListener != null) {
-                            mListener.onSnifferDiscovered(address, macs);
-                        }
+                        EventBus.getDefault().post(new DeviceSnifferEvent(address, macs));
                     }
                 }
                 break;
@@ -161,33 +154,13 @@ public class EspDeviceNotifyHelper implements EspUdpServer.DataReceivedListener 
                     String otaFlag = mOtaFlagMap.get(host);
                     if (!flag.equals(otaFlag)) {
                         mSnifferFlagMap.put(host, flag);
-                        if (mListener != null) {
-                            mListener.onOtaStatusChanged(address, macs);
-                        }
+                        EventBus.getDefault().post(new DeviceOtaStatusEvent(address, macs));
                     }
                 }
 
                 break;
             default:
                 return;
-        }
-    }
-
-    public void setDeviceNotifyListener(DeviceNotifyListener listener) {
-        mListener = listener;
-    }
-
-    public static abstract class DeviceNotifyListener {
-        public void onTopologyChanged(InetAddress address, String protocol, int port) {
-        }
-
-        public void onDeviceStatusChanged(InetAddress address, String[] macs) {
-        }
-
-        public void onSnifferDiscovered(InetAddress address, String[] macs) {
-        }
-
-        public void onOtaStatusChanged(InetAddress address, String[] macs) {
         }
     }
 }

@@ -2,6 +2,8 @@ package iot.espressif.esp32.model.device.ota;
 
 import android.os.Handler;
 
+import androidx.annotation.Nullable;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import io.reactivex.Observable;
+import io.reactivex.Completable;
 import io.reactivex.schedulers.Schedulers;
 import iot.espressif.esp32.action.device.IEspActionDeviceOTA;
 import iot.espressif.esp32.model.device.IEspDevice;
@@ -65,6 +67,7 @@ public abstract class EspOTAClient {
     }
 
     public interface OTACallback {
+        @Nullable
         Handler getHandler();
 
         void onOTAPrepare(EspOTAClient client);
@@ -95,9 +98,8 @@ public abstract class EspOTAClient {
             if (mOTACallback.getHandler() != null) {
                 mOTACallback.getHandler().post(runnable);
             } else {
-                Observable.just(runnable)
+                Completable.fromRunnable(runnable)
                         .subscribeOn(Schedulers.io())
-                        .doOnNext(Runnable::run)
                         .subscribe();
             }
         }

@@ -8,7 +8,6 @@ import java.util.Map;
 
 import iot.espressif.esp32.model.net.MeshNode;
 import iot.espressif.esp32.utils.DeviceUtil;
-import libs.espressif.net.EspHttpHeader;
 import libs.espressif.net.EspHttpParams;
 import libs.espressif.net.EspHttpResponse;
 import libs.espressif.net.EspHttpUtils;
@@ -26,12 +25,8 @@ public class EspActionDeviceTopology implements IEspActionDeviceTopology {
         params.setTryCount(3);
 
         List<MeshNode> result = new LinkedList<>();
-        EspHttpHeader tokenH = DeviceUtil.getUserTokenHeader();
         Map<String, String> headers = new HashMap<>();
-        if (tokenH != null) {
-            headers.put(tokenH.getName(), tokenH.getValue());
-        }
-        while(true) {
+        while (true) {
             EspHttpResponse response = EspHttpUtils.Get(url, params, headers);
             if (response == null) {
                 break;

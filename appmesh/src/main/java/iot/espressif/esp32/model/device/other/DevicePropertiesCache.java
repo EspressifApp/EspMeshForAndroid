@@ -1,5 +1,7 @@
 package iot.espressif.esp32.model.device.other;
 
+import android.util.SparseArray;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,12 +14,12 @@ import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
 
 public class DevicePropertiesCache {
     // Key=tid, Value=EspDeviceCharacteristic
-    private Map<Integer, PropertiesModel> mAssetMap;
+    private SparseArray<PropertiesModel> PropertiesModels;
     // Key=DeviceMac, Value=DeviceDB
     private Map<String, DeviceDB> mMacDeviceDBMap;
 
     public DevicePropertiesCache() {
-        mAssetMap = getAssetCharacteristicMap();
+        PropertiesModels = getAssetCharacteristicMap();
         mMacDeviceDBMap = getMacDeviceDBMap();
     }
 
@@ -33,7 +35,7 @@ public class DevicePropertiesCache {
             device.setMlinkVersion(db.mlink_version);
             device.setTrigger(db.trigger);
 
-            PropertiesModel propertiesModel = mAssetMap.get(db.tid);
+            PropertiesModel propertiesModel = PropertiesModels.get(db.tid);
             if (propertiesModel != null && propertiesModel.characteristics != null) {
                 for (EspDeviceCharacteristic c : propertiesModel.characteristics) {
                     device.addOrReplaceCharacteristic(c.cloneInstance());
@@ -42,8 +44,8 @@ public class DevicePropertiesCache {
         }
     }
 
-    private Map<Integer, PropertiesModel> getAssetCharacteristicMap() {
-        Map<Integer, PropertiesModel> result = new HashMap<>();
+    private SparseArray<PropertiesModel> getAssetCharacteristicMap() {
+        SparseArray<PropertiesModel> result = new SparseArray<>();
 
         PropertiesModel propertiesModel = getTid1();
         result.put(propertiesModel.tid, propertiesModel);

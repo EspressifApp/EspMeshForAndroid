@@ -1,11 +1,10 @@
 package iot.espressif.esp32.model.device.ota;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.SystemClock;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,12 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import iot.espressif.esp32.action.device.IEspActionDevice;
 import iot.espressif.esp32.action.device.IEspActionDeviceReboot;
-import iot.espressif.esp32.app.EspApplication;
-import iot.espressif.esp32.constants.DeviceConstants;
+import iot.espressif.esp32.model.event.DeviceOtaStatusEvent;
 import iot.espressif.esp32.utils.DeviceUtil;
 import libs.espressif.log.EspLog;
 import libs.espressif.net.EspHttpParams;
@@ -64,30 +60,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
 
     private final Map<String, Integer> mProgressValues = new HashMap<>();
     private final Set<String> mProgressMacs = new HashSet<>();
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (action == null) {
-                return;
-            }
-
-            if (action.equals(DeviceConstants.ACTION_OTA_STATUS_CHANGED)) {
-                mLog.d("Receive ota change local broadcast");
-                String[] macs = intent.getStringArrayExtra(DeviceConstants.KEY_DEVICE_MACS);
-                if (macs == null) {
-                    return;
-                }
-                synchronized (mProgressMacs) {
-                    mProgressMacs.addAll(Arrays.asList(macs));
-                }
-                synchronized (mReceiver) {
-                    mLog.d("Notify mReceiver wait to get ota progress");
-                    mReceiver.notify();
-                }
-            }
-        }
-    };
+    private final Object mProgressLock = new Object();
 
     EspOTAClientImpl2(File bin, String protocol, String host, Collection<String> macs, OTACallback callback) {
         mBin = bin;
@@ -187,6 +160,20 @@ class EspOTAClientImpl2 extends EspOTAClient {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onOtaStatusChanged(DeviceOtaStatusEvent event) {
+        mLog.d("onOtaStatusChanged");
+        if (!getAddress().equals(event.address.getHostAddress())) {
+            return;
+        }
+        synchronized (mProgressMacs) {
+            mProgressMacs.addAll(Arrays.asList(event.macs));
+        }
+        synchronized (mProgressLock) {
+            mProgressLock.notify();
+        }
+    }
+
     private void runOta() {
         mOtaRunning = true;
 
@@ -195,7 +182,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
                 runOtaCallback(() -> getOTACallback().onOTAPrepare(EspOTAClientImpl2.this));
             }
 
-            registerReceiver();
+            EventBus.getDefault().register(EspOTAClientImpl2.this);
 
             for (int t = 0; t < 1; t++) {
                 if (mBin != null) {
@@ -225,7 +212,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
                 mLog.d("Check over");
             }
 
-            unregisterReceiver();
+            EventBus.getDefault().unregister(EspOTAClientImpl2.this);
             close();
 
             if (getOTACallback() != null) {
@@ -268,7 +255,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
 
             URL url = new URL(getOTADataUrl());
             mConnection = (HttpURLConnection) url.openConnection();
-            mConnection.setFixedLengthStreamingMode((int)mBin.length());
+            mConnection.setFixedLengthStreamingMode((int) mBin.length());
             mConnection.setDoOutput(true);
             mConnection.setRequestMethod(EspHttpUtils.METHOD_POST);
             mConnection.setReadTimeout(30000);
@@ -423,9 +410,9 @@ class EspOTAClientImpl2 extends EspOTAClient {
                 return false;
             }
 
-            synchronized (mReceiver) {
+            synchronized (mProgressLock) {
                 try {
-                    mReceiver.wait(checkInterval);
+                    mProgressLock.wait(checkInterval);
                 } catch (InterruptedException e) {
                     mLog.w("CheckProgress wait interrupted");
                     return false;
@@ -509,45 +496,6 @@ class EspOTAClientImpl2 extends EspOTAClient {
         }
 
         return false;
-    }
-
-
-    private void registerReceiver() {
-        synchronized (mReceiver) {
-            Observable.create(emitter -> {
-                IntentFilter filter = new IntentFilter(DeviceConstants.ACTION_OTA_STATUS_CHANGED);
-                EspApplication.getEspApplication().registerLocalReceiver(mReceiver, filter);
-                synchronized (mReceiver) {
-                    mReceiver.notify();
-                }
-                emitter.onComplete();
-            }).subscribeOn(AndroidSchedulers.mainThread())
-                    .subscribe();
-            try {
-                mReceiver.wait();
-            } catch (InterruptedException e) {
-                mLog.w("OTA registerReceiver interrupted");
-            }
-        }
-    }
-
-    private void unregisterReceiver() {
-        synchronized (mReceiver) {
-            Observable.create(emitter -> {
-                EspApplication.getEspApplication().unregisterLocalReceiver(mReceiver);
-                synchronized (mReceiver) {
-                    mReceiver.notify();
-                }
-                emitter.onComplete();
-            }).subscribeOn(AndroidSchedulers.mainThread())
-                    .subscribe();
-            try {
-                mReceiver.wait();
-            } catch (InterruptedException e) {
-                mLog.w("OTA unregisterReceiver interrupted");
-                Thread.currentThread().interrupt();
-            }
-        }
     }
 
     private void otaReboot() {

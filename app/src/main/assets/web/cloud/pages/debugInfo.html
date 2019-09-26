@@ -1,0 +1,15 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{$t('topologyInfo')}}
+                </h4>
+            </div>
+            <div class="ibeacon-footer" style="margin-top: 0;">
+                <p v-for="item in infoList"><span>{{item.key}}:</span><span>{{item.value}}</span></p>
+            </div>
+        </div>
+    </transition>
+</div>

@@ -4,7 +4,8 @@ import android.bluetooth.BluetoothGatt;
 
 import java.util.UUID;
 
-import blufi.espressif.BlufiCallback;
+import meshblufi.espressif.BlufiCallback;
+import meshblufi.espressif.BlufiClient;
 
 public abstract class MeshBlufiCallback extends BlufiCallback {
     public void onGattConnectionChange(BluetoothGatt gatt, int status, boolean connected) {
@@ -17,5 +18,8 @@ public abstract class MeshBlufiCallback extends BlufiCallback {
     }
 
     public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+    }
+
+    public void onBlufiClientSet(BlufiClient client){
     }
 }

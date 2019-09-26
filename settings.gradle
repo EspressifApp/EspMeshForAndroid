@@ -1,1 +1,2 @@
-include ':app', ':apptools', ':appmesh', ':meshblufi', ':apph5'
+include ':app'
+include ':appmesh'

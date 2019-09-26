@@ -1,0 +1,124 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>编辑房间</h4>
+            <div class="add-room-wrapper">
+                <div class="room-image flex flex-ac flex-jcb">
+                    <span class="item-title">房间图片</span>
+                    <img @click="showImage" :src="'images/'+ currentImg">
+                </div>
+                <div class="room-item margin-top-15">
+                    <div class="flex">
+                        <span class="item-title">房间名称</span>
+                        <input v-model="roomName" placeholder="请输入房间名称">
+                    </div>
+                    <div class="flex flex-jcb">
+                        <span class="item-title">房间设备</span>
+                        <div @click="showDevice" class="item-desc flex-1 flex flex-ac flex-jcb">
+                            <span v-if="addedList.length == 0" class="desc">未添加</span>
+                            <span v-else class="desc">已添加{{addedList.length}}个设备</span>
+                            <span class="icon icon-right"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="room-btn margin-top-15">
+                    <button @click="saveRoom()" class="btn register-btn">保存</button>
+                </div>
+            </div>
+
+        </div>
+    </transition>
+    <transition name="ups">
+        <div v-show="imageShow" class="operate-wrapper">
+            <div @click="hideImage" class="mask"></div>
+            <div class="operate-info room-item-wrapper">
+                <div class="flex flex-ac flex-m">
+                    <div class="room-item-image flex-1" v-for="item in imageList">
+                        <div @click="selectImg(item.url, item.name)" class="room-item-info">
+                            <img :src="'images/' + item.url">
+                            <span>{{item.name}}</span>
+                        </div>
+                    </div>
+                </div>
+                <ul>
+                    <li @click="hideImage" class="margin-top-15"><span>{{$t('cancelBtn')}}</span></li>
+                </ul>
+            </div>
+        </div>
+    </transition>
+    <transition name="ups">
+        <div v-show="isShowDevice" class="operate-wrapper">
+            <div class="scan-desc">
+                <div class="title-info">
+                    <h4 class="app-title"><span @click="hideDevice"><i class="icon-left back"></i></span>编辑房间设备</h4>
+                </div>
+                <div class="content-info flex-wrapper no-padding-bottom no-search">
+                    <div class="room-device-wrapper flex flex-v">
+                        <mt-navbar v-model="active">
+                            <mt-tab-item id="added">已添加({{addedList.length}})</mt-tab-item>
+                            <mt-tab-item id="notAdd">未添加({{notAddList.length}})</mt-tab-item>
+                        </mt-navbar>
+                        <mt-tab-container v-model="active">
+                            <mt-tab-container-item id="added">
+                                <div class="input-info">
+                                    <i class="icon-search"></i>
+                                    <input type="search" v-model="addedName" class="form-control" placeholder="搜索名称或位置">
+                                </div>
+                                <div class="room-device">
+                                    <div class="overflow-touch">
+                                        <div v-for="item in addedList" class="item item-device">
+                                            <div class="item-icon-circle">
+                                                <i :class="getIcon(item.tid)"></i>
+                                            </div>
+                                            <div class="item-name">
+                                                <span>{{getPosition(item.position)}}</span>
+                                                <span v-show="!showDesc(item.name)">{{item.mac}}</span>
+                                                <span v-show="showDesc(item.name)"  :class="{'desc': showDesc(item.position)}">{{item.name}}
+                                             <span v-show="showDesc(item.position)">({{item.version}})</span></span>
+                                                <span class="desc" v-show="!showDesc(item.position)">{{item.version}} </span>
+                                            </div>
+                                            <div @click.stop="removeRoomMac(item.mac)" class="item-power-small">
+                                                <i class="icon-bin"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </mt-tab-container-item>
+                            <mt-tab-container-item id="notAdd">
+                                <div class="input-info">
+                                    <i class="icon-search"></i>
+                                    <input type="search" v-model="notAddName" class="form-control" placeholder="搜索名称或位置">
+                                </div>
+                                <div class="room-device room-active">
+                                    <div class="overflow-touch">
+                                        <div v-for="item in notAddList" class="item item-device">
+                                            <div class="item-icon-circle">
+                                                <i :class="getIcon(item.tid)"></i>
+                                            </div>
+                                            <div class="item-name">
+                                                <span>{{getPosition(item.position)}}</span>
+                                                <span v-show="!showDesc(item.name)">{{item.mac}}</span>
+                                                <span v-show="showDesc(item.name)"  :class="{'desc': showDesc(item.position)}">
+                                                    {{item.name}}
+                                                    <span v-show="showDesc(item.position)">({{item.version}})</span>
+                                                </span>
+                                                <span class="desc" v-show="!showDesc(item.position)">{{item.version}} </span>
+                                            </div>
+                                            <div @click.stop="addRoomMac(item.mac)" class="item-power-small">
+                                                <i class="icon-plus icon-blue"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div @click="showAdded" class="showAdded">
+                                    <i :class="isShowAdded ? 'icon-check' : 'icon-uncheck'"></i>显示已加入其他房间的设备
+                                </div>
+                            </mt-tab-container-item>
+                        </mt-tab-container>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </transition>
+</div>

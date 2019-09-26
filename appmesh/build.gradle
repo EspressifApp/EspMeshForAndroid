@@ -2,13 +2,13 @@ apply plugin: 'com.android.library'
 apply plugin: 'io.objectbox'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion conf.compile_sdk_version
 
     defaultConfig {
-        minSdkVersion 18
-        targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion conf.min_sdk_version
+        targetSdkVersion conf.target_sdk_version
+        versionCode 2
+        versionName "1.1"
     }
 
     buildTypes {
@@ -25,12 +25,11 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'androidx.multidex:multidex:2.0.1'
     implementation lib.material
 
     implementation lib.rxjava
     implementation lib.rxandroid
     implementation lib.jmdns
-
-    implementation project(':apptools')
-    implementation project(':meshblufi')
+    implementation lib.eventbus
 }

@@ -1,6 +1,7 @@
 package iot.espressif.esp32.api;
 
 import android.bluetooth.BluetoothDevice;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -8,8 +9,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
-import blufi.espressif.BlufiClient;
-import blufi.espressif.response.BlufiStatusResponse;
 import iot.espressif.esp32.model.callback.DeviceScanCallback;
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.device.ble.MeshBlufiCallback;
@@ -18,6 +17,8 @@ import iot.espressif.esp32.model.device.ble.MeshConfigureParams;
 import iot.espressif.esp32.model.device.ble.MeshScanListener;
 import iot.espressif.esp32.model.device.ota.EspOTAClient;
 import iot.espressif.esp32.model.device.properties.EspDeviceCharacteristic;
+import meshblufi.espressif.BlufiClient;
+import meshblufi.espressif.response.BlufiStatusResponse;
 
 public abstract class EspMeshApis {
     private static final Object sLock = new Object();
@@ -71,7 +72,7 @@ public abstract class EspMeshApis {
      */
     abstract public MeshBlufiClient startConfigureNetwork(@NonNull BluetoothDevice device, int meshVersion,
                                                           @NonNull MeshConfigureParams params,
-                                                          @Nullable MeshBlufiCallback blufiCallback);
+                                                          @NonNull MeshBlufiCallback blufiCallback);
 
     /**
      * Stop the configuring process
