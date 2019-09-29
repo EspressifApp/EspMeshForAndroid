@@ -724,4 +724,16 @@ public class AppApiForJS {
         mImpl.postDataToMeshBLEDevice(request);
     }
 
+    /**
+     * Set system status bar style
+     * @param request
+    {
+        "background":[red, green, blue, alpha] // red:[0 .. 255] green:[0 .. 255] blue:[0 .. 255] alpha:[0 .. 255]
+        "defaultStyle": true // true is white text, false is black text
+    }
+     */
+    @JavascriptInterface
+    public void setStatusBar(String request) {
+        mImpl.setStatusBar(request);
+    }
 }

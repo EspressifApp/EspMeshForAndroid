@@ -71,7 +71,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/blueList.html", "../js/blueConne
                 },
                 onConScanBLE: function(devices) {
                     var self = this;
-                    console.log(devices);
                     devices = JSON.parse(devices);
                     $.each(devices, function(i, item) {
                         var name = item.name;
@@ -91,7 +90,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/blueList.html", "../js/blueConne
                             if (flag && !Util._isEmpty(obj)) {
                                 self.blueList.push(obj);
                             }
-                            console.log(JSON.stringify(self.blueList));
                         }
                     })
                     window.onBackPressed = self.hide;

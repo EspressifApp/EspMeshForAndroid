@@ -23,4 +23,8 @@ public interface AliConstants {
     String KEY_TOKEN = "token";
     String KEY_PROPERTIES  = "properties";
     String KEY_VERSION = "version";
+
+    String KEY_APP_KEY = "appKey";
+    String KEY_REDIRECT_URI = "redirect_uri";
+    String KEY_AUTH_CODE = "authCode";
 }

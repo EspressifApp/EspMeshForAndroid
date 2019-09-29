@@ -1,5 +1,9 @@
 # 更新记录
 
+## v1.1.0
+- 增加阿里云开发接口
+- 合并meshblufi模块和apptools模块到appmesh模块
+
 ## v1.0.7
 - 优化界面
 - 修复BUG

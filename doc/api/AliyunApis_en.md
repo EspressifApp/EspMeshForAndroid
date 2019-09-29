@@ -15,6 +15,7 @@ Class [aliyun.espressif.mesh.IAliHelper](../../app/src/main/java/aliyun/espressi
 - Add code above build.gradle ``apply from: 'dependency.gradle'``
 
 ## Initialize Apis
+- Set your APP_KEY in AliInitialize.java
 ```java
 AliInitialize.initAliyun(Application);
 ```

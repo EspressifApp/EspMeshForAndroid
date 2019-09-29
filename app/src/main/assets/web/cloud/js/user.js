@@ -18,7 +18,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../
                 // 如果路由有变化，会再次执行该方法d
                 '$route': function (to, form) {
                     if (to.path == "/user") {
-                        this.getAliOTAUpgradeDeviceList();
+                        if (this.$store.state.isLogin) {
+                            this.getAliOTAUpgradeDeviceList();
+                        }
                     }
 
                 }

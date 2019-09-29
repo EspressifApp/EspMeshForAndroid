@@ -1,5 +1,6 @@
 package iot.espressif.esp32.app;
 
+import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -7,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.os.Environment;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.multidex.MultiDexApplication;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -15,7 +15,7 @@ import java.util.Random;
 import iot.espressif.esp32.db.box.MeshObjectBox;
 import libs.espressif.utils.RandomUtil;
 
-public class EspApplication extends MultiDexApplication {
+public class EspApplication extends Application {
     private static EspApplication instance;
     private final Object mCacheLock = new Object();
     private HashMap<String, Object> mCacheMap;

@@ -9,10 +9,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.view.View;
 
 import androidx.core.os.LocaleListCompat;
 
@@ -2439,5 +2441,33 @@ class AppApiForJSImpl implements EspWebConstants {
         }
 
         mMeshBLEClient.write(value);
+    }
+
+    void setStatusBar(String request) {
+        int r, g, b, a;
+        boolean defalutStyle;
+
+        try {
+            JSONObject requestJSON = new JSONObject(request);
+            JSONArray rgba = requestJSON.getJSONArray("background");
+            r = rgba.getInt(0);
+            g = rgba.getInt(1);
+            b = rgba.getInt(2);
+            a = rgba.getInt(3);
+            defalutStyle = requestJSON.optBoolean("defaultStyle", true);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        int styleFlags = defalutStyle ? View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                : View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        int bgColor = Color.argb(a, r, g, b);
+        mActivity.runOnUiThread(() -> {
+            mActivity.getWindow().getDecorView().setSystemUiVisibility(styleFlags);
+            mActivity.getWindow().setStatusBarColor(bgColor);
+        });
+
+
     }
 }

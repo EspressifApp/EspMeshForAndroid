@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="position-absolute btn-register-wrapper">
-            <button @click="next" :class="{'bg-gray': newEventType <= 0}" class="btn register-btn">{{$t('next')}}</button>
+            <button @click="next" :class="{'bg-gray': isGray()}" class="btn register-btn">{{$t('next')}}</button>
         </div>
     </div>
     <v-automationBtn v-on:autoBtnShow="hideThis" :deviceEvents="deviceEvents" :deviceInfo="deviceInfo" :isMuch="isMuch" ref="autoBtn"></v-automationBtn>

@@ -30,21 +30,29 @@ define(["vue", "MINT", "Util", "txt!../../pages/blueConnect.html"],
                     self.flag = true;
                 },
                 selectColor: function(item) {
-                    if (this.currentRgb == item) {
-                        this.currentRgb = "";
+                    var self = this;
+                    if (self.currentRgb == item) {
+                        self.currentRgb = "";
                     } else {
-                        this.currentRgb = item;
+                        self.currentRgb = item;
                         var meshs = [];
                         meshs.push({cid: HUE_CID, value: this.getHue(item)});
                         meshs.push({cid: SATURATION_CID, value: 100});
-                        this.customData = '{"type":"json","value":{"header":{"group":["010000000000"]},"body":{"request":"set_status",'
+                        self.customData = '{"type":"json","value":{"header":{"group":["010000000000"]},"body":{"request":"set_status",'
                             +'"characteristics":'+JSON.stringify(meshs)+'}}}';
+                        setTimeout(function() {
+                            self.postData();
+                        })
                     }
                 },
                 selectSwitch: function(status) {
-                    this.currentRgb = "";
-                    this.customData = '{"type":"json","value":{"header":{"group":["010000000000"]},"body":{"request":"set_status",'
+                    var self = this;
+                    self.currentRgb = "";
+                    self.customData = '{"type":"json","value":{"header":{"group":["010000000000"]},"body":{"request":"set_status",'
                         +'"characteristics":[{"cid":0,"value":'+parseInt(status)+'}]}}}';
+                    setTimeout(function() {
+                        self.postData();
+                    })
                 },
                 postData: function() {
                     var self = this;

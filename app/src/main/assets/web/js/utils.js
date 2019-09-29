@@ -505,7 +505,7 @@ define(function(){
             var flag = false;
             if ((version == 0 || (version == -1 && !this._isEmpty(name) && name.indexOf("MESH_") != -1))) {
                 if (!this._isEmpty(beacon)) {
-                    if (beacon == BEACON_MDF || beacon == BEACON_MAY) {
+                    if (beacon == BEACON_MDF) {
                         flag = true;
                     }
                 } else {

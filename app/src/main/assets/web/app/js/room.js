@@ -167,47 +167,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/room.html", "../js/footer", "../
                 return statusFlag;
             },
             getColor: function (characteristics, tid) {
-                var self = this,
-                    hueValue = 0, saturation = 0, luminance = 0, status = 0, rgb = "#6b6b6b",
-                    mode = 0, temperature = 0, brightness = 0;
-                if (!Util._isEmpty(characteristics)) {
-                    $.each(characteristics, function(i, item) {
-                        if (item.cid == HUE_CID) {
-                            hueValue = item.value;
-                        }else if (item.cid == SATURATION_CID) {
-                            saturation = item.value;
-                        }else if (item.cid == VALUE_CID) {
-                            luminance = item.value;
-                        } else if (item.cid == STATUS_CID) {
-                            status = item.value;
-                        } else if (item.cid == MODE_CID) {
-                            mode = item.value;
-                        } else if (item.cid == TEMPERATURE_CID) {
-                            temperature = item.value;
-                        } else if (item.cid == BRIGHTNESS_CID) {
-                            brightness = item.value;
-                        }
-                    })
-                }
-                if (status == STATUS_ON) {
-                    if (mode == MODE_CTB) {
-                        rgb = Util.modeFun(temperature, brightness);
-                    } else {
-                        rgb = Raphael.hsb2rgb(hueValue / 360, saturation / 100, luminance / 100);
-                        var v = luminance / 100;
-                        if (v <= 0.4)  {
-                            v *= 1.2;
-                        }
-                        if(v <= 0.2) {
-                            v = 0.2;
-                        }
-                        rgb = "rgba("+Math.round(rgb.r)+", "+Math.round(rgb.g)+", "+Math.round(rgb.b)+", "+ v +")";
-                    }
-                }
-                if (tid < MIN_LIGHT || tid > MAX_LIGHT) {
-                    rgb = "#3ec2fc";
-                }
-                return rgb;
+                return Util.getColor(characteristics, tid);
             },
             editName: function() {
                 var self = this;
@@ -460,13 +420,16 @@ define(["vue", "MINT", "Util", "txt!../../pages/room.html", "../js/footer", "../
                     }
                 }
                 var list = this.$store.state.roomList;
-                console.log(JSON.stringify(list));
                 $.each(list, function(i, item) {
                     var key = item.key;
                     if (roomKeys.indexOf(key) != -1) {
                         $.each(roomList, function(j, itemSub) {
                             if (key == itemSub.key) {
-                                roomList.splice(j, 1, item);
+                                var value = JSON.parse(decodeURIComponent(item.value));
+                                var valueSub = JSON.parse(decodeURIComponent(itemSub.value));
+                                roomList.splice(j, 1, {key: key,
+                                    value: encodeURIComponent(JSON.stringify({name: value.name, url: valueSub.url,
+                                    macs: value.macs}))});
                                 return false;
                             }
                         })
@@ -484,12 +447,12 @@ define(["vue", "MINT", "Util", "txt!../../pages/room.html", "../js/footer", "../
                     });
                     var data = {name: ROOM_LIST, content: roomList};
                     espmesh.saveValuesForKeysInFile(JSON.stringify(data));
-                    console.log(JSON.stringify(list));
                     self.setRoomList(list);
                 }
             },
             setRoomList: function(list) {
                 this.roomList = [], updateObj = '{';
+                list.sort(Util.sortBy("name"));
                 this.roomList = list;
                 $.each(list, function(i, item) {
                     updateObj += '"'+item.roomKey+'":' + JSON.stringify(item.macs) + ",";

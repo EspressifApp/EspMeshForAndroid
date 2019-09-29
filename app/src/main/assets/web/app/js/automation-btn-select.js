@@ -123,6 +123,13 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-select.html", "../
                 hideThis: function() {
                     window.onBackPressed = this.hide;
                 },
+                isGray: function() {
+                    var flag = true;
+                    if (!Util._isEmpty(this.newEventType) && this.newEventType > 0) {
+                        flag = false;
+                    }
+                    return flag;
+                },
                 onGetEvent: function(res) {
                     var self = this;
                     console.log(res);

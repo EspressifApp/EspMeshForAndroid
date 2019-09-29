@@ -1,5 +1,9 @@
 # Update Log
 
+## v1.1.0
+- Add Aliyun APIs
+- Merge meshblufi module and apptools module into appmesh module
+
 ## v1.0.7
 - Optimize UI
 - Fix bugs

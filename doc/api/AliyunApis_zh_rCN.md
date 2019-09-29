@@ -15,6 +15,7 @@
 - 在 build.gradle 上方添加 ``apply from: 'dependency.gradle'``
 
 ## 初始化 Api
+- 在 AliInitialize.java 文件设置您的 APP_KEY
 ```java
 AliInitialize.initAliyun(Application);
 ```

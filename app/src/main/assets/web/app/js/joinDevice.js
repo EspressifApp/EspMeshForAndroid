@@ -290,9 +290,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/joinDevice.html", "./importDevic
                 $.each(devices, function(i, item) {
                     if(Util.isMesh(item.name, item.version, item.beacon)) {
                         var flag = true,
-                            obj = {mac: item.mac, name: Util.setName(item.name, item.bssid),
-                                rssi: item.rssi, bssid: item.bssid, position: self.getPairInfo(item.mac),
-                                tid: item.tid};
+                            obj = Util.assemblyObject(item, self);
                         $.each(self.scanDeviceList, function(j, itemSub) {
                             if (item.mac == itemSub.mac) {
                                 if (item.rssi >= self.rssiValue) {

@@ -22,10 +22,10 @@
             <input v-model="searchName" type="search" class="form-control" :placeholder="$t('search')">
         </div>
         <div class="content-info flex-wrapper no-padding-bottom" id="device-list">
-            <div  class="overflow-touch">
+            <div class="overflow-touch">
                 <mt-loadmore :top-method="loadTop" @top-status-change="handleTopChange" ref="loadmore">
                     {{list}}
-                    <div v-show="!showAdd" v-infinite-scroll="loadMoreList"
+                    <div v-if="!showAdd" v-infinite-scroll="loadMoreList"
                          infinite-scroll-disabled="loadMoreing"
                          infinite-scroll-distance="30">
                         <div v-for="item in loadList" :id="item.mac" :key="item.mac" v-longtap="{fn: showOperate, mac: item.mac}"
@@ -39,16 +39,16 @@
                                 <span :class="{'cr-warning': getFlag(item.position)}">{{getPosition(item.position)}}</span>
                                 <span v-show="!showDesc(item.name)">{{item.mac}}</span>
                                 <span v-show="showDesc(item.name)"  :class="{'desc': showDesc(item.position)}">
-                                {{item.name}}
-                                <span v-show="showDesc(item.position)">({{item.version}})&nbsp;&nbsp;&nbsp;
+                                    {{item.name}}
+                                    <span v-show="showDesc(item.position)">({{item.version}})&nbsp;&nbsp;&nbsp;
+                                        <img v-show="item.rssi <= 0" class="item-img" :src="getRssiIcon(item.rssi)"/>
+                                    </span>
+
+                                </span>
+                                <span class="desc" v-show="!showDesc(item.position)">
+                                    {{item.version}}&nbsp;&nbsp;&nbsp;
                                     <img v-show="item.rssi <= 0" class="item-img" :src="getRssiIcon(item.rssi)"/>
                                 </span>
-
-                            </span>
-                                <span class="desc" v-show="!showDesc(item.position)">
-                                {{item.version}}&nbsp;&nbsp;&nbsp;
-                                <img v-show="item.rssi <= 0" class="item-img" :src="getRssiIcon(item.rssi)"/>
-                            </span>
                             </div>
                             <div class="item-power">
                                 <div v-show="isLigth(item.tid)" class="switch-wrapper">
@@ -63,7 +63,8 @@
                             </div>
                         </div>
                     </div>
-                    <div v-show="showAdd || deviceList.lenght == 0" class="add-wrapper">
+
+                    <div v-if="showAdd" class="add-wrapper">
                         <div class="add-icon-wrapper">
                             <img class="add-image" src="images/no_light.png"/>
                         </div>

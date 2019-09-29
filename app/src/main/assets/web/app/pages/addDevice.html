@@ -25,12 +25,12 @@
                             <input readonly type="text"
                                    class="form-control add-wifi"  >
                             <div class="form-input">
-                                <input type="text" maxlength="2" data-value="1" v-model="meshIdOne" class="input-control">
-                                <input type="text" maxlength="2" data-value="2" v-model="meshIdTwo" class="input-control">
-                                <input type="text" maxlength="2" data-value="3" v-model="meshIdThr" class="input-control">
-                                <input type="text" maxlength="2" data-value="4" v-model="meshIdFour" class="input-control">
-                                <input type="text" maxlength="2" data-value="5" v-model="meshIdFive" class="input-control">
-                                <input type="text" maxlength="2" data-value="6" v-model="meshIdSex" class="input-control">
+                                <input maxlength="2" data-value="1" v-model="meshIdOne" class="input-control">
+                                <input maxlength="2" data-value="2" v-model="meshIdTwo" class="input-control">
+                                <input maxlength="2" data-value="3" v-model="meshIdThr" class="input-control">
+                                <input maxlength="2" data-value="4" v-model="meshIdFour" class="input-control">
+                                <input maxlength="2" data-value="5" v-model="meshIdFive" class="input-control">
+                                <input maxlength="2" data-value="6" v-model="meshIdSex" class="input-control">
                             </div>
                             <div @click="selectMesh" class="cell-down">
                                 <i class="icon-right"></i>
@@ -46,7 +46,7 @@
                         <mt-tab-container v-model="selected">
                             <mt-tab-container-item id="2">
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Custom data" v-model="customData"  class="form-control" >
+                                    <input placeholder="Custom data" v-model="customData"  class="form-control" >
                                 </div>
                             </mt-tab-container-item>
                             <mt-tab-container-item id="1">
@@ -71,25 +71,25 @@
                                     </div>
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Vote percentage" v-model="votePercentage"  class="form-control" >
+                                    <input placeholder="Vote percentage" v-model="votePercentage"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Vote max count" v-model="voteMaxCount"  class="form-control" >
+                                    <input placeholder="Vote max count" v-model="voteMaxCount"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Backoff RSSI" v-model="backoffRssi"  class="form-control" >
+                                    <input placeholder="Backoff RSSI" v-model="backoffRssi"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Scan min count" v-model="scanMinCount"  class="form-control" >
+                                    <input placeholder="Scan min count" v-model="scanMinCount"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Scan fail count" v-model="scanFailCount"  class="form-control" >
+                                    <input placeholder="Scan fail count" v-model="scanFailCount"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Monitor ie count" v-model="monitorCount"  class="form-control" >
+                                    <input placeholder="Monitor ie count" v-model="monitorCount"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Root healing MS" v-model="rootHealing"  class="form-control" >
+                                    <input placeholder="Root healing MS" v-model="rootHealing"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
                                     <div @click="selectRoot()" class="flex flex-ac">
@@ -106,37 +106,37 @@
                                     </div>
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Capacity number" v-model="capacityNum"  class="form-control" >
+                                    <input placeholder="Capacity number" v-model="capacityNum"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Max layer" v-model="maxLayer"  class="form-control" >
+                                    <input placeholder="Max layer" v-model="maxLayer"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Max connection" v-model="maxConnect"  class="form-control" >
+                                    <input placeholder="Max connection" v-model="maxConnect"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Assoc expire MS" v-model="assocExpire"  class="form-control" >
+                                    <input placeholder="Assoc expire MS" v-model="assocExpire"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Beacon interval MS" v-model="beaconInterval"  class="form-control" >
+                                    <input placeholder="Beacon interval MS" v-model="beaconInterval"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Passive scan MS" v-model="passiveScan"  class="form-control" >
+                                    <input placeholder="Passive scan MS" v-model="passiveScan"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Monitor duration MS" v-model="monitorDuration"  class="form-control" >
+                                    <input placeholder="Monitor duration MS" v-model="monitorDuration"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="CNX RSSI" v-model="cnxRssi"  class="form-control" >
+                                    <input placeholder="CNX RSSI" v-model="cnxRssi"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Select RSSI" v-model="selectRssi"  class="form-control" >
+                                    <input placeholder="Select RSSI" v-model="selectRssi"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="Switch RSSI" v-model="switchRssi"  class="form-control" >
+                                    <input placeholder="Switch RSSI" v-model="switchRssi"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
-                                    <input type="text" placeholder="XON qsize" v-model="xonQsize"  class="form-control" >
+                                    <input placeholder="XON qsize" v-model="xonQsize"  class="form-control" >
                                 </div>
                                 <div class="position-relative">
                                     <div @click="selectRetransmit()" class="flex flex-ac">

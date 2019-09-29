@@ -40,7 +40,7 @@ import h5.espressif.esp32.BuildConfig;
 public final class AliInitialize {
     private final static String TAG = "AliInitialize";
 
-    private static final String APP_KEY = "26063463";
+    public static final String APP_KEY = "26063463";
 
     public static void initAliyun(Application application) {
         initAPi(application);
@@ -148,7 +148,10 @@ public final class AliInitialize {
     }
 
     private static void initBoneMobile(Application application) {
-        String language = null; //语言环境，目前支持中文“zh-CN”, 英文"en-US"，法文"fr-FR",德文"de-DE",日文"ja-JP",韩文"ko-KR",西班牙文"es-ES",俄文"ru-RU"，八种语言
+        //语言环境，目前支持中文“zh-CN”, 英文"en-US"，法文"fr-FR",德文"de-DE",日文"ja-JP",韩文"ko-KR"
+        // ,西班牙文"es-ES",俄文"ru-RU"，八种语言
+        String language = null;
+
         LocaleListCompat localeList = LocaleListCompat.getDefault();
         for (int i = 0; i < localeList.size(); i++) {
             Locale locale = LocaleListCompat.getDefault().get(i);
