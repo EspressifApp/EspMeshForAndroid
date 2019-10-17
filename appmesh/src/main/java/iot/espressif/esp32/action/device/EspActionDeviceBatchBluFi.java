@@ -61,7 +61,6 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
         mMeshBlufiClients.clear();
     }
 
-    @Override
     public MeshBlufiClient doActionConnectMeshBLE(@NonNull BluetoothDevice device, int meshVersion,
                                                   @NonNull MeshBlufiCallback userCallback) {
         throw new IllegalStateException("Forbid this function, call execute()");
