@@ -6,6 +6,8 @@ import android.bluetooth.BluetoothGatt;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -17,7 +19,12 @@ import meshblufi.espressif.BlufiClient;
 import meshblufi.espressif.params.BlufiConfigureParams;
 import meshblufi.espressif.response.BlufiStatusResponse;
 
-public class EspActionDeviceConfigure2 implements IEspActionDeviceConfigure2 {
+public class EspActionDeviceConfigure2 extends EspActionDeviceConfigure implements IEspActionDeviceConfigure2 {
+
+    @Override
+    public MeshBlufiClient doActionConfigureBlufi(@NonNull BluetoothDevice device, int meshVersion, BlufiConfigureParams params, @NonNull MeshBlufiCallback userCallback) {
+        throw new IllegalStateException("Please use function doActionConfigureBlufi2");
+    }
 
     public MeshBlufiClient doActionConfigureBlufi2(String deviceMac, int deviceVersion, BlufiConfigureParams params,
                                                    ProgressCallback callback) {

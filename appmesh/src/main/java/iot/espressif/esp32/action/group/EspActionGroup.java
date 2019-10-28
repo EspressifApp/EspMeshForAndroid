@@ -54,7 +54,7 @@ public class EspActionGroup implements IEspActionGroup {
                 }
             }
             deviceIds = new long[deviceIdList.size()];
-            for (int i = 0; i < deviceIds.length; i++) {
+            for (int i = 0; i < deviceIds.length; ++i) {
                 deviceIds[i] = deviceIdList.get(i);
             }
         }

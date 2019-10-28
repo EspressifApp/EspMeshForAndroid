@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 
@@ -34,11 +33,7 @@ public class EspActionUpgradeAPK extends EspActionDownload implements IEspAction
 
             JSONObject releaseJSON = new JSONObject(new String(contentArray.toByteArray()));
             return parseRelease(releaseJSON);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
+        } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
 
@@ -49,7 +44,7 @@ public class EspActionUpgradeAPK extends EspActionDownload implements IEspAction
         try {
             String notes = releaseJSON.getString(KEY_BODY);
             JSONArray assetArray = releaseJSON.getJSONArray(KEY_ASSETS);
-            for (int i = 0; i < assetArray.length(); i++) {
+            for (int i = 0; i < assetArray.length(); ++i) {
                 JSONObject assetJSON = assetArray.getJSONObject(i);
                 String assetName = assetJSON.getString(KEY_ASSET_NAME);
                 if (assetName.endsWith(APK_SUFFIX)) {

@@ -175,7 +175,7 @@ public class EspActionDeviceSniffer implements IEspActionDeviceSniffer {
                         break;
                     case TYPE_NAME:
                         ByteArrayOutputStream nameOS = new ByteArrayOutputStream();
-                        for (int i = 0; i < value.length; i++) {
+                        for (int i = 0; i < value.length; ++i) {
                             if (value[i] != 0) {
                                 nameOS.write(value[i]);
                             }

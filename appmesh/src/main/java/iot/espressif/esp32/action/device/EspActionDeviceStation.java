@@ -88,6 +88,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
         DevicePropertiesCache devProCache = new DevicePropertiesCache();
 
         LinkedBlockingQueue<Object> topoTaskQueue = new LinkedBlockingQueue<>();
+        topoTaskQueue.iterator().hasNext();
         AtomicInteger topoCounter = new AtomicInteger(0);
         HashSet<String> addrSet = new HashSet<>();
         HashSet<String> rootMacSet = new HashSet<>();
@@ -109,6 +110,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
                                 List<IEspDevice> nodeDevices = new ArrayList<>(nodes.size());
                                 for (MeshNode node : nodes) {
                                     IEspDevice nodeDev = EspDeviceFactory.parseMeshNode(node);
+                                    assert nodeDev != null;
                                     devProCache.setPropertiesIfCache(nodeDev);
                                     nodeDevices.add(nodeDev);
                                 }
@@ -141,17 +143,18 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
         };
 
         LinkedBlockingQueue<Object> scanTaskQueue = new LinkedBlockingQueue<>();
+        scanTaskQueue.iterator().hasNext();
         int mdnsCount = 1;
         int udpCount = 3;
 
-        for (int i = 0; i < mdnsCount; i++) {
+        for (int i = 0; i < mdnsCount; ++i) {
             Observable.just(listener)
                     .subscribeOn(Schedulers.io())
                     .doOnNext(this::scanMDNS)
                     .doOnComplete(() -> scanTaskQueue.add(Boolean.TRUE))
                     .subscribe();
         }
-        for (int i = 0; i < udpCount; i++) {
+        for (int i = 0; i < udpCount; ++i) {
             Observable.just(listener)
                     .subscribeOn(Schedulers.io())
                     .doOnNext(this::scanUDP)
@@ -168,7 +171,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
         }
 
         int scanCount = mdnsCount + udpCount;
-        for (int i = 0; i < scanCount; i++) {
+        for (int i = 0; i < scanCount; ++i) {
             try {
                 scanTaskQueue.take();
             } catch (InterruptedException e) {
@@ -179,7 +182,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
         }
 
         int topoTaskCount = topoCounter.get();
-        for (int i = 0; i < topoTaskCount; i++) {
+        for (int i = 0; i < topoTaskCount; ++i) {
             try {
                 topoTaskQueue.take();
             } catch (InterruptedException e) {

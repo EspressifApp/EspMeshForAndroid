@@ -24,9 +24,10 @@ import meshblufi.espressif.response.BlufiStatusResponse;
 public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
     private final EspLog mLog = new EspLog(getClass());
 
-    public MeshBlufiClient doActionConnectMeshBLE(@NonNull BluetoothDevice device,
+    public MeshBlufiClient doActionConnectMeshBLE(@NonNull BluetoothDevice device, int meshVersion,
                                                   @NonNull MeshBlufiCallback userCallback) {
         MeshBlufiClient blufi = new MeshBlufiClient();
+        blufi.setMeshVersion(meshVersion);
         Context context = EspApplication.getEspApplication().getApplicationContext();
         BleCallback bleCallback = new BleCallback(blufi, userCallback);
         BluetoothGatt gatt = EspBleUtils.connectGatt(device, context, bleCallback);
@@ -58,7 +59,8 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            mLog.d(String.format(Locale.ENGLISH, "onConnectionStateChange status=%d, newState=%d", status, newState));
+            mLog.d(String.format(Locale.ENGLISH, "onConnectionStateChange status=%d, newState=%d, address=%s", status, newState,
+                    gatt.getDevice().getAddress()));
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 switch (newState) {
                     case BluetoothProfile.STATE_CONNECTED:
