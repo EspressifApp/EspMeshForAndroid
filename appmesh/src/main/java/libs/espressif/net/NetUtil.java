@@ -74,7 +74,7 @@ public class NetUtil {
     public static byte[] getMacBytesForString(String mac) {
         byte[] result = new byte[6];
         String[] splits = mac.split(":");
-        for (int i = 0; i < result.length; i++) {
+        for (int i = 0; i < result.length; ++i) {
             result[i] = (byte) Integer.parseInt(splits[i], 16);
         }
 
@@ -142,7 +142,7 @@ public class NetUtil {
 
     private static String getIpString(int ip) {
         StringBuilder ipSB = new StringBuilder();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; ++i) {
             ipSB.append((ip >> (i * 8)) & 0xff);
             if (i < 3) {
                 ipSB.append('.');

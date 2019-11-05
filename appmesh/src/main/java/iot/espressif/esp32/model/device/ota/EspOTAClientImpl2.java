@@ -27,6 +27,7 @@ import java.util.Set;
 
 import iot.espressif.esp32.action.device.IEspActionDevice;
 import iot.espressif.esp32.action.device.IEspActionDeviceReboot;
+import iot.espressif.esp32.constants.DeviceConstants;
 import iot.espressif.esp32.model.event.DeviceOtaStatusEvent;
 import iot.espressif.esp32.utils.DeviceUtil;
 import libs.espressif.log.EspLog;
@@ -77,9 +78,9 @@ class EspOTAClientImpl2 extends EspOTAClient {
     private void init(String protocol, String host, Collection<String> macs, OTACallback callback) {
         mProtocol = protocol;
         if (protocol.toLowerCase().equals("http")) {
-            mPort = 80;
+            mPort = DeviceConstants.PORT_HTTP_DEFAULT;
         } else {
-            mPort = 443;
+            mPort = DeviceConstants.PORT_HTTPS_DEFAULT;
         }
         mHost = host;
         mMacList = new LinkedList<>();
@@ -235,7 +236,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
 
     private String getMacHeaderValue() {
         StringBuilder macsValue = new StringBuilder(13 * mMacList.size());
-        for (int i = 0; i < mMacList.size(); i++) {
+        for (int i = 0; i < mMacList.size(); ++i) {
             macsValue.append(mMacList.get(i));
             if (i < mMacList.size() - 1) {
                 macsValue.append(",");
@@ -292,7 +293,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
                         });
                     }
                 }
-                i++;
+                ++i;
                 os.write(read);
             }
             mLog.d("OTA post bin complete");
@@ -364,7 +365,7 @@ class EspOTAClientImpl2 extends EspOTAClient {
                 contentList.add((byte) read);
             }
             byte[] content = new byte[contentList.size()];
-            for (int i = 0; i < content.length; i++) {
+            for (int i = 0; i < content.length; ++i) {
                 content[i] = contentList.get(i);
             }
             String contentStr = new String(content);

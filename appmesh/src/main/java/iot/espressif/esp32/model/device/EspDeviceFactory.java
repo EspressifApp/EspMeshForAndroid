@@ -65,7 +65,7 @@ public final class EspDeviceFactory {
             try {
                 JSONArray groupArray = new JSONArray(db.group_ids);
                 List<String> groupList = new ArrayList<>(groupArray.length());
-                for (int i = 0; i < groupArray.length(); i++) {
+                for (int i = 0; i < groupArray.length(); ++i) {
                     groupList.add(groupArray.getString(i));
                 }
                 device.setGroups(groupList);

@@ -115,7 +115,7 @@ public class EspHttpUtils {
             requireResp = params.isRequireResponse();
         }
 
-        for (int i = 0; i < tryCount; i++) {
+        for (int i = 0; i < tryCount; ++i) {
             if (Thread.currentThread().isInterrupted()) {
                 return null;
             }
@@ -345,7 +345,7 @@ public class EspHttpUtils {
         }
 
         Map<String, List<String>> headerMap = new HashMap<>();
-        for (int i = 1; i < headers.length; i++) {
+        for (int i = 1; i < headers.length; ++i) {
             String headerStr = headers[i];
             int index = headerStr.indexOf(": ");
             if (index == -1) {

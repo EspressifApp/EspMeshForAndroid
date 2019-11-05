@@ -45,6 +45,8 @@ public class EspDeviceNotifyHelper implements EspUdpServer.DataReceivedListener 
     private Map<String, String> mSnifferFlagMap;
     private Map<String, String> mOtaFlagMap;
 
+    private volatile boolean mClosed = false;
+
     public EspDeviceNotifyHelper() {
         mUdpServer = new EspUdpServer();
         WifiManager wifiManager = (WifiManager) EspApplication.getEspApplication().getApplicationContext()
@@ -58,17 +60,25 @@ public class EspDeviceNotifyHelper implements EspUdpServer.DataReceivedListener 
         mOtaFlagMap = new HashMap<>();
     }
 
-    public boolean open() {
+    public synchronized boolean open() {
+        if (mClosed) {
+            mLog.w("Helper has closed");
+            return false;
+        }
+
         mMulticastLock.acquire();
         mUdpServer.setDataReceivedListener(this);
         boolean open = mUdpServer.open(PORT);
         if (!open) {
             mMulticastLock.release();
+        } else {
+            mLog.w("Helper open failed");
         }
         return open;
     }
 
-    public void close() {
+    public synchronized void close() {
+        mClosed = true;
         mMulticastLock.release();
         mUdpServer.close();
         mUdpServer.setDataReceivedListener(null);

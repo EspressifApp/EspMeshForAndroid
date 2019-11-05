@@ -31,7 +31,7 @@ public class OperationBox {
 
     public void deleteUntilLeftOperations(int leftCount) {
         List<OperationDB> cacheList = mBox.query().orderDesc(OperationDB_.time).build().find();
-        for (int i = leftCount; i < cacheList.size(); i++) {
+        for (int i = leftCount; i < cacheList.size(); ++i) {
             OperationDB cache = cacheList.get(i);
             mBox.remove(cache);
         }

@@ -11,7 +11,7 @@ buildscript {
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
-        classpath "io.objectbox:objectbox-gradle-plugin:2.3.4"
+        classpath "io.objectbox:objectbox-gradle-plugin:2.4.0"
     }
 }
 
@@ -32,7 +32,7 @@ ext {
             material : 'com.google.android.material:material:1.0.0',
 
             zxing_android_embedded : "com.journeyapps:zxing-android-embedded:3.6.0",
-            rxjava : "io.reactivex.rxjava2:rxjava:2.2.11",
+            rxjava : "io.reactivex.rxjava2:rxjava:2.2.14",
             rxandroid : "io.reactivex.rxjava2:rxandroid:2.1.1",
             jmdns : "org.jmdns:jmdns:3.5.5",
             eventbus : "org.greenrobot:eventbus:3.1.1"

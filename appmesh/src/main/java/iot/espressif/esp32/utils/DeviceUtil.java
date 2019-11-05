@@ -20,10 +20,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -31,6 +35,8 @@ import iot.espressif.esp32.action.device.IEspActionDevice;
 import iot.espressif.esp32.constants.DeviceConstants;
 import iot.espressif.esp32.model.callback.DeviceRequestCallable;
 import iot.espressif.esp32.model.device.IEspDevice;
+import libs.espressif.collection.EspCollections;
+import libs.espressif.function.EspFunction;
 import libs.espressif.net.EspHttpParams;
 import libs.espressif.net.EspHttpResponse;
 import libs.espressif.net.EspHttpUtils;
@@ -45,6 +51,8 @@ public class DeviceUtil {
     public static final String CONTENT_TYPE_BIN = "application/bin";
 
     public static final String FILE_REQUEST = "/device_request";
+
+    private static final String TAG = DeviceUtil.class.getSimpleName();
 
     private static final String HEADER_MESH_MAC = IEspActionDevice.HEADER_NODE_MAC;
     private static final String HEADER_GROUP = IEspActionDevice.HEADER_NODE_GROUP;
@@ -144,98 +152,46 @@ public class DeviceUtil {
      */
     public static List<EspHttpResponse> httpLocalMulticastRequest(@NonNull Collection<IEspDevice> devices,
                                                                   @NonNull byte[] content, @Nullable EspHttpParams params, @Nullable Map<String, String> headers) {
-        HashMap<String, String> newHeaders = new HashMap<>();
-        if (headers != null) {
-            newHeaders.putAll(headers);
-        }
-
         final List<EspHttpResponse> result = new LinkedList<>();
 
-        HashMap<InetAddress, List<IEspDevice>> inetDevicesMap = new HashMap<>();
-        final HashMap<String, IEspDevice> protocolMap = new HashMap<>();
-        for (IEspDevice device : devices) {
-            InetAddress address = device.getLanAddress();
-
-            if (address != null) {
-                protocolMap.put(address.getHostAddress(), device);
-            }
-
-            List<IEspDevice> inetDeviceList = inetDevicesMap.get(address);
-            if (inetDeviceList == null) {
-                inetDeviceList = new LinkedList<>();
-                inetDevicesMap.put(address, inetDeviceList);
-            }
-            inetDeviceList.add(device);
-        }
-        int threadCount = 0;
-        final LinkedBlockingQueue<Object> taskQueue = new LinkedBlockingQueue<>();
-        for (Map.Entry<InetAddress, List<IEspDevice>> entry : inetDevicesMap.entrySet()) {
+        Map<InetAddress, List<IEspDevice>> deviceGroups = EspCollections.groupBy(devices,
+                IEspDevice::getLanAddress);
+        final List<Future<List<EspHttpResponse>>> futures = new ArrayList<>();
+        ExecutorService executor = Executors.newCachedThreadPool();
+        for (Map.Entry<InetAddress, List<IEspDevice>> entry : deviceGroups.entrySet()) {
             InetAddress address = entry.getKey();
-            if (address != null) {
-                final String host = address.getHostAddress();
-                final byte[] orgContent = content;
-                final EspHttpParams orgParams = params;
-                final Map<String, String> orgHeaders = newHeaders;
-                List<IEspDevice> inetDevices = entry.getValue();
-                Collections.sort(inetDevices, (dev1, dev2) -> {
-                    Integer layer1 = dev1.getMeshLayerLevel();
-                    Integer layer2 = dev2.getMeshLayerLevel();
-                    return layer2.compareTo(layer1);
-                });
-                final List<String> bssids = new LinkedList<>();
-                for (IEspDevice dev : inetDevices) {
-                    bssids.add(dev.getMac());
-                }
-
-                Observable.create((ObservableOnSubscribe<List<EspHttpResponse>>) emitter -> {
-                    if (!emitter.isDisposed()) {
-                        try {
-                            IEspDevice protocolDev = protocolMap.get(host);
-                            List<EspHttpResponse> respList = httpLocalMulticastRequest(
-                                    protocolDev.getProtocol(), host, protocolDev.getProtocolPort(),
-                                    bssids, orgContent, orgParams, orgHeaders);
-                            emitter.onNext(respList);
-                            emitter.onComplete();
-                        } catch (Exception e) {
-                            emitter.onError(e);
-                        }
-                    }
-                }).subscribeOn(Schedulers.io())
-                        .subscribe(new Observer<List<EspHttpResponse>>() {
-                            @Override
-                            public void onSubscribe(Disposable d) {
-                            }
-
-                            @Override
-                            public void onNext(List<EspHttpResponse> espHttpResponses) {
-                                result.addAll(espHttpResponses);
-                            }
-
-                            @Override
-                            public void onError(Throwable e) {
-                                e.printStackTrace();
-                                taskQueue.add(new Object());
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                taskQueue.add(new Object());
-                            }
-                        });
-
-                threadCount++;
+            if (address == null) {
+                continue;
             }
+
+            List<IEspDevice> devicesInGroup = entry.getValue();
+            final String host = address.getHostAddress();
+            final IEspDevice protocolDev = devicesInGroup.get(0);
+            final List<String> bssids = new LinkedList<>();
+            for (IEspDevice dev : devicesInGroup) {
+                bssids.add(dev.getMac());
+            }
+            Callable<List<EspHttpResponse>> callable = () -> httpLocalMulticastRequest(
+                    protocolDev.getProtocol(), host, protocolDev.getProtocolPort(),
+                    bssids, content, params, headers);
+
+            Future<List<EspHttpResponse>> future = executor.submit(callable);
+            futures.add(future);
         }
-        for (int i = 0; i < threadCount; i++) {
+
+        for (Future<List<EspHttpResponse>> future : futures) {
             try {
-                taskQueue.take();
-            } catch (InterruptedException e) {
+                List<EspHttpResponse> responses = future.get();
+                result.addAll(responses);
+            } catch (ExecutionException e) {
                 e.printStackTrace();
+            } catch (InterruptedException e) {
+                Log.w(TAG, "httpLocalMulticastRequest future get() interrupted");
                 break;
             }
         }
+        executor.shutdownNow();
 
-        inetDevicesMap.clear();
         return result;
     }
 
@@ -292,9 +248,10 @@ public class DeviceUtil {
         // There are more than 1 group bssids
         int threadCount = Math.min(threadLimit, chunkedBssidsList.size());
         LinkedBlockingQueue<Boolean> resultWaitor = new LinkedBlockingQueue<>();
+        resultWaitor.iterator().hasNext();
         Vector<EspHttpResponse> result = new Vector<>();
 
-        for (int i = 0; i < threadCount; i++) {
+        for (int i = 0; i < threadCount; ++i) {
             final Map<String, String> taskHeader = newHeaders;
             Observable.create(emitter -> {
                 try {
@@ -336,7 +293,7 @@ public class DeviceUtil {
                     });
         }
 
-        for (int i = 0; i < threadCount; i++) {
+        for (int i = 0; i < threadCount; ++i) {
             try {
                 resultWaitor.take();
             } catch (InterruptedException e) {
@@ -492,15 +449,15 @@ public class DeviceUtil {
 
         final int threadCount = Math.min(10, devices.size());
         final LinkedBlockingQueue<Object> threadQueue = new LinkedBlockingQueue<>();
-        final LinkedList<IEspDevice> deviceList = new LinkedList<>();
-        deviceList.addAll(devices);
+        threadQueue.iterator().hasNext();
+        final LinkedList<IEspDevice> deviceList = new LinkedList<>(devices);
         final byte[] orgContent = content;
         final EspHttpParams orgParams = params;
         final Map<String, String> orgHeaders = headers;
         final DeviceRequestCallable orgCallable = callable;
         final Thread mainTaskThread = Thread.currentThread();
 
-        for (int i = 0; i < threadCount; i++) {
+        for (int i = 0; i < threadCount; ++i) {
             new Thread(() -> {
                 while (true) {
                     IEspDevice device;
@@ -520,8 +477,8 @@ public class DeviceUtil {
                     int port = device.getProtocolPort();
                     EspHttpResponse response = httpLocalRequest(protocol, host, port, device.getMac(),
                             orgContent, orgParams, orgHeaders);
-                    if (callable != null) {
-                        callable.onResponse(device, response);
+                    if (orgCallable != null) {
+                        orgCallable.onResponse(device, response);
                     }
                     if (response != null) {
                         result.put(device.getMac(), response);
@@ -536,7 +493,7 @@ public class DeviceUtil {
             }).start();
         }
 
-        for (int i = 0; i < threadCount; i++) {
+        for (int i = 0; i < threadCount; ++i) {
             try {
                 threadQueue.take();
             } catch (InterruptedException e) {
@@ -661,7 +618,7 @@ public class DeviceUtil {
     }
 
     public static void delayRequestRetry(Collection<IEspDevice> devices, String request, EspHttpParams params) {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; ++i) {
             int delay = 0;
             switch (i) {
                 case 0:

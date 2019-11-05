@@ -1,33 +1,30 @@
-package h5.espressif.esp32.module.main;
+package iot.espressif.esp32.model.device.other;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.text.TextUtils;
+
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import h5.espressif.esp32.module.action.EspActionJSON;
-import h5.espressif.esp32.module.model.event.SnifferDiscoveredEvent;
-import h5.espressif.esp32.module.model.other.EspDeviceComparator;
-import h5.espressif.esp32.module.model.web.JSCallbacks;
 import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import iot.espressif.esp32.action.device.EspActionDeviceInfo;
 import iot.espressif.esp32.action.device.EspActionDeviceSniffer;
@@ -35,8 +32,6 @@ import iot.espressif.esp32.action.device.EspActionDeviceTopology;
 import iot.espressif.esp32.db.box.MeshObjectBox;
 import iot.espressif.esp32.model.device.EspDeviceFactory;
 import iot.espressif.esp32.model.device.IEspDevice;
-import iot.espressif.esp32.model.device.other.DevicePropertiesCache;
-import iot.espressif.esp32.model.device.other.Sniffer;
 import iot.espressif.esp32.model.device.properties.EspDeviceState;
 import iot.espressif.esp32.model.event.DeviceSnifferEvent;
 import iot.espressif.esp32.model.event.DeviceStatusEvent;
@@ -47,32 +42,68 @@ import iot.espressif.esp32.net.udp.EspDeviceNotifyHelper;
 import libs.espressif.log.EspLog;
 
 @SuppressLint("CheckResult")
-public class MainDeviceNotifyHelper {
+public abstract class DeviceNotifier implements IDeviceNotifier, LifecycleObserver {
     private EspLog mLog = new EspLog(getClass());
 
     private final Map<InetAddress, Runnable> mTopoTaskMap;
     private final Map<InetAddress, StatusRunnable> mStatusTaskMap;
     private final Map<InetAddress, SnifferRunnable> mSnifferTaskMap;
 
-    private volatile EspWebActivity mActivity;
+    private Context mContext;
+
     private EspUser mUser;
 
-    private Disposable mTaskDisposable;
+    private Thread mTaskThread;
     private LinkedBlockingQueue<InetAddress> mTaskQueue;
 
     private EspDeviceNotifyHelper mDeviceNotifyHelper;
 
-    public MainDeviceNotifyHelper(EspWebActivity activity) {
-        mActivity = activity;
+    private boolean listenSniffer = false;
+    private boolean listenTopology = false;
+    private boolean listenStatus = false;
+
+    public DeviceNotifier(Context context) {
+        mContext = context;
         mUser = EspUser.INSTANCE;
 
         mTopoTaskMap = new HashMap<>();
         mStatusTaskMap = new HashMap<>();
         mSnifferTaskMap = new HashMap<>();
-        initTaskDisposable();
+    }
 
-        mDeviceNotifyHelper = new EspDeviceNotifyHelper();
+    public void setListenSniffer(boolean listen) {
+        listenSniffer = listen;
+    }
+
+    public void setListenStatus(boolean listen) {
+        listenStatus = listen;
+    }
+
+    public void setListenTopology(boolean listen) {
+        listenTopology = listen;
+    }
+
+    public boolean isOTAing() {
+        return false;
+    }
+
+    public void listenedDeviceLost(List<IEspDevice> devices) {
+    }
+
+    public void listenedDeviceFound(List<IEspDevice> devices) {
+    }
+
+    public void listenedDeviceStatusChanged(List<IEspDevice> devices) {
+    }
+
+    public void listenedSnifferDiscovered(List<Sniffer> sniffers) {
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    public void open() {
         EventBus.getDefault().register(this);
+        initTaskThread();
+        mDeviceNotifyHelper = new EspDeviceNotifyHelper();
         Observable.create(emitter -> {
             boolean suc = mDeviceNotifyHelper.open();
             emitter.onNext(suc);
@@ -81,22 +112,22 @@ public class MainDeviceNotifyHelper {
                 .subscribe();
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void close() {
         EventBus.getDefault().unregister(this);
         mDeviceNotifyHelper.close();
-        mTaskDisposable.dispose();
+        mTaskThread.interrupt();
         mTopoTaskMap.clear();
         mStatusTaskMap.clear();
         mSnifferTaskMap.clear();
         mTaskQueue.clear();
-        mActivity = null;
+        mContext = null;
     }
 
-    private void initTaskDisposable() {
+    private void initTaskThread() {
         mTaskQueue = new LinkedBlockingQueue<>();
-
-        mTaskDisposable = Observable.create(emitter -> {
-            while (!emitter.isDisposed()) {
+        mTaskThread = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
                 InetAddress address;
                 try {
                     address = mTaskQueue.take();
@@ -106,18 +137,18 @@ public class MainDeviceNotifyHelper {
                     break;
                 }
 
-                Runnable topoRunable;
+                Runnable topoRunnable;
                 synchronized (mTopoTaskMap) {
-                    topoRunable = mTopoTaskMap.get(address);
-                    if (topoRunable != null) {
+                    topoRunnable = mTopoTaskMap.get(address);
+                    if (topoRunnable != null) {
                         mTopoTaskMap.remove(address);
                     }
                 }
-                if (topoRunable != null) {
-                    topoRunable.run();
+                if (topoRunnable != null) {
+                    topoRunnable.run();
                 }
 
-                if (emitter.isDisposed()) {
+                if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
@@ -133,7 +164,7 @@ public class MainDeviceNotifyHelper {
                 }
 
 
-                if (emitter.isDisposed()) {
+                if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
@@ -148,15 +179,18 @@ public class MainDeviceNotifyHelper {
                     snifferRunnable.run();
                 }
             }
-
-            emitter.onNext(Boolean.TRUE);
-            emitter.onComplete();
-        }).subscribeOn(Schedulers.io())
-                .subscribe();
+        });
+        mTaskThread.start();
     }
 
     @Subscribe
     public void onTopologyChanged(DeviceTopologyEvent event) {
+        if (!listenTopology) {
+            return;
+        }
+        if (isOTAing()) {
+            return;
+        }
         mLog.d("onTopologyChanged " + event.address);
         if (!mUser.isLogged()) {
             mLog.d("User not logged");
@@ -177,6 +211,9 @@ public class MainDeviceNotifyHelper {
 
     @Subscribe
     public void onDeviceStatusChanged(DeviceStatusEvent event) {
+        if (!listenStatus) {
+            return;
+        }
         mLog.d("onDeviceStatusChanged " + event.address);
         if (!mUser.isLogged()) {
             mLog.d("User not logged");
@@ -203,6 +240,9 @@ public class MainDeviceNotifyHelper {
 
     @Subscribe
     public void onSnifferDiscovered(DeviceSnifferEvent event) {
+        if (!listenSniffer) {
+            return;
+        }
         mLog.d("onSnifferDiscovered " + event.address);
         if (!mUser.isLogged()) {
             mLog.d("User not logged");
@@ -242,17 +282,11 @@ public class MainDeviceNotifyHelper {
             int i = 0;
             for (int cid : cidSet) {
                 cids[i] = cid;
-                i++;
+                ++i;
             }
             new EspActionDeviceInfo().doActionGetStatusLocal(devices, cids);
-            Observable.fromIterable(devices)
-                    .subscribeOn(AndroidSchedulers.mainThread())
-                    .forEach(device -> {
-                        JSONObject json = new EspActionJSON().doActionParseDeviceStatus(device);
-                        if (mActivity != null) {
-                            mActivity.evaluateJavascript(JSCallbacks.onDeviceStatusChanged(json.toString()));
-                        }
-                    });
+            List<IEspDevice> deviceList = new ArrayList<>(devices);
+            listenedDeviceStatusChanged(deviceList);
         }
     }
 
@@ -269,11 +303,6 @@ public class MainDeviceNotifyHelper {
 
         @Override
         public void run() {
-            if (mActivity.isOTAing()) {
-                mLog.d("OTA ING");
-                return;
-            }
-
             Thread thread = Thread.currentThread();
 
             List<MeshNode> nodes = new EspActionDeviceTopology().doActionGetMeshNodeLocal(protocol, address, port);
@@ -332,7 +361,8 @@ public class MainDeviceNotifyHelper {
 
             // Delete devices
             Observable.fromIterable(delDevices)
-                    .forEach(device -> mUser.removeDevice(device.getMac()));
+                    .doOnNext(device -> mUser.removeDevice(device.getMac()))
+                    .subscribe();
 
             Set<IEspDevice> newDevices = new HashSet<>();
             Observable.fromIterable(nodeDevices)
@@ -351,24 +381,12 @@ public class MainDeviceNotifyHelper {
                 return;
             }
 
-            Observable.fromIterable(delDevices)
-                    .subscribeOn(AndroidSchedulers.mainThread())
-                    .forEach(device -> {
-                        if (mActivity != null) {
-                            mActivity.evaluateJavascript(JSCallbacks.onDeviceLost(device.getMac()));
-                        }
-                    });
-
-            List<IEspDevice> newDeviceList = new LinkedList<>(newDevices);
-            Collections.sort(newDeviceList, new EspDeviceComparator<>());
-            Observable.fromIterable(newDeviceList)
-                    .subscribeOn(AndroidSchedulers.mainThread())
-                    .forEach(device -> {
-                        JSONObject json = new EspActionJSON().doActionParseDevice(device);
-                        if (json != null && mActivity != null) {
-                            mActivity.evaluateJavascript(JSCallbacks.onDeviceFound(json.toString()));
-                        }
-                    });
+            if (!delDevices.isEmpty()) {
+                listenedDeviceLost(new ArrayList<>(delDevices));
+            }
+            if (!newDevices.isEmpty()) {
+                listenedDeviceFound(new ArrayList<>(newDevices));
+            }
         }
     }
 
@@ -392,13 +410,13 @@ public class MainDeviceNotifyHelper {
                 MeshObjectBox.getInstance().sniffer().saveSniffer(sr);
             }
 
-            EventBus.getDefault().post(new SnifferDiscoveredEvent(querySnifferList));
+            listenedSnifferDiscovered(querySnifferList);
         }
 
         private Map<String, String> getOrgMacMap() {
             Map<String, String> result = new HashMap<>();
             try {
-                InputStream is = mActivity.getAssets().open("mac_org_list.txt");
+                InputStream is = mContext.getAssets().open("org/mac_list.txt");
                 BufferedReader br = new BufferedReader(new InputStreamReader(is));
                 for (String string = br.readLine(); string != null; string = br.readLine()) {
                     String[] values = string.split("\t");
@@ -418,7 +436,7 @@ public class MainDeviceNotifyHelper {
         private Map<String, String> getOrgBtMap() {
             Map<String, String> result = new HashMap<>();
             try {
-                InputStream is = mActivity.getAssets().open("bt_org_list.txt");
+                InputStream is = mContext.getAssets().open("org/bt_list.txt");
                 BufferedReader br = new BufferedReader(new InputStreamReader(is));
                 for (String string = br.readLine(); string != null; string = br.readLine()) {
                     String[] values = string.split("\t");

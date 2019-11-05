@@ -38,7 +38,7 @@ public class SnifferBox {
         if (delDuplicate) {
             // Delete duplicate bssid
             Set<String> bssidSet = new HashSet<>();
-            for (int i = 0; i < cacheList.size(); i++) {
+            for (int i = 0; i < cacheList.size(); ++i) {
                 SnifferDB snifferDB = cacheList.get(i);
                 if (bssidSet.contains(snifferDB.bssid)) {
                     cacheList.remove(i--);

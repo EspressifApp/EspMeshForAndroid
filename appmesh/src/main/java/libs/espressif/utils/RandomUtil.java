@@ -28,7 +28,7 @@ public class RandomUtil {
     public static String randomString(int length) {
         Random random = new Random();
         String token = "";
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < length; ++i) {
             int x = random.nextInt(36);
             token += map(x);
         }

@@ -265,7 +265,7 @@ class BlufiClientImpl implements BlufiParameter {
 
     private byte[] generateAESIV(int sequence) {
         byte[] result = new byte[16];
-        for (int i = 0; i < result.length; i++) {
+        for (int i = 0; i < result.length; ++i) {
             if (i == 0) {
                 result[0] = (byte) sequence;
             } else {
@@ -478,7 +478,7 @@ class BlufiClientImpl implements BlufiParameter {
         } else {
             dataOffset = 0;
         }
-        for (int i = dataOffset; i < dataBytes.length; i++) {
+        for (int i = dataOffset; i < dataBytes.length; ++i) {
             notification.addData(dataBytes[i]);
         }
 
@@ -582,7 +582,7 @@ class BlufiClientImpl implements BlufiParameter {
             int infotype = dataIS.read() & 0xff;
             int len = dataIS.read() & 0xff;
             byte[] stateBytes = new byte[len];
-            for (int i = 0; i < len; i++) {
+            for (int i = 0; i < len; ++i) {
                 stateBytes[i] = (byte) dataIS.read();
             }
 
@@ -919,12 +919,9 @@ class BlufiClientImpl implements BlufiParameter {
 
     private void __configure(BlufiConfigureParams params) {
         int opMode = params.getOpMode();
-        switch (opMode) {
-            case OP_MODE_STA:
-                break;
-            default:
-                onConfigureResult(BlufiCallback.CODE_CONF_INVALID_OPMODE);
-                return;
+        if (opMode != OP_MODE_STA) {
+            onConfigureResult(BlufiCallback.CODE_CONF_INVALID_OPMODE);
+            return;
         }
 
         boolean setMode = postDeviceMode(opMode);
@@ -1248,7 +1245,7 @@ class BlufiClientImpl implements BlufiParameter {
     private byte[] convertAddressStringToByteArray(String address) {
         String[] splits = address.split(":");
         byte[] result = new byte[splits.length];
-        for (int i = 0; i < result.length; i++) {
+        for (int i = 0; i < result.length; ++i) {
             result[i] = (byte) Integer.parseInt(splits[i], 16);
         }
 

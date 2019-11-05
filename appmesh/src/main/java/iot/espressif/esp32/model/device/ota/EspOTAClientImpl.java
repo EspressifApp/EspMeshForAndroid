@@ -116,7 +116,7 @@ class EspOTAClientImpl extends EspOTAClient {
     private Socket createSocket(InetAddress address, int port) {
         mLog.d("ota createLongSocket");
         Socket socket = null;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; ++i) {
             if (mClosed) {
                 return null;
             }
@@ -506,7 +506,7 @@ class EspOTAClientImpl extends EspOTAClient {
             }
 
             Map<String, EspHttpResponse> respMap = new HashMap<>();
-            for (int i = 0; i < tryCount && !deviceMap.isEmpty(); i++) {
+            for (int i = 0; i < tryCount && !deviceMap.isEmpty(); ++i) {
                 if (mClosed) {
                     return Collections.emptyMap();
                 }
@@ -550,7 +550,7 @@ class EspOTAClientImpl extends EspOTAClient {
                         case STATUS_CONTINUE:
                             JSONArray array = respJSON.getJSONArray(KEY_PACKAGE_SEQUENCE);
                             HashSet<Integer> set = new HashSet<>();
-                            for (int i = 0; i < array.length(); i++) {
+                            for (int i = 0; i < array.length(); ++i) {
                                 set.add(array.getInt(i));
                             }
                             result.put(device, set);
@@ -596,7 +596,7 @@ class EspOTAClientImpl extends EspOTAClient {
             mLog.d("OTA requestOTA addr" + otaAddr.toString());
 
             StringBuilder bssids = new StringBuilder();
-            for (int i = 0; i < requestDevices.size(); i++) {
+            for (int i = 0; i < requestDevices.size(); ++i) {
                 bssids.append(requestDevices.get(i).getMac());
                 if (i < requestDevices.size() - 1) {
                     bssids.append(",");
@@ -626,7 +626,7 @@ class EspOTAClientImpl extends EspOTAClient {
             final int headLen = 8;
             final int binLen = pkgLen - headLen;
             ByteArrayInputStream is = new ByteArrayInputStream(mBinData);
-            for (int i = 0; ; i++) {
+            for (int i = 0; ; ++i) {
                 byte[] data = new byte[pkgLen];
                 data[0] = data[1] = data[2] = data[3] = (byte) 0xa5;
                 data[4] = (byte) (i & 0xff);
@@ -662,7 +662,7 @@ class EspOTAClientImpl extends EspOTAClient {
                 return size1.compareTo(size2);
             });
 
-            for (int i = 0; i < devices.size(); i++) {
+            for (int i = 0; i < devices.size(); ++i) {
                 Set<Integer> set1 = deviceSeqMap.get(devices.get(i));
                 for (int j = i + 1; j < devices.size(); j++) {
                     Set<Integer> set2 = deviceSeqMap.get(devices.get(j));

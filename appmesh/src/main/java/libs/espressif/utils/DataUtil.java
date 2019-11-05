@@ -14,7 +14,7 @@ public class DataUtil {
      */
     public static void printBytes(byte[] bytes, int colCount) {
         StringBuilder sb = new StringBuilder(":\n");
-        for (int i = 0; i < colCount; i++) {
+        for (int i = 0; i < colCount; ++i) {
             if (i < 10) {
                 sb.append(0);
             }
@@ -22,12 +22,12 @@ public class DataUtil {
         }
         sb.append('\n');
 
-        for (int i = 0; i < colCount; i++) {
+        for (int i = 0; i < colCount; ++i) {
             sb.append("-\t");
         }
         sb.append('\n');
 
-        for (int i = 0; i < bytes.length; i++) {
+        for (int i = 0; i < bytes.length; ++i) {
             sb.append(Integer.toHexString(bytes[i] & 0xff)).append('\t');
             if (i % colCount == (colCount - 1)) {
                 sb.append("| ").append(i / colCount).append('\n');
@@ -49,7 +49,7 @@ public class DataUtil {
             return false;
         }
 
-        for (int i = 0; i < data1.length; i++) {
+        for (int i = 0; i < data1.length; ++i) {
             if (data1[i] != data2[i]) {
                 return false;
             }
@@ -70,7 +70,7 @@ public class DataUtil {
 
     public static byte[] longToLittleEndianBytes(long value, int byteSize) {
         byte[] result = new byte[byteSize];
-        for (int i = 0; i < byteSize; i++) {
+        for (int i = 0; i < byteSize; ++i) {
             result[i] = (byte) ((value >> (8 * i)) & 0xff);
         }
         return result;
@@ -89,7 +89,7 @@ public class DataUtil {
 
     public static long littleEndianBytesToLong(byte[] bytes) {
         long result = 0L;
-        for (int i = 0; i < bytes.length; i++) {
+        for (int i = 0; i < bytes.length; ++i) {
             long l = bytes[i] & 0xffL;
             result |= (l << (8 * i));
         }
@@ -151,7 +151,7 @@ public class DataUtil {
      */
     public static byte[] byteListToArray(List<Byte> list) {
         byte[] result = new byte[list.size()];
-        for (int i = 0; i < result.length; i++) {
+        for (int i = 0; i < result.length; ++i) {
             result[i] = list.get(i);
         }
         return result;
@@ -180,7 +180,7 @@ public class DataUtil {
             return false;
         }
 
-        for (int i = 0; i < b1.length; i++) {
+        for (int i = 0; i < b1.length; ++i) {
             if (b1[i] != b2[i]) {
                 return false;
             }
@@ -196,7 +196,7 @@ public class DataUtil {
         if (data.length < prefix.length) {
             return false;
         }
-        for (int i = 0; i < prefix.length; i++) {
+        for (int i = 0; i < prefix.length; ++i) {
             if (prefix[i] != data[i]) {
                 return false;
             }
@@ -212,7 +212,7 @@ public class DataUtil {
         if (data.length < suffix.length) {
             return false;
         }
-        for (int i = 0; i < suffix.length; i++) {
+        for (int i = 0; i < suffix.length; ++i) {
             if (suffix[i] != data[data.length - (suffix.length - i)]) {
                 return false;
             }
@@ -228,7 +228,7 @@ public class DataUtil {
         if (list.size() < prefix.length) {
             return false;
         }
-        for (int i = 0; i < prefix.length; i++) {
+        for (int i = 0; i < prefix.length; ++i) {
             if (prefix[i] != list.get(i)) {
                 return false;
             }
@@ -244,7 +244,7 @@ public class DataUtil {
         if (list.size() < suffix.length) {
             return false;
         }
-        for (int i = 0; i < suffix.length; i++) {
+        for (int i = 0; i < suffix.length; ++i) {
             if (suffix[i] != list.get(list.size() - (suffix.length - i))) {
                 return false;
             }
@@ -298,7 +298,7 @@ public class DataUtil {
 
     public static byte[] reverseBytes(byte[] src) {
         byte[] result = new byte[src.length];
-        for (int i = 0; i < result.length; i++) {
+        for (int i = 0; i < result.length; ++i) {
             result[i] = src[src.length - 1 - i];
         }
         return result;
@@ -332,7 +332,7 @@ public class DataUtil {
      */
     public static byte[] getTLV(byte[] type, int lLength, byte[] value) {
         byte[] length = new byte[lLength];
-        for (int i = 0; i < length.length; i++) {
+        for (int i = 0; i < length.length; ++i) {
             length[i] = (byte) ((value.length >> (i * 8)) & 0xff);
         }
 
