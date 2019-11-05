@@ -1,6 +1,9 @@
 package aliyun.espressif.mesh.web;
 
+import android.app.Activity;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.Intent;
 
 import com.aliyun.alink.business.devicecenter.api.add.DeviceInfo;
 import com.aliyun.iot.aep.sdk.login.LoginBusiness;
@@ -22,28 +25,33 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import aliyun.espressif.mesh.AliHelper;
 import aliyun.espressif.mesh.IAliHelper;
+import aliyun.espressif.mesh.activity.TaobaoAuthActivity;
 import aliyun.espressif.mesh.constants.AliConstants;
 import h5.espressif.esp32.module.action.EspActionDeviceConfigure2;
 import h5.espressif.esp32.module.action.IEspActionDeviceConfigure2;
-import h5.espressif.esp32.module.model.web.JSCallbacks;
-import h5.espressif.esp32.module.model.web.WebUtils;
+import h5.espressif.esp32.module.model.other.JSEvaluate;
+import h5.espressif.esp32.module.web.WebUtils;
+import h5.espressif.esp32.module.web.JSCallbacks;
 import io.reactivex.Observable;
+import iot.espressif.esp32.action.device.EspActionDeviceBlufi;
+import iot.espressif.esp32.model.device.ble.MeshBlufiCallback;
 import iot.espressif.esp32.model.device.ble.MeshBlufiClient;
 import iot.espressif.esp32.utils.DeviceUtil;
 import libs.espressif.log.EspLog;
+import meshblufi.espressif.BlufiClient;
 
 class AliApiForJSImpl implements AliConstants {
     private final EspLog mLog = new EspLog(getClass());
 
     private IAliHelper mAliHelper;
-    private AliApiForJS.JSEvaluate mJSEvaluate;
+    private JSEvaluate mJSEvaluate;
 
     private final Object mConfigLock = new Object();
     private MeshBlufiClient mBlufi;
 
     private volatile boolean mReleased = false;
 
-    AliApiForJSImpl(Context context, AliApiForJS.JSEvaluate evaluate) {
+    AliApiForJSImpl(Context context, JSEvaluate evaluate) {
         mAliHelper = new AliHelper(context);
         mJSEvaluate = evaluate;
     }
@@ -184,7 +192,7 @@ class AliApiForJSImpl implements AliConstants {
 //                            mAliHelper.stopDiscovery();
 //
 //                            boolean allSuc = true;
-//                            for (int i = 0; i < mBindCounter.get(); i++) {
+//                            for (int i = 0; i < mBindCounter.get(); ++i) {
 //                                try {
 //                                    JSONObject json = mBoundResults.take();
 //                                    boolean suc = json.getBoolean("bound");
@@ -308,7 +316,14 @@ class AliApiForJSImpl implements AliConstants {
     void getAliDeviceList() {
         mAliHelper.listBindingDevices((code, data, beans, exception) -> {
             try {
-                JSONObject json = data != null ? new JSONObject(new String(data)) : new JSONObject();
+                JSONObject json;
+                if (data != null) {
+                    json = new JSONObject(new String(data));
+                    json = json.getJSONObject(KEY_DATA);
+                } else {
+                    json = new JSONObject();
+                }
+
                 json.put(KEY_CODE, code);
                 if (exception != null) {
                     json.put(KEY_MESSAGE, exception.getMessage());
@@ -376,7 +391,7 @@ class AliApiForJSImpl implements AliConstants {
             AtomicInteger counter = new AtomicInteger(0);
             JSONArray resultArray = new JSONArray();
             JSONArray iotIdArray = new JSONArray(request);
-            for (int i = 0; i < iotIdArray.length(); i++) {
+            for (int i = 0; i < iotIdArray.length(); ++i) {
                 String iotId = iotIdArray.getString(i);
                 mAliHelper.unbindDevice(iotId, (code, data, exception) -> {
                     if (code == 200) {
@@ -399,7 +414,7 @@ class AliApiForJSImpl implements AliConstants {
             AtomicInteger counter = new AtomicInteger(0);
 
             JSONArray iotIdArray = new JSONArray(request);
-            for (int i = 0; i < iotIdArray.length(); i++) {
+            for (int i = 0; i < iotIdArray.length(); ++i) {
                 String iotId = iotIdArray.getString(i);
                 mAliHelper.statusGet(iotId, (suc, data) -> {
                     if (suc && data != null) {
@@ -430,17 +445,19 @@ class AliApiForJSImpl implements AliConstants {
             AtomicInteger counter = new AtomicInteger(0);
 
             JSONArray iotIdArray = new JSONArray(request);
-            for (int i = 0; i < iotIdArray.length(); i++) {
+            for (int i = 0; i < iotIdArray.length(); ++i) {
                 String iotId = iotIdArray.getString(i);
                 mAliHelper.propertiesGet(iotId, (suc, data) -> {
                     mLog.i("getAliDeviceProperties " + suc + " , " + data);
                     if (suc && data != null) {
                         try {
                             JSONObject json = new JSONObject(data.toString());
-                            JSONObject dataJSON = json.getJSONObject(KEY_DATA);
-                            dataJSON.put(KEY_IOT_ID, iotId);
-                            synchronized (resultArray) {
-                                resultArray.put(dataJSON);
+                            JSONObject dataJSON = json.optJSONObject(KEY_DATA);
+                            if (dataJSON != null) {
+                                dataJSON.put(KEY_IOT_ID, iotId);
+                                synchronized (resultArray) {
+                                    resultArray.put(dataJSON);
+                                }
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -472,7 +489,7 @@ class AliApiForJSImpl implements AliConstants {
                 String key = keys.next();
                 itemsMap.put(key, itemsJSON.get(key));
             }
-            for (int i = 0; i < iotIdArray.length(); i++) {
+            for (int i = 0; i < iotIdArray.length(); ++i) {
                 String iotId = iotIdArray.getString(i);
                 mAliHelper.propertiesSet(iotId, itemsMap, (suc, data) -> {
                     mLog.i("getAliDeviceProperties " + suc + " , " + data);
@@ -503,9 +520,11 @@ class AliApiForJSImpl implements AliConstants {
     void getAliOTAUpgradeDeviceList() {
         mAliHelper.listOTAPreDevices((code, data, infoList, exception) -> {
             JSONArray dataArray = null;
-            if (data != null) {
+            String dataStr = data == null ? null : new String(data);
+            if (dataStr != null) {
                 try {
-                    dataArray = new JSONArray(new String(data));
+                    JSONObject dataJSON = new JSONObject(dataStr);
+                    dataArray = dataJSON.getJSONArray(KEY_DATA);
                 } catch (JSONException e) {
                     mLog.w("Parse getAliOTAUpgradeDeviceList data failed");
                 }
@@ -514,7 +533,7 @@ class AliApiForJSImpl implements AliConstants {
             try {
                 JSONObject resultJSON = new JSONObject()
                         .put(KEY_CODE, code)
-                        .put(KEY_DATA, dataArray != null ? dataArray : data);
+                        .put(KEY_DATA, dataArray != null ? dataArray : dataStr);
                 evaluateJavascript(AliJSCallbacks.onGetAliOTAUpgradeDeviceList(resultJSON.toString()));
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -527,7 +546,7 @@ class AliApiForJSImpl implements AliConstants {
         try {
             JSONArray array = new JSONArray(request);
             iotIdList = new ArrayList<>(array.length());
-            for (int i = 0; i < array.length(); i++) {
+            for (int i = 0; i < array.length(); ++i) {
                 iotIdList.add(array.getString(i));
             }
         } catch (JSONException e) {
@@ -535,10 +554,11 @@ class AliApiForJSImpl implements AliConstants {
             return;
         }
         mAliHelper.startOTA(iotIdList, (code, data, exception) -> {
+            String dataStr = data == null ? null : new String(data);
             JSONObject dataJSON = null;
-            if (data != null) {
+            if (dataStr != null) {
                 try {
-                    dataJSON = new JSONObject(new String(data));
+                    dataJSON = new JSONObject(dataStr);
                 } catch (JSONException e) {
                     mLog.w("Parse aliUpgradeWifiDevice data failed");
                 }
@@ -547,7 +567,7 @@ class AliApiForJSImpl implements AliConstants {
             try {
                 JSONObject resultJSON = new JSONObject()
                         .put(KEY_CODE, code)
-                        .put(KEY_DATA, dataJSON != null ? dataJSON : data);
+                        .put(KEY_DATA, dataJSON != null ? dataJSON : dataStr);
                 evaluateJavascript(AliJSCallbacks.onAliUpgradeWifiDevice(resultJSON.toString()));
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -558,10 +578,11 @@ class AliApiForJSImpl implements AliConstants {
     void aliQueryDeviceUpgradeStatus(String request) {
         final String iotId = request;
         mAliHelper.queryOTAProgress(iotId, (status, data, info, exception) -> {
+            String dataStr = data == null ? null : new String(data);
             JSONObject dataJSON = null;
             if (data != null) {
                 try {
-                    dataJSON = new JSONObject(new String(data));
+                    dataJSON = new JSONObject(dataStr);
                 } catch (JSONException e) {
                     mLog.w("Parse aliQueryDeviceUpgradeStatus data failed");
                 }
@@ -571,7 +592,7 @@ class AliApiForJSImpl implements AliConstants {
                 JSONObject resultJSON = new JSONObject()
                         .put(KEY_IOT_ID, iotId)
                         .put(KEY_CODE, status)
-                        .put(KEY_DATA, dataJSON != null ? dataJSON : data);
+                        .put(KEY_DATA, dataJSON != null ? dataJSON : dataStr);
                 evaluateJavascript(AliJSCallbacks.onAliQueryDeviceUpgradeStatus(resultJSON.toString()));
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -581,10 +602,12 @@ class AliApiForJSImpl implements AliConstants {
 
     void getAliOTAIsUpgradingDeviceList() {
         mAliHelper.listUpgradingDevices((code, data, infoList, exception) -> {
+            String dataStr = data == null ? null : new String(data);
             JSONArray dataArray = null;
             if (data != null) {
                 try {
-                    dataArray = new JSONArray(new String(data));
+                    JSONObject dataJSON = new JSONObject(dataStr);
+                    dataArray = dataJSON.getJSONArray(KEY_DATA);
                 } catch (JSONException e) {
                     mLog.w("Parse getAliOTAIsUpgradingDeviceList data failed");
                 }
@@ -593,11 +616,117 @@ class AliApiForJSImpl implements AliConstants {
             try {
                 JSONObject resultJSON = new JSONObject()
                         .put(KEY_CODE, code)
-                        .put(KEY_DATA, dataArray != null ? dataArray : data);
+                        .put(KEY_DATA, dataArray != null ? dataArray : dataStr);
                 evaluateJavascript(AliJSCallbacks.onGetAliOTAIsUpgradingDeviceList(resultJSON.toString()));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         });
     }
+
+    void aliUserBindTaobaoId() {
+        Intent intent = new Intent();
+        String redirectUri = "https://www.espressif.com/en/products/software/esp-mesh/overview";
+        intent.putExtra(AliConstants.KEY_REDIRECT_URI, redirectUri);
+        mJSEvaluate.startActivity(TaobaoAuthActivity.class, intent, (requestCode, resultCode, resultData) -> {
+            if (resultCode == Activity.RESULT_OK) {
+                String authCode = resultData.getStringExtra(AliConstants.KEY_AUTH_CODE);
+                mAliHelper.bindTaobaoAccount(authCode, (code, data, exception) -> {
+                    JSONObject json = null;
+                    if (data != null) {
+                        try {
+                            json = new JSONObject(new String(data));
+                        } catch (JSONException e) {
+                            mLog.w("aliUserBindTaobaoId response data is not json");
+                        }
+                    }
+                    if (json == null) {
+                        try {
+                            json = new JSONObject().put(KEY_CODE, code);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            return;
+                        }
+                    }
+
+                    mJSEvaluate.evaluateJavascript(AliJSCallbacks.onAliUserBindTaobaoId(json.toString()));
+                });
+            }
+        });
+    }
+
+    void aliUserUnbindId(String request) {
+        String accountType;
+        try {
+            JSONObject requestJSON = new JSONObject(request);
+            accountType = requestJSON.getString(KEY_ACCOUNT_TYPE);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+        mAliHelper.unbindThirdPartyAccount(accountType, (code, data, exception) -> {
+            JSONObject json = null;
+            if (data != null) {
+                try {
+                    json = new JSONObject(new String(data));
+                } catch (JSONException e) {
+                    mLog.w("aliUserUnbindId response data is not json");
+                }
+            }
+            if (json == null) {
+                try {
+                    json = new JSONObject().put(KEY_CODE, code);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+            try {
+                json.put(KEY_ACCOUNT_TYPE, accountType);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            mJSEvaluate.evaluateJavascript(AliJSCallbacks.onAliUserUnbindId(json.toString()));
+        });
+    }
+
+    void getAliUserId(String request) {
+        String accountType;
+        try {
+            JSONObject requestJSON = new JSONObject(request);
+            accountType = requestJSON.getString(KEY_ACCOUNT_TYPE);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        mAliHelper.getThirdPartyAccount(accountType, (code, data, exception) -> {
+            JSONObject json = null;
+            if (data != null) {
+                try {
+                    json = new JSONObject(new String(data));
+                } catch (JSONException e) {
+                    mLog.w("getAliUserId response data is not json");
+                }
+            }
+            if (json == null) {
+                try {
+                    json = new JSONObject().put(KEY_CODE, code);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+            try {
+                json.put(KEY_ACCOUNT_TYPE, accountType);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            mJSEvaluate.evaluateJavascript(AliJSCallbacks.onGetAliUserId(json.toString()));
+        });
+    }
+
+
 }

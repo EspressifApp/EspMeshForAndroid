@@ -60,4 +60,16 @@ public class AliJSCallbacks {
     public static String onGetAliOTAIsUpgradingDeviceList(String info) {
         return getCallbackScript("onGetAliOTAIsUpgradingDeviceList", info);
     }
+
+    public static String onAliUserBindTaobaoId(String info) {
+        return getCallbackScript("onAliUserBindTaobaoId", info);
+    }
+
+    public static String onAliUserUnbindId(String info) {
+        return getCallbackScript("onAliUserUnbindId", info);
+    }
+
+    public static String onGetAliUserId(String info) {
+        return getCallbackScript("onGetAliUserId", info);
+    }
 }

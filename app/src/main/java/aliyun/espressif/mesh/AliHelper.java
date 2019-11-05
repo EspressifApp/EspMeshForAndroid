@@ -48,9 +48,11 @@ import aliyun.espressif.mesh.bean.ota.OTADeviceDetailInfo;
 import aliyun.espressif.mesh.bean.ota.OTADeviceSimpleInfo;
 import aliyun.espressif.mesh.bean.ota.OTAStatusInfo;
 import aliyun.espressif.mesh.callback.AliBindDeviceCallback;
+import aliyun.espressif.mesh.callback.AliBindTaobaoAccountCallback;
 import aliyun.espressif.mesh.callback.AliConfigureCallback;
 import aliyun.espressif.mesh.callback.AliGetDevicePropertiesCallback;
 import aliyun.espressif.mesh.callback.AliGetDeviceStatusCallback;
+import aliyun.espressif.mesh.callback.AliGetThirdPartyAccountCallback;
 import aliyun.espressif.mesh.callback.AliListBindingDevicesCallback;
 import aliyun.espressif.mesh.callback.AliListUpgradingDevicesCallback;
 import aliyun.espressif.mesh.callback.AliLoginCallback;
@@ -61,6 +63,7 @@ import aliyun.espressif.mesh.callback.AliOTAStartCallback;
 import aliyun.espressif.mesh.callback.AliOTAStopCallback;
 import aliyun.espressif.mesh.callback.AliSetDevicePropertiesCallback;
 import aliyun.espressif.mesh.callback.AliUnbindDeviceCallback;
+import aliyun.espressif.mesh.callback.AliUnbindThirdPartyAccountCallback;
 import aliyun.espressif.mesh.task.AliDeviceConfigureTask;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -599,6 +602,108 @@ public class AliHelper implements IAliHelper {
                         exception = new AliApiClientException(code, ioTResponse.getLocalizedMsg());
                     }
                     callback.onResult(code, ioTResponse.getRawData(), infoList, exception);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void bindTaobaoAccount(String authCode, AliBindTaobaoAccountCallback callback) {
+        IoTRequest request = new IoTRequestBuilder()
+                .setAuthType(AUTH_TYPE)
+                .setApiVersion("1.0.5")
+                .setPath("/account/taobao/bind")
+                .addParam(KEY_AUTH_CODE, authCode)
+                .build();
+
+        IoTAPIClient client = new IoTAPIClientFactory().getClient();
+        client.send(request, new IoTCallback() {
+            @Override
+            public void onFailure(IoTRequest ioTRequest, Exception e) {
+                e.printStackTrace();
+                if (callback != null) {
+                    callback.onResult(CODE_CATCH_EXCEPTION, null, e);
+                }
+            }
+
+            @Override
+            public void onResponse(IoTRequest ioTRequest, IoTResponse ioTResponse) {
+                if (callback != null) {
+                    int code = ioTResponse.getCode();
+                    byte[] data = ioTResponse.getRawData();
+                    AliApiClientException exception = null;
+                    if (code != 200) {
+                        exception = new AliApiClientException(code, ioTResponse.getLocalizedMsg());
+                    }
+                    callback.onResult(code, data, exception);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void unbindThirdPartyAccount(String accountType, AliUnbindThirdPartyAccountCallback callback) {
+        IoTRequest request = new IoTRequestBuilder()
+                .setAuthType(AUTH_TYPE)
+                .setApiVersion("1.0.5")
+                .setPath("/account/thirdparty/unbind")
+                .addParam(KEY_ACCOUNT_TYPE, accountType)
+                .build();
+
+        IoTAPIClient client = new IoTAPIClientFactory().getClient();
+        client.send(request, new IoTCallback() {
+            @Override
+            public void onFailure(IoTRequest ioTRequest, Exception e) {
+                e.printStackTrace();
+                if (callback != null) {
+                    callback.onResult(CODE_CATCH_EXCEPTION, null, e);
+                }
+            }
+
+            @Override
+            public void onResponse(IoTRequest ioTRequest, IoTResponse ioTResponse) {
+                if (callback != null) {
+                    int code = ioTResponse.getCode();
+                    byte[] data = ioTResponse.getRawData();
+                    AliApiClientException exception = null;
+                    if (code != 200) {
+                        exception = new AliApiClientException(code, ioTResponse.getLocalizedMsg());
+                    }
+                    callback.onResult(code, data, exception);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void getThirdPartyAccount(String accountType, AliGetThirdPartyAccountCallback callback) {
+        IoTRequest request = new IoTRequestBuilder()
+                .setAuthType(AUTH_TYPE)
+                .setApiVersion("1.0.5")
+                .setPath("/account/thirdparty/get")
+                .addParam(KEY_ACCOUNT_TYPE, accountType)
+                .build();
+
+        IoTAPIClient client = new IoTAPIClientFactory().getClient();
+        client.send(request, new IoTCallback() {
+            @Override
+            public void onFailure(IoTRequest ioTRequest, Exception e) {
+                e.printStackTrace();
+                if (callback != null) {
+                    callback.onResult(CODE_CATCH_EXCEPTION, null, e);
+                }
+            }
+
+            @Override
+            public void onResponse(IoTRequest ioTRequest, IoTResponse ioTResponse) {
+                if (callback != null) {
+                    int code = ioTResponse.getCode();
+                    byte[] data = ioTResponse.getRawData();
+                    AliApiClientException exception = null;
+                    if (code != 200) {
+                        exception = new AliApiClientException(code, ioTResponse.getLocalizedMsg());
+                    }
+                    callback.onResult(code, data, exception);
                 }
             }
         });

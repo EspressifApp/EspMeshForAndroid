@@ -27,4 +27,5 @@ public interface AliConstants {
     String KEY_APP_KEY = "appKey";
     String KEY_REDIRECT_URI = "redirect_uri";
     String KEY_AUTH_CODE = "authCode";
+    String KEY_ACCOUNT_TYPE = "accountType";
 }

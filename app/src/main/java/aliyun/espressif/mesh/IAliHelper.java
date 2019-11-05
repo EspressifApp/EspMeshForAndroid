@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 import aliyun.espressif.mesh.callback.AliBindDeviceCallback;
+import aliyun.espressif.mesh.callback.AliBindTaobaoAccountCallback;
 import aliyun.espressif.mesh.callback.AliConfigureCallback;
 import aliyun.espressif.mesh.callback.AliGetDevicePropertiesCallback;
 import aliyun.espressif.mesh.callback.AliGetDeviceStatusCallback;
+import aliyun.espressif.mesh.callback.AliGetThirdPartyAccountCallback;
 import aliyun.espressif.mesh.callback.AliListBindingDevicesCallback;
 import aliyun.espressif.mesh.callback.AliListUpgradingDevicesCallback;
 import aliyun.espressif.mesh.callback.AliLoginCallback;
@@ -21,6 +23,7 @@ import aliyun.espressif.mesh.callback.AliOTAStartCallback;
 import aliyun.espressif.mesh.callback.AliOTAStopCallback;
 import aliyun.espressif.mesh.callback.AliSetDevicePropertiesCallback;
 import aliyun.espressif.mesh.callback.AliUnbindDeviceCallback;
+import aliyun.espressif.mesh.callback.AliUnbindThirdPartyAccountCallback;
 import aliyun.espressif.mesh.constants.AliConstants;
 import iot.espressif.esp32.model.device.ble.IMeshBleDevice;
 import iot.espressif.esp32.model.device.ble.MeshConfigureParams;
@@ -170,4 +173,10 @@ public interface IAliHelper extends AliConstants {
      * @param callback
      */
     void listUpgradingDevices(AliListUpgradingDevicesCallback callback);
+
+    void bindTaobaoAccount(String authCode, AliBindTaobaoAccountCallback callback);
+
+    void unbindThirdPartyAccount(String accountType, AliUnbindThirdPartyAccountCallback callback);
+
+    void getThirdPartyAccount(String accountType, AliGetThirdPartyAccountCallback callback);
 }

@@ -8,6 +8,7 @@ import androidx.core.os.LocaleListCompat;
 
 import com.alibaba.wireless.security.jaq.SecurityInit;
 import com.aliyun.alink.alirn.RNGlobalConfig;
+import com.aliyun.alink.alirn.rnpackage.biz.BizPackageHolder;
 import com.aliyun.alink.business.devicecenter.extbone.BoneAddDeviceBiz;
 import com.aliyun.alink.business.devicecenter.extbone.BoneHotspotHelper;
 import com.aliyun.alink.business.devicecenter.extbone.BoneLocalDeviceMgr;
@@ -20,9 +21,11 @@ import com.aliyun.alink.linksdk.tmp.listener.IDevListener;
 import com.aliyun.alink.linksdk.tmp.utils.ErrorInfo;
 import com.aliyun.alink.page.rn.InitializationHelper;
 import com.aliyun.alink.sdk.jsbridge.BonePluginRegistry;
+import com.aliyun.alink.sdk.jsbridge.adapter.BonePluginServiceFactory;
 import com.aliyun.iot.aep.sdk.apiclient.IoTAPIClientImpl;
 import com.aliyun.iot.aep.sdk.apiclient.emuns.Env;
 import com.aliyun.iot.aep.sdk.apiclient.hook.IoTAuthProvider;
+import com.aliyun.iot.aep.sdk.bridge.core.BoneServiceFactoryRegistry;
 import com.aliyun.iot.aep.sdk.credential.IoTCredentialProviderImpl;
 import com.aliyun.iot.aep.sdk.credential.IotCredentialManager.IoTCredentialManageImpl;
 import com.aliyun.iot.aep.sdk.log.ALog;
@@ -31,7 +34,6 @@ import com.aliyun.iot.aep.sdk.login.oa.OALoginAdapter;
 import com.aliyun.iot.breeze.api.Config;
 import com.aliyun.iot.breeze.api.Factory;
 import com.aliyun.iot.breeze.api.IBreeze;
-import com.facebook.react.FrescoPackage;
 
 import java.util.Locale;
 
@@ -153,7 +155,7 @@ public final class AliInitialize {
         String language = null;
 
         LocaleListCompat localeList = LocaleListCompat.getDefault();
-        for (int i = 0; i < localeList.size(); i++) {
+        for (int i = 0; i < localeList.size(); ++i) {
             Locale locale = LocaleListCompat.getDefault().get(i);
             String localeLanguage = locale.getLanguage();
             if ("zh".equalsIgnoreCase(localeLanguage)) {
@@ -188,7 +190,8 @@ public final class AliInitialize {
         // 初始化 BoneMobile RN 容器
         InitializationHelper.initialize(application, pluginEnv, serverEnv, language);
         // 添加基于 Fresco 的图片组件支持
-        RNGlobalConfig.addBizPackage(new FrescoPackage());
+//        RNGlobalConfig.addBizPackage(new FrescoPackage());
+        RNGlobalConfig.addBizPackage(new BizPackageHolder().getBizPackage());
 
         BonePluginRegistry.register("BoneAddDeviceBiz", BoneAddDeviceBiz.class);
         BonePluginRegistry.register("BoneLocalDeviceMgr", BoneLocalDeviceMgr.class);

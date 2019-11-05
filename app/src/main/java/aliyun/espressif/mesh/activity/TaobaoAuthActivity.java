@@ -1,5 +1,6 @@
 package aliyun.espressif.mesh.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -8,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -28,6 +30,7 @@ public class TaobaoAuthActivity extends AppCompatActivity {
 
     private String mAuthCode;
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +48,9 @@ public class TaobaoAuthActivity extends AppCompatActivity {
         int height = ViewGroup.LayoutParams.MATCH_PARENT;
         ViewGroup.MarginLayoutParams mlp = new ViewGroup.MarginLayoutParams(width, height);
         mWebForm.addView(mWebView, mlp);
+
+        WebSettings webSettings = mWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -60,21 +66,21 @@ public class TaobaoAuthActivity extends AppCompatActivity {
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
                 if (isTokenUrl(url)) {
-                    finishWithAuthCode();
+                    onAuthCodeGot();
                     return true;
                 }
                 view.loadUrl(url, request.getRequestHeaders());
-                return true;
+                return false;
             }
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 if (isTokenUrl(url)) {
-                    finishWithAuthCode();
+                    onAuthCodeGot();
                     return true;
                 }
                 view.loadUrl(url);
-                return true;
+                return false;
             }
         });
 
@@ -114,7 +120,7 @@ public class TaobaoAuthActivity extends AppCompatActivity {
         return false;
     }
 
-    private void finishWithAuthCode() {
+    private void onAuthCodeGot() {
         Intent intent = new Intent();
         intent.putExtra(AliConstants.KEY_AUTH_CODE, mAuthCode);
         setResult(RESULT_OK, intent);

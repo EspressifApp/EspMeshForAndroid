@@ -1,7 +1,10 @@
 package aliyun.espressif.mesh.web;
 
 import android.content.Context;
+import android.content.Intent;
 import android.webkit.JavascriptInterface;
+
+import h5.espressif.esp32.module.model.other.JSEvaluate;
 
 public class AliApiForJS {
     public static final String NAME = "aliyun";
@@ -10,10 +13,6 @@ public class AliApiForJS {
 
     public AliApiForJS(Context context, JSEvaluate evaluate) {
         mImpl = new AliApiForJSImpl(context, evaluate);
-    }
-
-    public interface JSEvaluate {
-        void evaluateJavascript(String script);
     }
 
     public void release() {
@@ -108,5 +107,20 @@ public class AliApiForJS {
     @JavascriptInterface
     public void getAliOTAIsUpgradingDeviceList() {
         mImpl.getAliOTAIsUpgradingDeviceList();
+    }
+
+    @JavascriptInterface
+    public void aliUserBindTaobaoId() {
+        mImpl.aliUserBindTaobaoId();
+    }
+
+    @JavascriptInterface
+    public void aliUserUnbindId(String request) {
+        mImpl.aliUserUnbindId(request);
+    }
+
+    @JavascriptInterface
+    public void getAliUserId(String request) {
+        mImpl.getAliUserId(request);
     }
 }
