@@ -1,5 +1,9 @@
 apply plugin: 'com.android.application'
-apply from: 'dependency.gradle'
+
+Boolean willCompileAliyun = Boolean.valueOf(property('aliyun.compile'))
+if (willCompileAliyun) {
+    apply from: 'dependency.gradle'
+}
 
 android {
     compileSdkVersion conf.compile_sdk_version
@@ -11,30 +15,43 @@ android {
         versionName "1.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         ndk {
-            abiFilters "armeabi-v7a", "x86"//过滤除 armeabi 和 x86 以外的 so 文件
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86"//过滤除 armeabi 和 x86 以外的 so 文件
         }
         multiDexEnabled true
     }
-//    signingConfigs {
-//        debug {
-//            keyAlias 'xxx'
-//            keyPassword 'xxx'
-//            storeFile file('xxx')
-//            storePassword 'xxx'
-//        }
-//    }
+    signingConfigs {
+        debug {
+            if (Boolean.valueOf(property('sign.useInDebug'))) {
+                storeFile file(property('sign.storeFile'))
+                storePassword property('sign.storePassword')
+                keyAlias property('sign.keyAlias')
+                keyPassword property('sign.keyPassword')
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-//        debug {
-//            signingConfig signingConfigs.debug
-//        }
+        debug {
+            if (Boolean.valueOf(property('sign.useInDebug'))) {
+                signingConfig signingConfigs.debug
+            }
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    sourceSets {
+        main {
+            java {
+                if (!willCompileAliyun) {
+                    exclude 'aliyun/espressif/mesh/**'
+                }
+            }
+        }
     }
 }
 

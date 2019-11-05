@@ -7,8 +7,6 @@ import android.webkit.JavascriptInterface;
 import h5.espressif.esp32.module.model.other.JSEvaluate;
 
 public class AliApiForJS {
-    public static final String NAME = "aliyun";
-
     private AliApiForJSImpl mImpl;
 
     public AliApiForJS(Context context, JSEvaluate evaluate) {

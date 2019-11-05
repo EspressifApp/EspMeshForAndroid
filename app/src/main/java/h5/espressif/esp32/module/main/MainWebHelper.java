@@ -21,9 +21,11 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Objects;
 
-import aliyun.espressif.mesh.web.AliApiForJS;
 import h5.espressif.esp32.R;
 import h5.espressif.esp32.module.model.customer.Customer;
 import h5.espressif.esp32.module.model.other.ActivityResultCallback;
@@ -34,6 +36,8 @@ import libs.espressif.log.EspLog;
 
 @SuppressLint("SetJavaScriptEnabled")
 public class MainWebHelper implements LifecycleObserver {
+    private static final String ALIYUN_API_NAME = "aliyun";
+
     private static final String FILE_PHONE = "app";
     private static final String FILE_PAD = "ipad";
 
@@ -48,7 +52,7 @@ public class MainWebHelper implements LifecycleObserver {
     private ImageView mCoverIV;
 
     private AppApiForJS mMeshApiForJS;
-    private AliApiForJS mAliApiForJS;
+    private Object mAliApiForJS;
     private SparseArray<ActivityResultCallback> mAliRequests;
 
     private SharedPreferences mSharedPref;
@@ -110,50 +114,81 @@ public class MainWebHelper implements LifecycleObserver {
         mWebView.addJavascriptInterface(mMeshApiForJS, AppApiForJS.NAME);
 
         mAliRequests = new SparseArray<>();
-        mAliApiForJS = new AliApiForJS(mActivity.getApplicationContext(), new JSEvaluate() {
-            @Override
-            public void evaluateJavascript(String script) {
-                mActivity.evaluateJavascript(script);
-            }
-
-            @Override
-            public void startActivity(@NonNull Class cls, @Nullable Intent extras,
-                                      @Nullable ActivityResultCallback callback) {
-                Intent intent = new Intent(mActivity, cls);
-                if (extras != null) {
-                    intent.putExtras(extras);
-                }
-                Runnable runnable;
-                if (callback == null) {
-                    runnable = () -> mActivity.startActivity(intent);
-                } else {
-                    int code;
-                    while (true) {
-                        code = (int) SystemClock.currentThreadTimeMillis();
-                        if (mAliRequests.indexOfKey(code) < 0) {
-                            mAliRequests.put(code, callback);
-                            break;
-                        }
-                    }
-                    int requestCode = code;
-                    runnable = () -> mActivity.startActivityForResult(intent, requestCode);
-                }
-                mActivity.runOnUiThread(runnable);
-            }
-        });
-        mWebView.addJavascriptInterface(mAliApiForJS, AliApiForJS.NAME);
+        initAliApi();
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void onDestroy() {
         mWebForm.removeAllViews();
         mWebView.removeJavascriptInterface(AppApiForJS.NAME);
-        mWebView.removeJavascriptInterface(AliApiForJS.NAME);
+        mWebView.removeJavascriptInterface(ALIYUN_API_NAME);
         mWebView.destroy();
         mMeshApiForJS.release();
-        mAliApiForJS.release();
+        releaseAliApi();
 
         mActivity = null;
+    }
+
+    @SuppressLint("JavascriptInterface")
+    private void initAliApi() {
+        try {
+            Class<?> aliApiCls = Class.forName("aliyun.espressif.mesh.web.AliApiForJS");
+            Constructor constructor = aliApiCls.getConstructor(Context.class, JSEvaluate.class);
+            mAliApiForJS = constructor.newInstance(mActivity.getApplicationContext(), new JSEvaluate() {
+                @Override
+                public void evaluateJavascript(String script) {
+                    mActivity.evaluateJavascript(script);
+                }
+
+                @Override
+                public void startActivity(@NonNull Class cls, @Nullable Intent extras,
+                                          @Nullable ActivityResultCallback callback) {
+                    Intent intent = new Intent(mActivity, cls);
+                    if (extras != null) {
+                        intent.putExtras(extras);
+                    }
+                    Runnable runnable;
+                    if (callback == null) {
+                        runnable = () -> mActivity.startActivity(intent);
+                    } else {
+                        int code;
+                        while (true) {
+                            code = (int) SystemClock.currentThreadTimeMillis();
+                            if (mAliRequests.indexOfKey(code) < 0) {
+                                mAliRequests.put(code, callback);
+                                break;
+                            }
+                        }
+                        int requestCode = code;
+                        runnable = () -> mActivity.startActivityForResult(intent, requestCode);
+                    }
+                    mActivity.runOnUiThread(runnable);
+                }
+            });
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
+                | InstantiationException | InvocationTargetException e) {
+            mLog.w("Create AliApiForJS instance failed");
+        }
+        if (mAliApiForJS != null) {
+            mWebView.addJavascriptInterface(mAliApiForJS, ALIYUN_API_NAME);
+            mLog.d("Add AliApiForJS success");
+        }
+    }
+
+    private void releaseAliApi() {
+        if (mAliApiForJS == null) {
+            return;
+        }
+
+        try {
+            Class<?> aliApiCls = Class.forName("aliyun.espressif.mesh.web.AliApiForJS");
+            Method mothod = aliApiCls.getMethod("release");
+            mothod.invoke(mAliApiForJS);
+            mLog.d("Release AliApiForJS success");
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException e) {
+            mLog.w("Release AliApiForJS failed");
+        }
     }
 
     void onActivityResult(int requestCode, int resultCode, Intent data) {
