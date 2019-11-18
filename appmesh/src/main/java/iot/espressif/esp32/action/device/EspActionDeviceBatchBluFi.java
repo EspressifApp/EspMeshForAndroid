@@ -117,14 +117,13 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
 
         mLog.d("Execute Batch BluFi");
         mThread = new Thread(() -> {
-            AtomicInteger counter = new AtomicInteger(0);
             while (!mDeviceQueue.isEmpty()) {
                 if (mClosed) {
                     break;
                 }
 
                 synchronized (mDeviceQueue) {
-                    if (counter.get() > CONNECTION_MAX) {
+                    if (mDeviceCounter.get() > CONNECTION_MAX) {
                         try {
                             mDeviceQueue.wait();
                         } catch (InterruptedException e) {
