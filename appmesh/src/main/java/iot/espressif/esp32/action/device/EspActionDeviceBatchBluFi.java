@@ -141,25 +141,31 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
                     mListener.onClientCreated(blufi);
                 }
                 boolean connected = false;
+                mDeviceCounter.incrementAndGet();
                 for (int i = 0; i < 5; ++i) {
+                    if (blufi.isClosed()) {
+                        break;
+                    }
                     connect(blufi, device);
                     try {
                         connected = mConnectQueue.take();
                         if (connected) {
-                            mDeviceCounter.incrementAndGet();
                             break;
                         }
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        mLog.w("Take connect queue interrupted");
                         break;
                     }
 
                     try {
                         Thread.sleep(300);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        mLog.w("Sleep connect interrupted");
                         break;
                     }
+                }
+                if (!connected) {
+                    mDeviceCounter.decrementAndGet();
                 }
                 if (mListener != null) {
                     mListener.onConnectResult(device, connected);

@@ -9,6 +9,8 @@ public class MeshBlufiClient {
     private BlufiClient mBlufiClient;
     private BluetoothGatt mBluetoothGatt;
 
+    private volatile boolean mClosed = false;
+
     public void setMeshVersion(int meshVersion) {
         mMeshVersion = meshVersion;
     }
@@ -33,7 +35,12 @@ public class MeshBlufiClient {
         return mBluetoothGatt;
     }
 
+    public boolean isClosed() {
+        return mClosed;
+    }
+
     public synchronized void close() {
+        mClosed = true;
         if (mBluetoothGatt != null) {
             mBluetoothGatt.close();
         }
