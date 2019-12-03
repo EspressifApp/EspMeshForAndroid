@@ -1,5 +1,7 @@
 package iot.espressif.esp32.model.net;
 
+import iot.espressif.esp32.model.device.IEspDevice;
+
 public class MeshNode {
     private String mMac;
     private String mHost;
@@ -8,7 +10,7 @@ public class MeshNode {
     private String mParentMac;
     private String[] mChildrenMac;
     private String mRootMac;
-    private int mMeshLevel;
+    private int mMeshLevel = IEspDevice.LAYER_UNKNOWN;
     private String mMeshId;
 
     private int mProtocolPort;

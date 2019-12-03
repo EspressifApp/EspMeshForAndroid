@@ -11,9 +11,9 @@ import iot.espressif.esp32.model.device.properties.EspDeviceState;
 
 public interface IEspDevice {
     int LAYER_ROOT = 1;
-    int LAYER_UNKNOW = -1;
+    int LAYER_UNKNOWN = -1;
 
-    int TID_UNKNOW = 0;
+    int TID_UNKNOWN = 0;
 
     String PROTOCOL_HTTP = "http";
     String PROTOCOL_HTTPS = "https";
@@ -207,7 +207,7 @@ public interface IEspDevice {
     /**
      * Get mesh layer level
      *
-     * @return mesh layer level
+     * @return mesh layer level, root level is {@link #LAYER_ROOT}
      */
     int getMeshLayerLevel();
 
@@ -301,29 +301,6 @@ public interface IEspDevice {
      * Remove all characteristics
      */
     void clearCharacteristics();
-
-    /**
-     * Put an object in map
-     *
-     * @param key   map key
-     * @param value map value
-     */
-    void putCahce(String key, Object value);
-
-    /**
-     * Get the object saved
-     *
-     * @param key map key
-     * @return null if no such value
-     */
-    Object getCache(String key);
-
-    /**
-     * Remove the object in map
-     *
-     * @param key map key
-     */
-    void removeCache(String key);
 
     /**
      * Release the device data

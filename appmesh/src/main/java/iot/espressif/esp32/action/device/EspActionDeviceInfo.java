@@ -71,7 +71,7 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
             int trigger = respJSON.optInt(KEY_TRIGGER);
             device.setTrigger(trigger);
 
-            int layer = IEspDevice.LAYER_UNKNOW;
+            int layer = IEspDevice.LAYER_UNKNOWN;
             EspHttpHeader layerHeader = response.findHeader(HEADER_MESH_LAYER);
             if (layerHeader != null) {
                 try {
@@ -81,7 +81,7 @@ public class EspActionDeviceInfo implements IEspActionDeviceInfo {
                     nfe.printStackTrace();
                 }
             } else {
-                layer = respJSON.optInt(KEY_LAYER, IEspDevice.LAYER_UNKNOW);
+                layer = respJSON.optInt(KEY_LAYER, IEspDevice.LAYER_UNKNOWN);
             }
             device.setMeshLayerLevel(layer);
 

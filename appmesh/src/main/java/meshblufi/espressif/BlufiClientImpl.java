@@ -57,9 +57,9 @@ class BlufiClientImpl implements BlufiParameter {
     private BlufiClient mClient;
 
     private BluetoothGatt mGatt;
-    private BluetoothGattCharacteristic mWriteCharact;
+    private BluetoothGattCharacteristic mWriteChar;
     private final Object mWriteLock;
-    private BluetoothGattCharacteristic mNotiCharact;
+    private BluetoothGattCharacteristic mNotifyChar;
 
     private volatile BlufiCallback mUserCallback;
 
@@ -92,8 +92,8 @@ class BlufiClientImpl implements BlufiParameter {
                     BluetoothGattCharacteristic notiCharact, BlufiCallback callback) {
         mClient = client;
         mGatt = gatt;
-        mWriteCharact = writeCharact;
-        mNotiCharact = notiCharact;
+        mWriteChar = writeCharact;
+        mNotifyChar = notiCharact;
         mUserCallback = callback;
 
         mPackageLengthLimit = DEFAULT_PACKAGE_LENGTH;
@@ -131,8 +131,8 @@ class BlufiClientImpl implements BlufiParameter {
                 mGatt.close();
                 mGatt = null;
             }
-            mNotiCharact = null;
-            mWriteCharact = null;
+            mNotifyChar = null;
+            mWriteChar = null;
             if (mAck != null) {
                 mAck.clear();
                 mAck = null;
@@ -189,11 +189,19 @@ class BlufiClientImpl implements BlufiParameter {
     }
 
     void sendMDFCustomData(final byte[] data) {
-        mThreadPool.submit(() -> __sendMDFCustomData(data));
+        mThreadPool.submit(() -> {
+            boolean send = __sendMDFCustomData(data);
+            int status = send ? BlufiCallback.STATUS_SUCCESS : BlufiCallback.CODE_WRITE_DATA_FAILED;
+            if (mUserCallback != null) {
+                mUIHandler.post(() -> {
+                    mUserCallback.onSendMDFCustomData(mClient, data, status);
+                });
+            }
+        });
     }
 
     void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-        if (characteristic != mNotiCharact) {
+        if (characteristic != mNotifyChar) {
             return;
         }
 
@@ -213,7 +221,7 @@ class BlufiClientImpl implements BlufiParameter {
     }
 
     void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-        if (characteristic != mWriteCharact) {
+        if (characteristic != mWriteChar) {
             return;
         }
 
@@ -278,8 +286,8 @@ class BlufiClientImpl implements BlufiParameter {
 
     private synchronized void gattWrite(byte[] data) throws InterruptedException {
         synchronized (mWriteLock) {
-            mWriteCharact.setValue(data);
-            mGatt.writeCharacteristic(mWriteCharact);
+            mWriteChar.setValue(data);
+            mGatt.writeCharacteristic(mWriteChar);
 
             mWriteLock.wait();
         }
@@ -1252,12 +1260,13 @@ class BlufiClientImpl implements BlufiParameter {
         return result;
     }
 
-    private void __sendMDFCustomData(byte[] data) {
+    private boolean __sendMDFCustomData(byte[] data) {
         int typeValue = getTypeValue(Type.Data.PACKAGE_VALUE, Type.Data.SUBTYPE_MDF_CUSTOM);
         try {
-            post(mEncrypted, mChecksum, mRequireAck, typeValue, data);
+            return post(mEncrypted, mChecksum, mRequireAck, typeValue, data);
         } catch (InterruptedException e) {
             e.printStackTrace();
+            return false;
         }
     }
 

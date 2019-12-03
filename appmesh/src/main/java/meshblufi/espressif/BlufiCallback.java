@@ -65,6 +65,9 @@ public abstract class BlufiCallback {
     public void onWifiStateResponse(BlufiClient client, BlufiStatusResponse response) {
     }
 
+    public void onSendMDFCustomData(BlufiClient client, byte[] data, int status) {
+    }
+
     /**
      * Callback the device send custom data to APP
      *

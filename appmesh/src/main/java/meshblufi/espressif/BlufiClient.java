@@ -8,9 +8,9 @@ import meshblufi.espressif.params.BlufiConfigureParams;
 public class BlufiClient {
     private BlufiClientImpl mImpl;
 
-    public BlufiClient(BluetoothGatt gatt, BluetoothGattCharacteristic writeCharact, BluetoothGattCharacteristic notiCharact,
+    public BlufiClient(BluetoothGatt gatt, BluetoothGattCharacteristic writeChar, BluetoothGattCharacteristic notifyChar,
                        BlufiCallback callback) {
-        mImpl = new BlufiClientImpl(this, gatt, writeCharact, notiCharact, callback);
+        mImpl = new BlufiClientImpl(this, gatt, writeChar, notifyChar, callback);
     }
 
     public void setDeviceVersion(int version) {
