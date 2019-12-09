@@ -203,6 +203,11 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
             }
 
             @Override
+            public void onSendMDFCustomData(BlufiClient client, byte[] data, int status) {
+                mUserCallback.onSendMDFCustomData(client, data, status);
+            }
+
+            @Override
             public void onReceivedCustomData(BlufiClient client, byte[] data) {
                 mUserCallback.onReceivedCustomData(client, data);
             }
