@@ -1,0 +1,27 @@
+<div class="overflow-touch">
+    <div class="flex flex-m flex-jcb">
+        <div class="card-wrapper-info" v-for="(item, index) in attrList">
+            <div class="card-wrapper">
+                <div class="card-name flex flex-jcb"><span>{{item.name}}</span><span class="icon-blue">{{item.value}}</span></div>
+                <div class="card-content">
+                    <div :id="item.cid + item.name" :data-cid="item.cid"
+                         v-show="initAttrSlider(item.cid, item.name, item.value, item.perms, item.min,
+                                item.max, item.step)" class="div-slider"
+                    ></div>
+                    <div class="card-num flex flex-jcb flex-ac">
+                        <span class="start">{{item.min}}</span>
+                        <span class="end">{{item.max}}</span>
+                    </div>
+                </div>
+                <div v-show="isShowInput(item.perms)" class="card-bottom flex flex-ac flex-jcc">
+                    <input @change="changValue($event, item.cid)" :data-cid="item.cid" class="form-control input-value" :value="item.value">
+                    <span class="card-icon">
+                        <i @click="resetValue(item.value, item.cid, $event)" class="icon-reset"></i>
+                        <i @click="sendValue($event)" class="icon-send"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

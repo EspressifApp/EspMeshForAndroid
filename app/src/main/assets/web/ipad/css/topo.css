@@ -1643,12 +1643,22 @@ div.set {
 	width: 10%;
 	padding: 0 !important;
 }
+#toporight-wirting-table {
+	overflow: hidden;
+}
 #table-wirting-wrapper {
 	height: 100%;
-	margin: 0 15px;
+	text-align: center;
+
+}
+#table-wirting-wrapper .table tr {
+	display: block;
+	height: 22px;
 }
 #table-wirting-wrapper .table tr td {
-	height: 1vh;
+	display: inline-block;
+	height: 22px;
+	width: 22px;
 	text-align: center;
 	padding: 0 !important;
 	margin: 0;
@@ -1657,14 +1667,12 @@ div.set {
 	margin: 0;
 }
 #table-drop-wirting {
-	width: 100vh;
-	margin: 10px auto;
 	border: none;
 }
 #table-drop-wirting .writing-round {
 	display: inline-block;
-	width: 24px;
-	height: 24px;
+	width: 20px;
+	height: 20px;
 	border-radius: 100%;
 	background: #00c0ef;
 	transition: all .2s linear;
@@ -2036,15 +2044,15 @@ div.set {
 	height: 18px;
 	line-height: 18px;
 }
-.register-wraaper .content {
+.register-wrapper .content {
 	background: #fff;
 	padding: 0;
 	margin-bottom: 10px;
 }
-.register-wraaper .position-relative {
+.register-wrapper .position-relative {
 	margin: 0;
 }
-.register-wraaper .form-control {
+.register-wrapper .form-control {
 	border: none;
 	border-top: 1px solid #ededed;
 	height: 45px;
@@ -2127,15 +2135,15 @@ div.set {
 	background-position: center;
 
 }
-.register-wraaper .content {
+.register-wrapper .content {
 	background: #fff;
 	padding: 0;
 	margin-bottom: 10px;
 }
-.register-wraaper .position-relative {
+.register-wrapper .position-relative {
 	margin: 0;
 }
-.register-wraaper .form-control {
+.register-wrapper .form-control {
 	border: none;
 	border-top: 1px solid #ededed;
 	height: 45px;
@@ -2728,6 +2736,8 @@ h3 {
 	padding-top: 30px;
 	background: #fff;
 	z-index: 1055;
+	overflow: hidden;
+	overflow-y: auto;
 }
 .text-wrapper span {
 	width: 50px;
@@ -2737,6 +2747,13 @@ h3 {
 	font-size: 32px;
 	color: #fff;
 	border-radius: 100%;
+	transition: all .3 linear;
+}
+.text-wrapper span.text-info {
+    font-size: 16px;
+}
+.text-wrapper span.text-info.active {
+	box-shadow: 0 0 10px #000;
 }
 @media (min-width: 768px) {
 

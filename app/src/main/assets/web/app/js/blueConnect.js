@@ -26,7 +26,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/blueConnect.html"],
                     self.currentRgb = "";
                     setTimeout(function() {
                         window.onBackPressed = self.hide;
-                    });
+                    }, 1000);
                     self.flag = true;
                 },
                 selectColor: function(item) {
@@ -68,6 +68,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/blueConnect.html"],
                                 position: 'bottom',
                             });
                         }
+                        setTimeout(function() {
+                            window.onBackPressed = self.hide;
+                        }, 1000);
                     }, 1000)
                 },
                 hide: function () {

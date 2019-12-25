@@ -3,12 +3,17 @@ package libs.espressif.log;
 import android.util.Log;
 
 public class EspLog {
+
+    private static final int LINE_LENGTH_DEFAULT = 1500;
+
     private static Level sLevel = Level.V;
 
-    private static final int SUB_LENGTH = 1500;
+    private static int sLineLength = LINE_LENGTH_DEFAULT;
 
     private final String mTag;
     private Level mLevel;
+    private int mLineLength;
+
 
     /**
      * @param cls The tag will use simple name of the cls.
@@ -16,14 +21,11 @@ public class EspLog {
     public EspLog(Class cls) {
         mTag = String.format("[%s]", cls.getSimpleName());
         mLevel = sLevel;
+        mLineLength = sLineLength;
     }
 
     public static void setDefaultLevel(Level level) {
-        if (level == null) {
-            sLevel = Level.NIL;
-        } else {
-            sLevel = level;
-        }
+        sLevel = level != null ? level : Level.NIL;
     }
 
     /**
@@ -32,11 +34,15 @@ public class EspLog {
      * @param level The lowest level can print log.
      */
     public void setLevel(Level level) {
-        if (level == null) {
-            mLevel = Level.NIL;
-        } else {
-            mLevel = level;
-        }
+        mLevel = level != null ? level : Level.NIL;
+    }
+
+    public static void setDefaultLineLength(int length) {
+        sLineLength = length > 0 ? length : LINE_LENGTH_DEFAULT;
+    }
+
+    public void setLineLength(int length) {
+        mLineLength = length > 0 ? length : LINE_LENGTH_DEFAULT;
     }
 
     /**
@@ -89,22 +95,24 @@ public class EspLog {
             return;
         }
 
-        if (msg.length() <= SUB_LENGTH) {
-            __log(msg, level);
+        final int lineLength = mLineLength > 0 ? mLineLength : sLineLength;
+
+        if (msg.length() <= lineLength) {
+            androidLog(msg, level);
             return;
         }
 
-        for (int begin = 0, end = SUB_LENGTH; begin < msg.length(); begin += SUB_LENGTH, end += SUB_LENGTH) {
+        for (int begin = 0, end = lineLength; begin < msg.length(); begin += lineLength, end += lineLength) {
             if (end > msg.length()) {
                 end = msg.length();
             }
 
             String subString = msg.substring(begin, end);
-            __log(subString, level);
+            androidLog(subString, level);
         }
     }
 
-    private void __log(String msg, Level level) {
+    private void androidLog(String msg, Level level) {
         switch (level) {
             case V:
                 Log.v(mTag, msg);

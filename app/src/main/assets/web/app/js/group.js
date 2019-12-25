@@ -267,10 +267,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
             editName: function () {
                 var self = this;
                 if (self.groupObj.is_user) {
-                    MINT.Toast({
-                        message: self.$t('prohibitEditDesc'),
-                        position: 'middle',
-                    });
+                    Util.toast(MINT, self.$t('prohibitEditDesc'))
                 } else{
                     self.hideOperate();
                     MINT.MessageBox.prompt(self.$t('editNameInput'), self.$t('editGroupTitle'),
@@ -290,10 +287,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                 var self = this,
                     doc = $(e.currentTarget);
                 if (self.groupObj.is_user) {
-                    MINT.Toast({
-                        message: self.$t('prohibitDelDesc'),
-                        position: 'middle',
-                    });
+                    Util.toast(MINT, self.$t('prohibitDelDesc'));
                 } else {
                     self.hideOperate();
                     MINT.MessageBox.confirm(self.$t('delGroupDesc'), self.$t('delGroupTitle'),{
@@ -423,11 +417,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/group.html", "../js/footer", "./
                 var self = this;
                 self.$store.commit("setShowScanBle", false);
                 window.onBackPressed = function () {
-                    MINT.Toast({
-                        message: self.$t('exitProgramDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('exitProgramDesc'));
                     if (startTime == 0) {
                         startTime = new Date().getTime();
                     } else {

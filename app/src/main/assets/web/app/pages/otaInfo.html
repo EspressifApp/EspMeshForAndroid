@@ -52,7 +52,7 @@
                                 <span class="desc-title">{{$t('processCutover')}}</span>
                             </div>
                         </div>
-                        <p class="progress-details">
+                        <p class="progress-details flex flex-ac flex-jcb">
                             <span>{{$t('deviceUpgradingDesc')}}</span>
                             <span>{{getBin(bin)}}</span>
                             <span class="text-right">{{timeCost}}</span>
@@ -68,16 +68,16 @@
                             <button @click="stopUpgrade" class="btn register-btn">{{$t('cancelBtn')}}</button>
                         </div>
                         <div v-show="upgradeSuccess" class="result-success">
-                            <p>{{$t('upgradeSucDesc')}}</p>
-                            <div class="result-flex">
+                            <p class="progress-details">{{$t('upgradeSucDesc')}}</p>
+                            <div class="result-flex flex flex-ac">
                                 <button @click="stopUpgrade" class="btn register-btn retry">{{$t('cancelBtn')}}</button>
                                 <button @click="otaReboot" class="btn register-btn">{{$t('confirmBtn')}}</button>
                             </div>
 
                         </div>
                         <div v-show="showPart" class="result-success">
-                            <p>{{$t('upgradepPartSucDesc')}}</p>
-                            <div class="result-flex">
+                            <p class="progress-details">{{$t('upgradepPartSucDesc')}}</p>
+                            <div class="result-flex flex flex-ac">
                                 <button @click="retrySave" class="btn register-btn retry">{{$t('retryBtn')}}</button>
                                 <button @click="otaReboot" class="btn register-btn">{{$t('confirmBtn')}}</button>
                             </div>

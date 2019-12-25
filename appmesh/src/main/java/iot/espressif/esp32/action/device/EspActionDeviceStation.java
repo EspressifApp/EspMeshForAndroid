@@ -10,16 +10,15 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Vector;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
@@ -38,10 +37,7 @@ import iot.espressif.esp32.model.callback.DeviceScanCallback;
 import iot.espressif.esp32.model.device.EspDeviceFactory;
 import iot.espressif.esp32.model.device.IEspDevice;
 import iot.espressif.esp32.model.device.other.DevicePropertiesCache;
-import iot.espressif.esp32.model.device.properties.EspDeviceState;
 import iot.espressif.esp32.model.net.MeshNode;
-import iot.espressif.esp32.model.other.EspRxObserver;
-import iot.espressif.esp32.model.user.EspUser;
 import libs.espressif.log.EspLog;
 import libs.espressif.net.NetUtil;
 
@@ -82,154 +78,117 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
         return result;
     }
 
-    private List<IEspDevice> scanStations(DeviceScanCallback callback) {
-        List<IEspDevice> result = new Vector<>();
+    private class ScanListener {
+        private final DeviceScanCallback callback;
+        private final ExecutorService executor;
+
+        final HashSet<String> addrSet = new HashSet<>();
+        final HashSet<String> rootMacSet = new HashSet<>();
+        final List<Future<List<IEspDevice>>> topoFuture = new Vector<>();
 
         DevicePropertiesCache devProCache = new DevicePropertiesCache();
 
-        LinkedBlockingQueue<Object> topoTaskQueue = new LinkedBlockingQueue<>();
-        topoTaskQueue.iterator().hasNext();
-        AtomicInteger topoCounter = new AtomicInteger(0);
-        HashSet<String> addrSet = new HashSet<>();
-        HashSet<String> rootMacSet = new HashSet<>();
-        ScanListener listener = (mac, addr, protocol, port) -> {
-            rootMacSet.add(mac);
+        ScanListener(DeviceScanCallback callback, ExecutorService executor) {
+            this.callback = callback;
+            this.executor = executor;
+        }
+
+        void onScanResult(String mac, String addr, String protocol, int port) {
             synchronized (addrSet) {
-                if (!addrSet.contains(addr)) {
-                    addrSet.add(addr);
-                    topoCounter.incrementAndGet();
-
-                    Observable.just(new EspActionDeviceTopology())
-                            .subscribeOn(Schedulers.io())
-                            .map(action -> {
-                                // Get mesh info
-                                return action.doActionGetMeshNodeLocal(protocol, addr, port);
-                            })
-                            .map(nodes -> {
-                                // Parse device
-                                List<IEspDevice> nodeDevices = new ArrayList<>(nodes.size());
-                                for (MeshNode node : nodes) {
-                                    IEspDevice nodeDev = EspDeviceFactory.parseMeshNode(node);
-                                    assert nodeDev != null;
-                                    devProCache.setPropertiesIfCache(nodeDev);
-                                    nodeDevices.add(nodeDev);
-                                }
-                                return nodeDevices;
-                            })
-                            .doOnNext(nodeDevices -> {
-                                // Invoke callback
-                                if (callback != null) {
-                                    Observable.just(nodeDevices)
-                                            .subscribeOn(Schedulers.io())
-                                            .doOnNext(callback::onMeshDiscover)
-                                            .subscribe();
-                                }
-                            })
-                            .doOnNext(result::addAll)
-                            .subscribe(new EspRxObserver<List<IEspDevice>>() {
-                                @Override
-                                public void onError(Throwable e) {
-                                    e.printStackTrace();
-                                    topoTaskQueue.add(Boolean.FALSE);
-                                }
-
-                                @Override
-                                public void onComplete() {
-                                    topoTaskQueue.add(Boolean.TRUE);
-                                }
-                            });
+                if (addrSet.contains(addr)) {
+                    return;
                 }
-            }
-        };
 
-        LinkedBlockingQueue<Object> scanTaskQueue = new LinkedBlockingQueue<>();
-        scanTaskQueue.iterator().hasNext();
+                addrSet.add(addr);
+            }
+
+            rootMacSet.add(mac);
+
+            Future<List<IEspDevice>> future = executor.submit(() -> {
+                EspActionDeviceTopology topoAction = new EspActionDeviceTopology();
+                List<MeshNode> meshNodes = topoAction.doActionGetMeshNodeLocal(protocol, addr, port);
+                List<IEspDevice> nodeDevices = new ArrayList<>(meshNodes.size());
+                for (MeshNode node : meshNodes) {
+                    IEspDevice nodeDev = EspDeviceFactory.parseMeshNode(node);
+                    assert nodeDev != null;
+                    devProCache.setPropertiesIfCache(nodeDev);
+                    nodeDevices.add(nodeDev);
+                }
+
+                if (callback != null) {
+                    Observable.just(new ArrayList<>(nodeDevices))
+                            .subscribeOn(Schedulers.io())
+                            .doOnNext(callback::onMeshDiscover)
+                            .subscribe();
+                }
+                return nodeDevices;
+            });
+            topoFuture.add(future);
+        }
+    }
+
+    private List<IEspDevice> scanStations(DeviceScanCallback callback) {
+        List<IEspDevice> result = new ArrayList<>();
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+        ScanListener listener = new ScanListener(callback, executor);
+
+        List<Future> scanFutures = new ArrayList<>();
         int mdnsCount = 1;
         int udpCount = 3;
-
+        // Scan mDNS
         for (int i = 0; i < mdnsCount; ++i) {
-            Observable.just(listener)
-                    .subscribeOn(Schedulers.io())
-                    .doOnNext(this::scanMDNS)
-                    .doOnComplete(() -> scanTaskQueue.add(Boolean.TRUE))
-                    .subscribe();
+            Future future = executor.submit(() -> scanMDNS(listener));
+            scanFutures.add(future);
         }
+
+        // Scan UDP
         for (int i = 0; i < udpCount; ++i) {
-            Observable.just(listener)
-                    .subscribeOn(Schedulers.io())
-                    .doOnNext(this::scanUDP)
-                    .doOnComplete(() -> scanTaskQueue.add(Boolean.TRUE))
-                    .subscribe();
+            Future future = executor.submit(() -> scanUDP(listener));
+            scanFutures.add(future);
 
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                mLog.w("Interrupted when scan station UDP");
                 Thread.currentThread().interrupt();
-                return result;
+                break;
             }
         }
 
-        int scanCount = mdnsCount + udpCount;
-        for (int i = 0; i < scanCount; ++i) {
+        for (Future future : scanFutures) {
             try {
-                scanTaskQueue.take();
-            } catch (InterruptedException e) {
+                future.get();
+            } catch (ExecutionException e) {
                 e.printStackTrace();
+            } catch (InterruptedException e) {
+                mLog.w("Interrupted when ScanFuture get result");
                 Thread.currentThread().interrupt();
-                return result;
+                break;
             }
         }
-
-        int topoTaskCount = topoCounter.get();
-        for (int i = 0; i < topoTaskCount; ++i) {
+        for (Future<List<IEspDevice>> future : listener.topoFuture) {
             try {
-                topoTaskQueue.take();
-            } catch (InterruptedException e) {
+                List<IEspDevice> devices = future.get();
+                result.addAll(devices);
+            } catch (ExecutionException e) {
                 e.printStackTrace();
+            } catch (InterruptedException e) {
+                mLog.w("Interrupted when TopoFuture get result");
                 Thread.currentThread().interrupt();
-                return result;
+                break;
             }
         }
 
-        Observable.fromIterable(result)
-                .filter(device -> rootMacSet.contains(device.getMac()))
-                .doOnNext(device -> device.setParentDeviceMac(null))
-                .subscribe();
+        // Close ThreadPool
+        executor.shutdown();
+        mLog.d("ExecutorService shutdown");
 
-        // TCP check
-        final List<IEspDevice> tcpCheckDevices = tcpCheckStations(result);
-        if (!tcpCheckDevices.isEmpty() && callback != null) {
-            synchronized (tcpCheckDevices) {
-                Observable.just(tcpCheckDevices)
-                        .subscribeOn(Schedulers.io())
-                        .doOnNext(callback::onMeshDiscover)
-                        .subscribe(new EspRxObserver<List<IEspDevice>>() {
-                            @Override
-                            public void onError(Throwable e) {
-                                e.printStackTrace();
-                                synchronized (tcpCheckDevices) {
-                                    tcpCheckDevices.notify();
-                                }
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                synchronized (tcpCheckDevices) {
-                                    tcpCheckDevices.notify();
-                                }
-                            }
-                        });
-
-                try {
-                    tcpCheckDevices.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    return Collections.emptyList();
-                }
+        for (IEspDevice device : result) {
+            if (listener.rootMacSet.contains(device.getMac())) {
+                device.setParentDeviceMac(null);
             }
         }
-        result.addAll(tcpCheckDevices);
 
         DeviceBox deviceBox = MeshObjectBox.getInstance().device();
         for (IEspDevice device : result) {
@@ -293,7 +252,7 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
             try {
                 Thread.sleep(MDNS_TIMEOUT);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                mLog.w("Scan mDNS interrupted");
                 return;
             } finally {
                 jmDNS.removeServiceListener(MDNS_TYPE_HTTP, listener);
@@ -409,56 +368,5 @@ public class EspActionDeviceStation implements IEspActionDeviceStation {
 
         socket.close();
         mLog.d("UDP scan end");
-    }
-
-    private List<IEspDevice> tcpCheckStations(Collection<IEspDevice> scanStations) {
-        List<IEspDevice> result = new LinkedList<>();
-
-        List<IEspDevice> tcpCheckDevices = new LinkedList<>();
-        List<IEspDevice> rootUserDevices = new ArrayList<>();
-        for (IEspDevice device : EspUser.INSTANCE.getAllDeviceList()) {
-            if (!device.isState(EspDeviceState.State.LOCAL)) {
-                continue;
-            }
-            if (device.getMeshLayerLevel() == IEspDevice.LAYER_ROOT) {
-                rootUserDevices.add(device);
-            }
-        }
-
-        HashSet<String> staAddrSet = new HashSet<>();
-        HashSet<String> staMacSet = new HashSet<>();
-        LinkedList<IEspDevice> stations = new LinkedList<>(scanStations);
-        for (IEspDevice device : stations) {
-            staAddrSet.add(device.getLanHostAddress());
-            staMacSet.add(device.getMac());
-        }
-
-        for (IEspDevice rootUserDev : rootUserDevices) {
-            if (staAddrSet.contains(rootUserDev.getLanHostAddress())) {
-                continue;
-            }
-            if (staMacSet.contains(rootUserDev.getMac())) {
-                continue;
-            }
-
-            tcpCheckDevices.add(rootUserDev);
-        }
-        mLog.d("TCP check device size = " + tcpCheckDevices.size());
-        for (IEspDevice tcpDevice : tcpCheckDevices) {
-            List<MeshNode> nodes = new EspActionDeviceTopology().doActionGetMeshNodeLocal(
-                    tcpDevice.getProtocol(), tcpDevice.getLanHostAddress(), tcpDevice.getProtocolPort());
-            for (MeshNode node : nodes) {
-                IEspDevice nodeDev = EspDeviceFactory.parseMeshNode(node);
-                if (nodeDev != null) {
-                    result.add(nodeDev);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private interface ScanListener {
-        void onScanResult(String mac, String addr, String protocol, int port);
     }
 }

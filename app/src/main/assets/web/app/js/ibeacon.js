@@ -33,7 +33,6 @@ define(["vue","MINT", "Util", "txt!../../pages/ibeacon.html", "./ibeaconInfo"],
                 },
                 hide: function () {
                     this.addFlag = false;
-                    espmesh.stopBleScan();
                     this.$store.commit("setShowScanBle", true);
                     this.$emit("ibeanShow");
                 },

@@ -18,10 +18,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/password.html"], function(v, MIN
             register: function () {
                 var self = this;
                 if (Util._isEmpty(self.email)) {
-                    MINT.Toast({
-                        message: self.$t('emailDesc'),
-                        position: 'bottom',
-                    });
+                    Util.toast(MINT, self.$t('emailDesc'));
                     return false;
                 }
                 MINT.Indicator.open();
@@ -30,16 +27,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/password.html"], function(v, MIN
                     if (!Util._isEmpty(res)){
                         res = JSON.parse(res);
                         if (res.status == 0) {
-                            MINT.Toast({
-                                message: self.$t('sendSuccessDesc'),
-                                position: 'bottom',
-                            });
+                            Util.toast(MINT, self.$t('sendSuccessDesc'))
                             self.hide();
                         } else {
-                            MINT.Toast({
-                                message: self.$t('sendFailDesc'),
-                                position: 'bottom',
-                            });
+                            Util.toast(MINT, self.$t('sendFailDesc'))
                         }
                     }
                     MINT.Indicator.close();

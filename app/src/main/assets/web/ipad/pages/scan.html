@@ -1,0 +1,66 @@
+<transition name="moves">
+    <div v-show="addFlag" class="add-info operate-way">
+        <div class="init-width main-wrap flex ">
+            <div class="left flex flex-v">
+                <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>Statistical</h4>
+                <ul class="flex-1">
+                    <li @click="selectItem(1)" :class="{'active': curSelect == 1}" class="flex flex-ac flex-jcb left-item">
+                        <div class="flex flex-ac">
+                            <span class="name">参数详情</span>
+                        </div>
+                        <span class="icon-right"></span>
+                    </li>
+                    <li @click="selectItem(2)" :class="{'active': curSelect == 2}" class="flex flex-ac flex-jcb left-item">
+                        <div class="flex flex-ac">
+                            <span class="name">参数配置</span>
+                        </div>
+                        <span class="icon-right"></span>
+                    </li>
+                    <li @click="selectItem(3)" :class="{'active': curSelect == 3}" class="flex flex-ac flex-jcb left-item">
+                        <div class="flex flex-ac">
+                            <span class="name">统计报表</span>
+                        </div>
+                        <span class="icon-right"></span>
+                    </li>
+                    <li @click="selectItem(4)" :class="{'active': curSelect == 4}" class="flex flex-ac flex-jcb left-item">
+                        <div class="flex flex-ac">
+                            <span class="name">附近设备</span>
+                        </div>
+                        <span class="icon-right"></span>
+                    </li>
+                </ul>
+            </div>
+            <div class="right flex flex-v flex-1">
+                <div class="control-content flex flex-v">
+                    <h4 class="app-title">参数详情</h4>
+                    <div class="ibeacon-content">
+                        <div class="ibeacon-header flex flex-ac flex-jcc">
+                            <div class="ibeacon-device flex flex-v flex-ac">
+                                <div class="ibeacon-device-icon flex flex-ac flex-jcc">
+                                    <i class="icon-radar icon-blue"></i>
+                                </div>
+                                <!--<span>ibeaconInfo.name</span>-->
+                                <!--<span>deviceInfo.mac</span>-->
+                            </div>
+                        </div>
+                        <!--<div class="ibeacon-line">-->
+                        <!--<div >Rssi</div>-->
+                        <!--<div class="show-line"></div>-->
+                        <!--</div>-->
+                        <div @click="selectItem(2)" class="ibeacon-middle">
+                            <p class="flex flex-jcb"><span>{{$t('status')}}:&emsp;</span>{{getType()}}</p>
+                            <p class="flex flex-jcb"><span>通知值(%):&emsp;</span>{{getNotice()}}</p>
+                            <p class="flex flex-jcb"><span>过滤ESP设备:&emsp;</span>{{getFilter()}}</p>
+                            <p class="flex flex-jcb"><span>蓝牙扫描间隔:&emsp;</span>{{getInterval()}}</p>
+                            <p class="flex flex-jcb"><span>蓝牙扫描时间:&emsp;</span>{{getWindow()}}</p>
+                        </div>
+                    </div>
+                </div>
+                <v-scanInfo v-on:scanInfoShow="onBackScan" :rootMac="rootMac" :scanInfo="scanInfo" ref="info"></v-scanInfo>
+                <v-reports v-on:reportsInfoShow="onBackScan" ref="reports"></v-reports>
+                <v-scanContent v-on:scanContentShow="onBackScan" ref="content"></v-scanContent>
+            </div>
+        </div>
+    </div>
+</transition>
+

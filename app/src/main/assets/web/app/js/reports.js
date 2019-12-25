@@ -14,15 +14,15 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                     addFlag: false,
                     newDate: "",
                     todayData: [],
+                    deviceList: [],
                     yesterdayData: [],
-                    todayChart: "",
-                    monthChart: "",
                     weekData: [],
                     monthData: [],
                     todayYData: [],
                     todayXData: [],
                     monthYData: [],
                     monthXData: [],
+                    pieData: [],
                     realTimeYData: [],
                     realTimeXData: [],
                     scanTimerId: "",
@@ -32,10 +32,8 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                 show: function() {
                     var self = this;
                     window.onBackPressed = self.hide;
-                    window.onTodayData = self.onTodayData;
-                    window.onYesterdayData = self.onYesterdayData;
-                    window.onWeekData = self.onWeekData;
                     window.onMonthData = self.onMonthData;
+                    self.deviceList = self.$store.state.deviceList;
                     self.todayXData = [];
                     self.todayYData = [];
                     self.monthXData = [];
@@ -46,26 +44,12 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                     setTimeout(function() {
                         self.getData();
                     }, 500)
-                    self.scanTimerId = setInterval(function() {
-                        if (self.addFlag) {
-                            self.getData();
-                        } else {
-                            clearInterval(self.scanTimerId);
-                            self.scanTimerId = "";
-                        }
-
-                    }, 10000);
                     MINT.Indicator.open();
                 },
                 getData: function() {
                     var self = this;
                     self.newDate = new Date();
-                    self.getPeople(self.getZeroTime(self.newDate), self.getCurrentTime(self.newDate), "onTodayData");
-                    self.getPeople(self.getYesterday(self.newDate), self.getOneTime(self.newDate), "onYesterdayData");
-                    self.getPeople(self.getWeek(self.newDate), self.getCurrentTime(self.newDate), "onWeekData");
                     self.getPeople(self.getTheMonth(self.newDate), self.getCurrentTime(self.newDate), "onMonthData");
-                    MINT.Indicator.close();
-                    //self.initPieEcharts("pie-chart");
                 },
                 getCurrentTime: function(date) {
                     return date.getTime();
@@ -94,23 +78,56 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                 getZeroTime: function(date) {
                     return (date.getTime() - this.getOneTime(date));
                 },
+                getPieData: function() {
+                    var self = this, macs = [], obj = {};
+                    for (var i = 0; i < self.todayData.length; i++) {
+                        var item = self.todayData[i];
+                        if (item.scanner) {
+                            var mac = item.scanner;
+                            if (macs.indexOf(item.scanner) == -1) {
+                                obj[mac] = 0
+                                macs.push(mac);
+                            }
+                            obj[mac] ++
+                        }
+
+                    }
+                    var pieData = []
+                    $.each(self.deviceList, function(i, item) {
+                        var mac = item.mac
+                        if (macs.indexOf(mac) != -1) {
+                            pieData.push({value: obj[mac], name: item.name})
+                        }
+                    })
+                    self.pieData = pieData;
+                    console.log(JSON.stringify(pieData));
+                    if (Util._isEmpty(PIE_CHART)) {
+                        self.initPieEcharts("pie-chart");
+                    } else {
+                        PIE_CHART.setOption({
+                            series: [{
+                                data: pieData
+                            }]
+                        })
+                    }
+                },
                 getRealTimeData: function(date) {
                     var self = this;
                     var endTime = date.getTime();
-                    var time = 10 * 1000;
+                    var time = 5 * 1000;
                     var startTime = endTime - time;
                     if (self.realTimeYData.length >= 25) {
-                        self.realTimeYData.splice(0, 1);
+                        self.realTimeYData.shift();
                     }
                     self.realTimeYData.push(self.getBlockData(self.todayData, startTime, endTime));
                     if (self.realTimeXData.length >= 25) {
-                        self.realTimeXData.splice(0, 1);
+                        self.realTimeXData.shift();
                     }
                     self.realTimeXData.push(date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds());
-                    if (Util._isEmpty(self.todayChart)) {
+                    if (Util._isEmpty(TODAY_CHART)) {
                         self.initLineEcharts("line-chart");
                     } else {
-                        self.todayChart.setOption({
+                        TODAY_CHART.setOption({
                             xAxis:[{
                                 data: self.realTimeXData
                             }],
@@ -127,7 +144,6 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                     self.todayXData = [];
                     var startTime = self.getZeroTime(date);
                     for(var i = 0; i <= hours; i++) {
-
                         var time = self.getHoursTime(1),
                             endTime = startTime + time;
                         self.todayYData.push(self.getBlockData(self.todayData, startTime, endTime));
@@ -135,10 +151,10 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                         self.todayXData.push(i + ":00");
 
                     }
-                    if (Util._isEmpty(self.monthChart)) {
+                    if (Util._isEmpty(MONTH_CHART)) {
                         self.initBarEcharts("bar-chart");
                     } else {
-                        self.monthChart.setOption({
+                        MONTH_CHART.setOption({
                             xAxis:[{
                                 data: self.todayXData
                             }],
@@ -148,41 +164,11 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                         })
                     }
                 },
-                getBarMonth: function(date) {
-                    var self = this,
-                        day = date.getDate();
-                    self.monthYData = [];
-                    self.monthXData = [];
-                    var startTime = (date.getTime() - day * 24 * 60 * 60 * 1000);
-                    if (day > 2) {
-                        for(var i = 1; i < day; i++) {
-                            var time = self.getHoursTime(24),
-                                endTime = startTime + time
-                            self.monthYData.push(self.getBlockData(self.monthData, startTime, endTime));
-                            self.monthXData.push(i);
-                            startTime = endTime;
-                        }
-                    }
-                    self.monthYData.push(self.todayData.length);
-                    self.monthXData.push(day);
-                    if (Util._isEmpty(self.monthChart)) {
-                        self.initBarEcharts("bar-chart")
-                    } else {
-                        self.monthChart.setOption({
-                            xAxis:[{
-                                data: self.monthXData
-                            }],
-                            series: [{
-                                data: self.monthYData
-                            }]
-                        })
-                    }
-                },
                 getHoursTime: function(hour) {
                     return hour * 60 * 60 * 1000;
                 },
                 getBlockData: function(data, zeroTime, currentTime) {
-                    var list = [];
+                    var self = this, list = [];
                     $.each(data, function(i, item) {
                         var time = item.time;
                         if (time >= zeroTime && time <= currentTime) {
@@ -193,49 +179,91 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                 },
                 hide: function () {
                     this.addFlag = false;
+                    MINT.Indicator.close();
+                    this.$parent.curSelect = 1;
                     espmesh.stopScanSniffer();
                     if (!Util._isEmpty(this.scanTimerId)) {
                         clearInterval(this.scanTimerId);
                         this.scanTimerId = "";
                     }
+                    if (!Util._isEmpty(TODAY_CHART)) {
+                        TODAY_CHART.clear();
+                    }
+                    if (!Util._isEmpty(MONTH_CHART)) {
+                        MONTH_CHART.clear();
+                    }
+                    if (!Util._isEmpty(PIE_CHART)) {
+                        PIE_CHART.clear();
+                    }
+                    TODAY_CHART = "";
+                    MONTH_CHART = "";
+                    PIE_CHART = "";
                     this.$emit("reportsInfoShow");
                 },
                 getPeople: function(startTime, endTime, callback) {
                    espmesh.loadSniffers(JSON.stringify({"min_time": startTime, "max_time": endTime,
                             "del_duplicate": true, "callback": callback}));
                 },
-                onTodayData: function(res) {
-                    this.todayData = [];
-                    if (!Util._isEmpty(res)) {
-                        this.todayData = JSON.parse(res);
-                    }
-                    this.getRealTimeData(this.newDate);
-                    this.getLineToday(this.newDate);
-                },
-                onYesterdayData: function(res) {
-                    this.yesterdayData = [];
-                    if (!Util._isEmpty(res)) {
-                        this.yesterdayData = JSON.parse(res);
-                    }
-                },
-                onWeekData: function(res) {
-                    this.weekData = [];
-                    if (!Util._isEmpty(res)) {
-                        this.weekData = JSON.parse(res);
-                    }
-                },
                 onMonthData: function(res) {
-                    this.monthData = [];
-                    if (!Util._isEmpty(res)) {
-                        this.monthData = JSON.parse(res);
+                    var self = this;
+                    self.monthData = [];
+                    if (!Util._isEmpty(res) && res !== "[]") {
+                        res= JSON.parse(res);
+                        var todayData = [], yesterdayData = [], weekData = [];
+                        var zeroTime = self.getZeroTime(self.newDate);
+                        var currentTime = self.getCurrentTime(self.newDate);
+                        var yersterDay = self.getYesterday(self.newDate);
+                        var oneTime = self.getOneTime(self.newDate);
+                        var yersterDay = self.getYesterday(self.newDate);
+                        var oneTime = self.getOneTime(self.newDate);
+                        var weekTime = self.getWeek(self.newDate);
+                        if (self.$store.state.systemInfo != "Android") {
+                            zeroTime = parseInt(zeroTime / 1000);
+                            currentTime = parseInt(currentTime / 1000);
+                            yersterDay = parseInt(yersterDay / 1000);
+                            oneTime = parseInt(oneTime / 1000);
+                            weekTime = parseInt(weekTime / 1000)
+                        }
+                        $.each(res, function (i, item) {
+                            var time = item.time;
+                            if (time >= zeroTime && time <= currentTime) {
+                                if (self.$store.state.systemInfo != "Android") {
+                                    item.time = time * 1000;
+                                }
+                                todayData.push(item);
+                            } else if (time >= yersterDay && time <= oneTime) {
+                                yesterdayData.push(item)
+                            }
+                            if (time >= weekTime && time <= currentTime) {
+                                weekData.push(item)
+                            }
+                        })
+                        self.todayData = todayData;
+                        console.log(self.todayData.length);
+                        self.yesterdayData = yesterdayData;
+                        self.weekData = weekData;
+                        self.monthData = res;
+                        self.getRealTimeData(self.newDate);
+                        setTimeout(function() {
+                            self.getLineToday(self.newDate);
+                        }, 500);
+                        setTimeout(function() {
+                            self.getPieData()
+                        }, 1000)
+                        setTimeout(function() {
+                            if (self.addFlag) {
+                                self.getData();
+                            }
+                        }, 3000);
                     }
+                    MINT.Indicator.close();
                 },
                 initLineEcharts: function (id) {
                     var self = this;
-                    self.todayChart = echarts.init(document.getElementById(id));
+                    TODAY_CHART = echarts.init(document.getElementById(id), null, {renderer: 'svg'});
                     var option = {
                         title: {
-                            text: '当日人流量实时变化',
+                            text: self.$t("realTimeChange"),
                             textStyle: {
                                 fontWeight: 'normal',              //标题颜色
                                 color: '#858585',
@@ -245,6 +273,7 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                         tooltip : {
                            trigger: 'axis',
                         },
+                        animation: false,
                         legend: {
                             show: false
                         },
@@ -305,9 +334,9 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                         ],
                         series : [
                             {
-                                name:'今天',
-                                type:'line',
-                                stack: '总量',
+                                name: self.$t("today"),
+                                type: 'line',
+                                stack: self.$t("total"),
                                 lineStyle:{
                                     normal:{
                                         color: "#00c0ef"  //连线颜色
@@ -337,14 +366,14 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
 
                         ]
                     };
-                    self.todayChart.setOption(option);
+                    TODAY_CHART.setOption(option);
                 },
                 initBarEcharts: function (id) {
                     var self = this;
-                    self.monthChart = echarts.init(document.getElementById(id));
+                    MONTH_CHART = echarts.init(document.getElementById(id), null, {renderer: 'svg'});
                     var option = {
                         title: {
-                            text: '当日人流量变化统计',
+                            text: self.$t("statisticsChange"),
                             textStyle: {
                                 fontWeight: 'normal',              //标题颜色
                                 color: '#858585',
@@ -357,6 +386,7 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                                 type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
                             }
                         },
+                        animation: false,
                         grid: {
                             left: '3%',
                             right: '4%',
@@ -408,8 +438,8 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                         ],
                         series : [
                             {
-                                name:'人数',
-                                type:'bar',
+                                name: self.$t("quantity"),
+                                type: 'bar',
                                 barWidth: '60%',
                                 itemStyle: {
                                     color: "#3ec2fc"
@@ -422,19 +452,21 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                             }
                         ]
                     };
-                    self.monthChart.setOption(option);
+                    MONTH_CHART.setOption(option);
                 },
                 initPieEcharts: function (id) {
-                    var myChart = echarts.init(document.getElementById(id));
+                    var self = this;
+                    PIE_CHART = echarts.init(document.getElementById(id));
                     var option = {
                         title : {
-                            text: '设备统计占比',
+                            text: self.$t("equipmentStatistics"),
                             textStyle: {
                                 fontWeight: 'normal',              //标题颜色
                                 color: '#858585',
                                 fontSize: 14
                             },
                         },
+                        animation: false,
                         tooltip : {
                             trigger: 'item',
                             formatter: "{a} <br/>{b} : {c} ({d}%)"
@@ -443,23 +475,17 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                             show: true,
                             type: 'scroll',
                             orient: 'vertical',
-                            right: 10,
-                            top: 20,
-                            bottom: 20,
+                            right: 0,
+                            top: 10,
+                            bottom: 10,
                         },
                         series : [
                             {
-                                name: '设备',
+                                name: self.$t('nav.device'),
                                 type: 'pie',
-                                radius : '55%',
-                                center: ['40%', '50%'],
-                                data:[
-                                    {value:335, name:'light-1'},
-                                    {value:310, name:'light-2'},
-                                    {value:234, name:'light-3'},
-                                    {value:135, name:'light-4'},
-                                    {value:1548, name:'light-5'}
-                                ],
+                                radius : '75%',
+                                center: ['30%', '50%'],
+                                data: self.pieData,
                                 label: {
                                     show: false
                                 },
@@ -473,7 +499,7 @@ define(["vue","MINT", "Util", "txt!../../pages/reports.html"],
                             }
                         ]
                     };
-                    myChart.setOption(option);
+                    PIE_CHART.setOption(option);
                 },
 
             },

@@ -1,0 +1,55 @@
+<div>
+    <transition name="moves">
+        <div v-show="flag" class="control-content flex flex-v">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-cross back"></i></span>
+                    {{$t('command')}}
+                </h4>
+            </div>
+            <div class="command flex">
+                <div class="command-wrapper flex-1">
+                    <div class="command-textarea">
+                        <textarea readonly rows="7">{{getCommand}}</textarea>
+                    </div>
+                    <div class="command-info">
+                        <p class="command-p" v-for="(item,index) in requestList">
+                            <input @focus="keyFocus(index)" @blur="keyBlur(index)" v-model="item.key" class="property form-control">
+                            <input @focus="valueFocus(index)" @blur="valueBlur(index)" v-model="item.value" class="value form-control">
+                            <i @click="delVal(index)" class="icon-less"></i>
+                        </p>
+                    </div>
+                    <div class="command-btn">
+                        <button @click="addVal" class="btn register-btn add-val">Add new value</button>
+                    </div>
+                    <div class="command-request">
+                        <mt-radio
+                                v-model="radioValue"
+                                :options="[{label: 'Response', value: 'true'},{label: 'No Response', value: 'false'}]">
+                        </mt-radio>
+                    </div>
+                    <div v-show="resultShow" class="command-result">
+                        <p v-for="(item, index) in resultText">
+                            {{index + 1}}. {{item}}
+                        </p>
+                    </div>
+                    <div class="result-flex flex flex-ac">
+                        <button @click="hide" class="btn register-btn retry">{{$t('cancelBtn')}}</button>
+                        <button @click="send" class="btn register-btn">{{$t('confirmBtn')}}</button>
+                    </div>
+                </div>
+                <div class="command-select flex-1">
+                    <div v-if="loadSelectList.length > 0" class="command-select-info">
+                        <mt-radio
+                                v-model="selectValue"
+                                :options="loadSelectList" @change="checkRadio">
+                        </mt-radio>
+                    </div>
+                    <div v-else class="desc">
+                        暂无发送记录
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

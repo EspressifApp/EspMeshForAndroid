@@ -1,0 +1,43 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    天猫精灵
+                </h4>
+            </div>
+            <div class="content-info user no-search no-padding-bottom">
+                <div class="overflow-touch">
+                    <div class="tm-logo">
+                        <span class="icon-quotedbl"></span>
+                    </div>
+                    <div @click="aliUserBindTaobaoId" v-if="!isBind" class="tm-bind">
+                        绑定账号
+                    </div>
+                    <div @click="aliUserUnbindId" v-else class="tm-bind color-danger">
+                        解绑账号
+                    </div>
+                    <div class="tm-device">
+                        <p>可控设备</p>
+                        <div class="tm-device-info">
+                            当前没有支持的设备
+                        </div>
+                    </div>
+                    <div class="tm-command">
+                        <p>平台指令</p>
+                        <div class="tm-command-info">
+                            <h3>你可以这样说：</h3>
+                            <p>"天猫精灵，打开灯"</p>
+                            <p>"天猫精灵，把灯调亮一点"</p>
+                            <p>"天猫精灵，把灯调成蓝色"</p>
+                            <p>"天猫精灵，打开窗帘"</p>
+                            <p>"天猫精灵，风扇调到3挡"</p>
+                            <p>"天猫精灵，取暖器温度调到30度"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

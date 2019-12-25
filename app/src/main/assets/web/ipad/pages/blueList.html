@@ -1,0 +1,57 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="init-width main-wrap flex ">
+                <div class="left flex flex-v">
+                    <div class="title-info">
+                        <h4 class="app-title">
+                            <span @click="hide"><i class="icon-left back"></i></span>
+                            蓝牙网关
+                        </h4>
+                    </div>
+                    <ul class="flex-1">
+                        <li @click="showBlue(item)"
+                            :class="{'active': selectMac == item.mac}"
+                            class="flex flex-ac flex-jcb left-item"
+                            v-for="item in list">
+                            <div class="flex flex-ac">
+                                <span class="icon" :class="getIcon(item.tid)"></span>
+                                <span class="name">{{item.name}}</span>
+                            </div>
+                            <span class="icon-right"></span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="right flex flex-v flex-1">
+                    <div class="init-width flex flex-v">
+                        <div class="title-info">
+                            <h4 class="app-title">
+                                发送数据
+                            </h4>
+                        </div>
+                        <div v-show="isConnected" class="content-info attr blue-connect">
+                            <textarea v-model="customData" placeholder="请输入自定义数据" class="textarea-control"></textarea>
+                            <div class="margin-top-30">
+                                <p>开关</p>
+                                <div class="">
+                                    <button @click="selectSwitch(0)" class="btn btn-ble">OFF</button>
+                                    <button @click="selectSwitch(1)" class="btn btn-ble">ON</button>
+                                </div>
+                                <p class="margin-top-30">色彩</p>
+                                <div class="flex flex-ac">
+                                    <button @click="selectColor(item)" class="btn-ble-color" v-for="item in colorList" :style="{'background': item}">
+                                        <span v-show="currentRgb == item" class="icon-ok-circled"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="btn-register-wrapper">
+                                <button type="submit" class="btn register-btn" @click="postData">确定</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

@@ -1,4 +1,4 @@
-define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MINT, Util, conDevice) {
+define(["vue", "MINT", "Common", "Util", "txt!../../pages/conDevice.html"], function(v, MINT, Common, Util, conDevice) {
 
     var ConDevice = v.extend({
 
@@ -53,60 +53,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                 this.$emit("conShow");
             },
             conWifi: function () {
-                var self = this,
-                    scanDeviceList = self.$store.state.scanDeviceList,
-                    scanMacs = [], rssi = -1000, rssiMac = "", version = -1;
-                espmesh.startBleScan();
-                self.setTimer();
-                self.success = true;
-                self.title = self.$t('connetDeviceTitle');
-                self.desc = self.$t('connetDeviceDesc');
-                setTimeout(function () {
-                    espmesh.stopBleScan();
-                    if (self.rssiList.length != 0) {
-                        console.log(JSON.stringify(scanDeviceList))
-                        $.each(scanDeviceList, function(i, item) {
-                            scanMacs.push(item.bssid);
-                        });
-                        $.each(self.rssiList, function(i, item) {
-                            var itemRssi = item.rssi;
-                            if (itemRssi != 0 && itemRssi > rssi && scanMacs.indexOf(item.bssid) != -1 &&
-                                !item.only_beacon) {
-                                rssi = itemRssi;
-                                rssiMac = item.mac;
-                                version = item.version
-                            }
-                        })
-                        if (Util._isEmpty(rssiMac)) {
-                            self.setFail(self.$t('farDeviceDesc'));
-                            return false;
-                        }
-                        var data = {"ble_addr": rssiMac,"ssid": self.wifiName,"password": self.password,
-                            "white_list": scanMacs, "bssid": self.wifiInfo.bssid, "mesh_id": self.convert(self.meshId),
-                            "version": version};
-                        data = Object.assign(data, self.moreObj)
-                        console.log(JSON.stringify(scanMacs));
-                        espmesh.saveMeshId(self.meshId);
-                        espmesh.startConfigureBlufi(JSON.stringify(data));
-                    } else {
-                        self.setFail(self.$t('farDeviceDesc'));
-                    }
-                }, 5000);
-
+                Common.conWifi(this);
             },
             setTimer: function() {
-                var self = this;
-                self.timerId = setInterval(function() {
-                    console.log("aaaaa");
-                    if (!self.addFlag) {
-                        clearInterval(self.timerId);
-                    }
-                    if (self.value < 5) {
-                        self.value += 1;
-                    } else {
-                        clearInterval(self.timerId);
-                    }
-                }, 1000)
+                Common.setTimer(this);
             },
             convert: function(bssid) {
                 var strs = bssid.split(":"), meshIds = [];
@@ -119,73 +69,21 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                 var self = this, list = [];
                 devices = JSON.parse(devices);
                 $.each(devices, function(i, item) {
-                    if (Util.isMesh(item.name, item.version, item.beacon)) {
+                    var name = item.name;
+                    if (self.$store.state.systemInfo == "Android") {
+                        name = Util.Base64.decode(name);
+                    }
+                    if (Util.isMesh(name, item.version, item.beacon)) {
                         list.push(item);
                     }
                 })
                 self.rssiList = list;
             },
             onConfigureProgress: function(config) {
-                var self = this;
-                console.log(config);
-                config = JSON.parse(config);
-                if (config.code < 400 && config.code > 300) {
-                    if (config.progress >= self.value) {
-                        self.value = config.progress;
-                    }
-                    if (self.textList.indexOf(config.message) < 0) {
-                        self.textList.push(config.message);
-                    }
-                    window.onConfigureProgress = self.onConfigureProgress;
-                } else if (config.code == 300) {
-                    self.value = config.progress;
-                    if (self.textList.indexOf(config.message) < 0) {
-                        self.textList.push(config.message);
-                    }
-                    self.desc = self.$t('connetSuccessDesc');
-                    espmesh.stopBleScan();
-                    espmesh.clearBleCache();
-                    self.$store.commit("setScanDeviceList", []);
-                    self.count = 0;
-                    setTimeout(function() {
-                        self.hide();
-                        self.$parent.hideParent();
-                    }, 1000);
-                } else {
-                    if (config.code == -20) {
-                        self.setFail(config.message);
-                    } else if (config.code == 1) {
-                        self.setFail(self.$t('conRouteFailDesc'));
-                    } else if (config.code == 16) {
-                        self.setFail(self.$t('pwdFailDesc'));
-                    } else if (config.code == 17) {
-                        self.setFail("AP not found");
-                    } else if (config.code == 18) {
-                        self.setFail("AP forbid");
-                    } else if (config.code == 19) {
-                        self.setFail("Configure data error");
-                    } else if (self.count < 3) {
-                        self.count++;
-                        setTimeout(function() {
-                            self.conWifi();
-                        }, 2000);
-                    } else {
-                        self.setFail(config.message);
-                    }
-
-                }
+                Common.onConfigureProgress(this, config);
             },
             setFail: function(msg) {
-                var self = this;
-                espmesh.stopBleScan();
-                espmesh.stopConfigureBlufi();
-                self.success = false;
-                self.title = self.$t('connetFailDesc');
-                self.desc = msg;
-                self.value = 0;
-                self.count = 0;
-                self.textList = [];
-                window.onConfigureProgress = self.onConfigureProgress;
+                Common.setFail(this, msg);
             }
         }
     });

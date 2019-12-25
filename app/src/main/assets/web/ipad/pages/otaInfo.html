@@ -1,0 +1,115 @@
+ <transition name="moves">
+    <div v-show="flag" class="control-content">
+        <div class="title-info">
+            <h4 class="app-title">
+                <span @click="hide"><i class="icon-cross back"></i></span>
+                {{$t('otaUpdate')}}
+            </h4>
+        </div>
+        <div class="content-info ota-device" :id="otaId">
+            <div class="overflow-touch">
+                <div @click="selectDevice(item.id)" v-for="item in otaList" class="item-small flex flex-ac">
+                    <div class="item-icon flex flex-jcc flex-ac">
+                        <i class="icon-easel"></i>
+                    </div>
+                    <div class="item-name flex-1 padding-left-10">
+                        <span>{{item.name}}</span>
+                    </div>
+                    <div class="item-power">
+                        <span class="span-radio" :class="{'active': bin == item.id}"><span></span></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div v-show="showFooterInfo" class="position-absolute ota-btn">
+            <a @click="downloadBin">{{$t('downloadBinTitle')}}</a>
+            <button @click="save" class="btn">确定</button>
+            <a @click="enterBinUrl">{{$t('enterBinUrl')}}</a>
+        </div>
+        <div v-show="upgrade" class="ota-upgrade">
+            <div @click="hideUpgrade" class="mask"></div>
+            <div class="upgrade-info">
+                <h3>{{$t('otaUpdate')}}({{successMacs.length}}/{{otaDeviceList.length}})
+                    <span @click="showDetailsFun" class="upgrade-details">{{$t('info')}}</span></h3>
+                <div class="progress-info">
+                    <span :style="{'left': upgradeValue + '%'}" class="progress-value upgrade-progress-value"
+                          :class="{'active': upgradeFailure}">0%</span>
+                    <div class="ota-progress">
+                        <div class="ota-progress-progress upgradeProgress" :class="{'active': upgradeFailure}"></div>
+                    </div>
+                    <div class="upgrade-title">
+                        <div class="upgrade-title-desc">
+                            <span class="desc-line" :class="{'active': upgradeValue >= 0}"></span>
+                            <span class="desc-title">{{$t('processDownload')}}</span>
+                        </div>
+                        <div class="upgrade-title-desc">
+                            <span class="desc-line" :class="{'active': upgradeValue >= 50}"></span>
+                            <span class="desc-title">{{$t('processTransport')}}</span>
+                        </div>
+                        <div class="upgrade-title-desc">
+                            <span class="desc-line" :class="{'active': upgradeValue == 100}"></span>
+                            <span class="desc-title">{{$t('processCutover')}}</span>
+                        </div>
+                    </div>
+                    <p class="progress-details flex flex-ac flex-jcb">
+                        <span>{{$t('deviceUpgradingDesc')}}</span>
+                        <span>{{getBin(bin)}}</span>
+                        <span class="text-right">{{timeCost}}</span>
+                    </p>
+                    <div v-show="showDetails" class="upgrade-details-info">
+                        <div v-for="item in progressList" class="details-item">
+                            <div class="detaile-name">{{getName(item.mac)}}</div>
+                            <div v-show="!showPart" class="detaile-progress">{{$t('upgradingDesc')}}
+                                {{item.progress == 99 ? 100 : item.progress}}%</div>
+                            <div v-show="showPart" class="detaile-progress">{{$t('upgradePartFailDesc')}}</div>
+                        </div>
+                    </div>
+                    <div v-show="!upgradeSuccess && !showPart && !upgradeFailure" class="result-success">
+                        <button @click="stopUpgrade" class="btn register-btn">{{$t('cancelBtn')}}</button>
+                    </div>
+                    <div v-show="upgradeSuccess" class="result-success">
+                        <p class="progress-details">{{$t('upgradeSucDesc')}}</p>
+                        <div class="result-flex flex flex-ac">
+                            <button @click="stopUpgrade" class="btn register-btn retry">{{$t('cancelBtn')}}</button>
+                            <button @click="otaReboot" class="btn register-btn">{{$t('confirmBtn')}}</button>
+                        </div>
+
+                    </div>
+                    <div v-show="showPart" class="result-success">
+                        <p class="progress-details">{{$t('upgradepPartSucDesc')}}</p>
+                        <div class="result-flex flex flex-ac">
+                            <button @click="retrySave" class="btn register-btn retry">{{$t('retryBtn')}}</button>
+                            <button @click="otaReboot" class="btn register-btn">{{$t('confirmBtn')}}</button>
+                        </div>
+
+                    </div>
+                    <div v-show="upgradeFailure" class="result-failure">
+                        <p class="progress-details">{{$t('upgradeFailDesc')}}</p>
+                        <div class="result-flex flex flex-ac">
+                            <button @click="retrySave" class="btn register-btn retry">{{$t('retryBtn')}}</button>
+                            <button @click="hide" class="btn register-btn">{{$t('confirmBtn')}}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-show="httpUrl" class="ota-upgrade">
+            <div @click="hideUrl" class="mask"></div>
+            <div class="upgrade-info">
+                <h3>{{$t('binServerAddress')}}</h3>
+                <div class="progress-info">
+                    <div>
+                        <textarea :disabled="downloadShow" v-model="binUrl"></textarea>
+                    </div>
+                </div>
+                <div class="result-failure">
+                    <div class="result-flex flex flex-ac">
+                        <button @click="hideUrl" class="btn register-btn retry">{{$t('cancelBtn')}}</button>
+                        <button @click="sendUrl" class="btn register-btn">{{$t('sendBtn')}}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</transition>

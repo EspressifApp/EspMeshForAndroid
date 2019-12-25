@@ -740,6 +740,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                     if (!Util._isEmpty(devices) && self.$store.state.showScanBle && self.showScanDevice && !self.loadShow && self.isLogin) {
                         var conScanDeviceList = self.$store.state.conScanDeviceList;
                         devices = JSON.parse(devices);
+                        devices = Util.blueNameDecode(self, devices);
                         $.each(devices, function(i, item) {
                             if (item.rssi >= rssiValue && Util.isCloud(item.name, item.version, item.beacon)) {
                                 rssiList.push(item);
@@ -866,6 +867,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 onGetAliDeviceList: function(res) {
                     var self = this;
                     var flag = true;
+                    console.log(res);
                     if (!Util._isEmpty(res) && res != "{}") {
                         res = JSON.parse(res);
                         if (res.code == 200) {

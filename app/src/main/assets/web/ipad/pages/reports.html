@@ -1,0 +1,53 @@
+<transition>
+    <div v-show="addFlag" class="control-content flex flex-v">
+        <h4 class="app-title">统计报表</h4>
+        <div class="statistics-info">
+            <div class="overflow-touch">
+                <div class="statistics-cart flex flex-ac">
+                    <div class="flex-1">
+                        <div class="cart-info cart-blue">
+                            <i class="icon-radar"></i>
+                            <div class="cart-content">
+                                <p class="cart-num">{{todayData.length}}</p>
+                                <p class="cart-desc">当日累计人流</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="cart-info cart-red">
+                            <i class="icon-radar"></i>
+                            <div class="cart-content">
+                                <p class="cart-num">{{yesterdayData.length}}</p>
+                                <p class="cart-desc">昨日累计人流</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="cart-info cart-purple">
+                            <i class="icon-radar"></i>
+                            <div class="cart-content">
+                                <p class="cart-num">{{weekData.length}}</p>
+                                <p class="cart-desc">当周累计人流</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="cart-info cart-green">
+                            <i class="icon-radar"></i>
+                            <div class="cart-content">
+                                <p class="cart-num">{{monthData.length}}</p>
+                                <p class="cart-desc">当月累计人流</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="statistics-line">
+                    <div id="line-chart"></div>
+                    <div id="bar-chart"></div>
+                    <div id="pie-chart"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</transition>

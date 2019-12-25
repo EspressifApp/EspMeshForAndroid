@@ -189,7 +189,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/room.html", "../js/footer", "../
                             return true;
                         }
                       },
-                     inputErrorMessage: '名称长度大于0且小于3个中文或6个字符和数字'
+                     inputErrorMessage: self.$t("nameLongDesc")
                       }).then(function(obj)  {
                     if (self.roomInfo.name != obj.value) {
                         self.newRoomName = obj.value;
@@ -198,11 +198,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/room.html", "../js/footer", "../
                             var key = Util.intsToHex(Util.toGbkBytes(obj.value));
                             key = key.join("").toLocaleLowerCase();;
                             if (self.roomExistKeys.indexOf(key) != -1) {
-                                MINT.Toast({
-                                    message: "房间名称已存在",
-                                    position: 'bottom',
-                                    duration: 2000
-                                });
+                                Util.toast(MINT, self.$t("isExistRoomNameDesc"));
                                 MINT.Indicator.close();
                                 //self.editName();
                                 return false;
@@ -227,7 +223,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/room.html", "../js/footer", "../
             delRoom: function() {
                 var self = this;
                 self.hideOperate();
-                MINT.MessageBox.confirm("确定要删除该房间吗？", "删除房间",{
+                MINT.MessageBox.confirm(self.$t("deleteRoom"), self.$t("deleteRoom"),{
                         confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
                     MINT.Indicator.open();
                     setTimeout(function() {
@@ -320,11 +316,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/room.html", "../js/footer", "../
                     console.log(meshData);
                     espmesh.requestDevicesMulticast(meshData);
                 } else {
-                    MINT.Toast({
-                        message: "房间名称修改失败",
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t("editFailDesc"))
                 }
             },
             onEditSaveRoom: function(res) {
@@ -360,11 +352,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/room.html", "../js/footer", "../
                     self.newRoomKey = "";
                     MINT.Indicator.close();
                 } else {
-                    MINT.Toast({
-                        message: "房间名称修改失败",
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t("editFailDesc"));
                 }
             },
             onDelRoom: function(res) {
@@ -391,11 +379,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/room.html", "../js/footer", "../
                     });
                     self.active = "";
                 } else {
-                    MINT.Toast({
-                        message: "删除失败",
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t("delFailDesc"))
                 }
                 MINT.Indicator.close();
             },
@@ -463,7 +447,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/room.html", "../js/footer", "../
                     console.log(updateObj);
                     espmesh.updateDeviceGroup(updateObj);
                 }
-                this.roomList.push({roomKey: "create", name: "创建房间", url: "", macs: []});
+                this.roomList.push({roomKey: "create", name: this.$t("createRoom"), url: "", macs: []});
                 if (this.roomList.length > 1 && Util._isEmpty(this.active)) {
                     this.active = this.roomList[0].roomKey;
                 }
@@ -502,11 +486,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/room.html", "../js/footer", "../
                 var startTime = 0;
                 var self = this;
                 window.onBackPressed = function () {
-                    MINT.Toast({
-                        message: self.$t('exitProgramDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('exitProgramDesc'));
                     if (startTime == 0) {
                         startTime = new Date().getTime();
                     } else {

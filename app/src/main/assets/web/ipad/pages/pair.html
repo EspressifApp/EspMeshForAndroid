@@ -1,73 +1,84 @@
-<div class="init-width">
-    <transition name="moves">
-        <div v-show="flag" class="add-info operate-way">
-            <div class="title-info">
-                <h4 class="app-title">
-                    <span @click="hide"><i class="icon-left back"></i></span>
-                    {{$t('pair')}}
-                </h4>
-                <i @click.stop="pairMore($event)" class="icon-more right-top"></i>
-                <ul v-show="flagUl" class="add-ul">
-                    <li @click.stop="addPair($event)"><i class="icon-plus"></i><span>{{$t('addPair')}}</span></li>
-                    <li @click.stop="editDevice($event)"><i class="icon-edit"></i><span>{{$t('edit')}}</span></li>
-                </ul>
-            </div>
-            <div v-show="deleteShow" class="selected-radio">
-                <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
-                <div><span @click="selectAllDevice($event)" class="span-radio"
-                           :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>
-            </div>
-            <div @click="moreFlag" class="content-info flex-wrapper" :class="{'attr': !deleteShow}" id="pair-wrapper">
-                <div v-show="!showAdd">
-                    <div v-for="item in pairList" :data-mac="item.mac" :key="item.mac" v-longtap="{fn: showPairOperate, mac: item.mac}" class="item">
-                        <div :data-mac="item.mac" class="item-icon-circle">
-                            <i :data-mac="item.mac" class="icon-light icon-blue"></i>
-                        </div>
-                        <div :data-mac="item.mac" class="item-name">
-                            <span :data-mac="item.mac">{{item.floor}}-{{item.area}}-{{item.code}}</span>
-                            <span :data-mac="item.mac" class="desc">MAC: {{item.mac}}</span>
-                        </div>
-                        <div class="item-power-small">
-                        <span v-show="deleteShow" :data-value="item.mac" @click="selectDevice($event)"
-                              class="span-radio"><span></span></span>
-                        </div>
-                    </div>
+<transition name="moves">
+    <div v-show="flag" class="add-info operate-way info-content">
+        <div class="init-width main-wrap flex ">
+            <div class="left flex flex-v">
+                <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{$t('pair')}}</h4>
+                <div class="input-info">
+                    <i class="icon-search"></i>
+                    <input v-model="searchName" type="search" class="form-control" :placeholder="$t('searchMAC')">
                 </div>
-                <div v-show="showAdd" class="add-wrapper">
-                    <h3>{{$t('addPair')}}</h3>
-                    <p>{{$t('pairListDesc')}}</p>
-                    <div @click="addPair($event)">
-                        <i class="icon-plus"></i>
-                    </div>
-                </div>
-            </div>
-            <footer v-show="deleteShow" class="footer-info">
-                <ul>
-                    <li @click="deleteDevice($event)">
-                        <i class="icon-bin"></i>
-                        <span>{{$t('deleteBtn')}}</span>
-                    </li>
-                    <li @click="calcelDevice($event)">
-                        <i class="icon-cancel"></i>
-                        <span>{{$t('cancelBtn')}}</span>
+                <ul class="flex-1">
+                    <li @click="selectDevice(item)" :class="{'active': selectMac == item.mac}"
+                        class="flex flex-ac flex-jcb left-item"
+                        v-for="item in list">
+                        <div class="flex flex-ac">
+                            <i class="icon icon-light icon-blue"></i>
+                            <div class="flex flex-v">
+                                <span>{{item.floor}}-{{item.area}}-{{item.code}}</span>
+                                <span class="desc">MAC: {{item.mac}}</span>
+                            </div>
+                        </div>
+                        <span class="icon-right"></span>
                     </li>
                 </ul>
-            </footer>
-            <transition name="ups">
-                <div v-show="pairShow" class="operate-wrapper">
-                    <div @click="hideInfo" class="mask"></div>
-                    <div class="operate-info">
-                        <ul v-if="pairInfo">
-                            <li @click="editPair"><span>{{$t('editBtn')}}</span></li>
-                            <li @click="delPair"><span class="icon-orange">{{$t('deleteBtn')}}</span></li>
-                            <li @click="hideInfo" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
-                        </ul>
+            </div>
+            <div class="right flex flex-v flex-1">
+                <div class="init-width flex flex-v">
+                    <h4 class="app-title"></span>{{title}}</h4>
+                    <i v-show="showEdit" @click="addPair" class="icon-plus right-top"></i>
+                    <div class="ibeacon-content info-content">
+                        <div class="info-item flex flex-ac flex-jcb">
+                            <span class="info-disc-span">{{$t('floor')}}</span>
+                            <el-select
+                                    v-model="floor"
+                                    filterable
+                                    allow-create
+                                    change="onFloorChange"
+                                    default-first-option>
+                                <el-option
+                                        v-for="item in floorArray"
+                                        :key="item"
+                                        :label="item"
+                                        :value="item">
+                                </el-option>
+                            </el-select>
+                        </div>
+                        <div class="info-item flex flex-ac flex-jcb">
+                            <span class="info-disc-span">{{$t('area')}}</span>
+                            <el-select
+                                    v-model="area"
+                                    filterable
+                                    allow-create
+                                    change="onAreaChange"
+                                    default-first-option>
+                                <el-option
+                                        v-for="item in areaArray"
+                                        :key="item"
+                                        :label="item"
+                                        :value="item">
+                                </el-option>
+                            </el-select>
+                        </div>
+                        <div class="info-item flex flex-ac flex-jcb">
+                            <span class="info-disc-span">{{$t('code')}}</span>
+                            <input v-model="serialNum" class="form-control">
+                        </div>
+                        <div class="info-item flex flex-ac flex-jcb">
+                            <span class="info-disc-span">Mac</span>
+                            <input v-model="mac" class="form-control">
+                            <span @click="setScanner" class="scanner flex flex-ac"><i class="icon-scanner"></i></span>
+                        </div>
+                        <div v-show="!showEdit" class="margin-top-30 flex">
+                            <button type="submit" class="btn register-btn" @click="savePair">{{$t('nextStep')}}</button>
+                        </div>
+                        <div v-show="showEdit" class="flex flex-jcb margin-top-30">
+                            <button @click="deleteDevice" class="btn register-btn ibeacon-btn btn-danger">{{$t('deleteBtn')}}</button>
+                            <button type="submit" class="btn register-btn ibeacon-btn" @click="editPair">{{$t('editBtn')}}</button>
+                        </div>
                     </div>
 
                 </div>
-            </transition>
-            <v-setPair v-on:setPairShow="onBackPair" :pairInfo="pairInfo" ref="setPair"></v-setPair>
+            </div>
         </div>
-    </transition>
-
-</div>
+    </div>
+</transition>

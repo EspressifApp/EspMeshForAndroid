@@ -1,36 +1,52 @@
-define(["vue", "MINT", "Util", "txt!../../pages/deviceIbeacon.html", "../js/ibeacon"],
-    function(v, MINT, Util, deviceTypeInfo, ibeacon) {
+define(["vue", "MINT", "Common", "Util", "txt!../../pages/deviceIbeacon.html", "../js/ibeacon"],
+    function(v, MINT, Common, Util, deviceTypeInfo, ibeacon) {
 
         var DeviceTypeInfo = v.extend({
             template: deviceTypeInfo,
             data: function(){
                 return {
                     flag: false,
-                    deviceList: this.$store.state.deviceList,
+                    ibeaconList: this.$store.state.ibeaconList,
                     infoShow: false,
                     deviceInfo: ""
                 }
             },
             computed: {
                 list: function () {
-                    var self = this, list = [];
-                    self.deviceList = this.$store.state.deviceList;
-                    return self.deviceList;
+                    var self = this, list = [], macs = [];
+                    if (self.flag) {
+                        self.ibeaconList = this.$store.state.ibeaconList;
+                        $.each(self.ibeaconList, function(i, item) {
+                            if (macs.indexOf(item.bssid) == -1) {
+                                macs.push(item.bssid)
+                            }
+                        })
+                        var deviceList = this.$store.state.deviceList;
+                        $.each(deviceList, function(i, item) {
+                            if (macs.indexOf(item.mac) != -1) {
+                                list.push(item);
+                            }
+                        })
+                    }
+                    return list;
                 }
             },
             methods:{
                 show: function () {
                     var self = this;
-                    self.deviceList = self.$store.state.deviceList;
+                    self.ibeaconList = self.$store.state.ibeaconList;
                     self.deviceInfo = "";
                     setTimeout(function() {
                         window.onBackPressed = self.hide;
+                        window.onScanBLE = self.onConScanBLE;
+                        Common.startBleScan(self);
                     });
                     self.flag = true;
                 },
                 hide: function () {
                     this.flag = false;
                     this.$emit("deviceIbeaconShow");
+                    Common.stopBleScan();
                 },
                 getBxColor: function(layer) {
                     return Util.getBxColor(layer);
@@ -71,6 +87,27 @@ define(["vue", "MINT", "Util", "txt!../../pages/deviceIbeacon.html", "../js/ibea
                 },
                 getRssiIcon: function(rssi) {
                     return Util.getWIFIRssiIcon(rssi);
+                },
+                onConScanBLE: function(devices) {
+                    var self = this;
+                    devices = JSON.parse(devices);
+                    $.each(devices, function(i, item) {
+                        var name = item.name;
+                        if(Util.isBeacon(name, item.version, item.beacon)) {
+                            var flag = true;
+                            $.each(self.ibeaconList, function(j, itemSub) {
+                                if (item.mac == itemSub.mac) {
+                                    self.ibeaconList.splice(j, 1, item);
+                                    flag = false;
+                                    return false;
+                                }
+                            })
+                            if (flag) {
+                                self.ibeaconList.push(item);
+                            }
+                        }
+                    })
+                    self.$store.commit("setIbeaconList", self.ibeaconList);
                 }
             },
             components: {

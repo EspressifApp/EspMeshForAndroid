@@ -7,24 +7,24 @@
             <div class="ibeacon-content">
                 <!--<div class="info-desc">基本</div>-->
                 <div class="info-content">
-                    <div class="info-item">
+                    <div class="info-item flex flex-jcb flex-ac">
                         <span class="info-disc-span">UUID</span>
                         <input v-model="ibeaconInfo.uuid" class="form-control">
                     </div>
-                    <div class="info-item">
+                    <div class="info-item flex flex-jcb flex-ac">
                         <span class="info-disc-span">Major</span>
                         <input v-model="ibeaconInfo.major" class="form-control">
                     </div>
-                    <div class="info-item">
+                    <div class="info-item flex flex-jcb flex-ac">
                         <span class="info-disc-span">Minor</span>
                         <input v-model="ibeaconInfo.minor" class="form-control">
                     </div>
-                    <div class="info-item">
-                        <span class="info-disc-span">发送功率</span>
+                    <div class="info-item flex flex-jcb flex-ac">
+                        <span class="info-disc-span">{{$t('transmitPower')}}</span>
                         <input v-model="ibeaconInfo.power" class="form-control">
                     </div>
-                    <div class="info-item">
-                        <span class="info-disc-span">设备名称</span>
+                    <div class="info-item flex flex-jcb flex-ac">
+                        <span class="info-disc-span">{{$t('deviceName')}}</span>
                         <input v-model="ibeaconInfo.name" class="form-control">
                     </div>
                 </div>

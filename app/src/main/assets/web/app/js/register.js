@@ -17,43 +17,23 @@ define(["vue", "MINT", "Util", "txt!../../pages/register.html"], function(v, MIN
             register: function () {
                 var self = this;
                 if (Util._isEmpty(self.email)) {
-                    MINT.Toast({
-                        message: self.$t('emailDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('emailDesc'));
                     return false;
                 }
                 if (Util._isEmpty(self.username)) {
-                    MINT.Toast({
-                        message: self.$t('userNameDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('userNameDesc'));
                     return false;
                 }
                 if (Util._isEmpty(self.password)) {
-                    MINT.Toast({
-                        message: self.$t('passwordDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('passwordDesc'));
                     return false;
                 }
                 if (Util._isEmpty(self.repassword)) {
-                    MINT.Toast({
-                        message: self.$t('rePasswordDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('rePasswordDesc'));
                     return false;
                 }
                 if (self.repassword != self.password) {
-                    MINT.Toast({
-                        message: self.$t('differentDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('differentDesc'));
                     return false;
                 }
                 MINT.Indicator.open();
@@ -64,25 +44,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/register.html"], function(v, MIN
                     if (!Util._isEmpty(res)) {
                         res = JSON.parse(res);
                         if (res.status == 0) {
-                            MINT.Toast({
-                                message: self.$t('registerSuccessDesc'),
-                                position: 'bottom',
-                                duration: 2000
-                            });
+                            Util.toast(MINT, self.$t('registerSuccessDesc'));
                             self.hide();
                         } else {
-                            MINT.Toast({
-                                message: self.$t('registerFailDesc'),
-                                position: 'bottom',
-                                duration: 2000
-                            });
-
+                            Util.toast(MINT, self.$t('registerFailDesc'));
                         }
                     }
 
                 }, 100);
-
-
             },
             show: function () {
                  window.onBackPressed = this.hide;

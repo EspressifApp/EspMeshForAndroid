@@ -11,8 +11,8 @@ android {
         applicationId "h5.espressif.esp32"
         minSdkVersion conf.min_sdk_version
         targetSdkVersion conf.target_sdk_version
-        versionCode 46
-        versionName "1.1.0"
+        versionCode 47
+        versionName "1.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86"//过滤除 armeabi 和 x86 以外的 so 文件

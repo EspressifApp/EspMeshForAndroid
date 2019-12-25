@@ -13,7 +13,7 @@
                 </div>
                 <div class="version-btn-wrapper">
                     <div v-show="!isStart" class="update-desc">
-                        <p class="update-content">更新内容</p>
+                        <p class="update-content">{{$t('updateContent')}}</p>
                         <ul>
                             <li v-for="item in appDesc">{{item}}</li>
                         </ul>

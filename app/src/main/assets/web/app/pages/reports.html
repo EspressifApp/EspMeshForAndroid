@@ -2,15 +2,15 @@
 <div class="init-width">
     <transition name="moves">
         <div v-show="addFlag" class="add-info operate-way">
-            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>统计报表</h4>
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{$t('statisticalReport')}}</h4>
             <div class="statistics-info">
-                <div class="statistics-cart">
+                <div class="statistics-cart flex flex-m">
                     <div class="cart-item">
                         <div class="cart-info cart-blue">
                             <i class="icon-radar"></i>
                             <div class="cart-content">
                                 <p class="cart-num">{{todayData.length}}</p>
-                                <p class="cart-desc">当日累计人流</p>
+                                <p class="cart-desc">{{$t('dailyFlow')}}</p>
                             </div>
                         </div>
                     </div>
@@ -19,7 +19,7 @@
                             <i class="icon-radar"></i>
                             <div class="cart-content">
                                 <p class="cart-num">{{yesterdayData.length}}</p>
-                                <p class="cart-desc">昨日累计人流</p>
+                                <p class="cart-desc">{{$t('yesterdayFlow')}}</p>
                             </div>
                         </div>
                     </div>
@@ -28,7 +28,7 @@
                             <i class="icon-radar"></i>
                             <div class="cart-content">
                                 <p class="cart-num">{{weekData.length}}</p>
-                                <p class="cart-desc">当周累计人流</p>
+                                <p class="cart-desc">{{$t('weekFlow')}}</p>
                             </div>
                         </div>
                     </div>
@@ -37,21 +37,15 @@
                             <i class="icon-radar"></i>
                             <div class="cart-content">
                                 <p class="cart-num">{{monthData.length}}</p>
-                                <p class="cart-desc">当月累计人流</p>
+                                <p class="cart-desc">{{$t('monthFlow')}}</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="statistics-line">
-                    <div id="line-chart">
-
-                    </div>
-                    <div id="bar-chart">
-
-                    </div>
-                    <!--<div id="pie-chart">-->
-
-                    <!--</div>-->
+                    <div id="line-chart"> </div>
+                    <div id="bar-chart"></div>
+                    <div id="pie-chart"></div>
                 </div>
             </div>
 

@@ -1,0 +1,58 @@
+<div style="height: 100%; width: 100%;" v-show="true">
+    {{computedWarmCold}}{{computedRgb}}
+    <div class="picker-wrapper">
+        <div class="picker-info" :class="{'height-100': !pickerShow || !currentStatus}">
+            <div v-show="pickerShow && currentStatus" :id="colorId" class="color-picker">
+            </div>
+            <div @click="editDeviceWhite()" class="white-color flex flex-ac flex-jcc" :class="{'black-bg': !currentStatus}" :style="{'background': borderColor, 'box-shadow': boxShadow}">
+                <span class="icon-light"></span>
+            </div>
+        </div>
+    </div>
+
+    <div v-show="currentStatus" class="range-wrapper">
+        <div v-show="pickerShow">
+            <div class="range-info-wrap">
+                <div class="range-title flex flex-ac flex-jcb"><span class="blod">{{$t('luminance')}}</span><span>{{currentLuminance}}%</span></div>
+                <div class="range-info">
+                    <div :id="colorId + 'luminance'" data-type="luminance" class="range-slider"></div>
+                </div>
+            </div>
+            <div class="range-info-wrap">
+                <div class="range-title flex flex-ac flex-jcb"><span class="blod">{{$t('saturation')}}</span><span>{{currentSaturation}}%</span></div>
+                <div class="range-info">
+                    <div :id="colorId + 'saturation'" data-type="saturation" class="range-slider"></div>
+                </div>
+            </div>
+        </div>
+        <div v-show="!pickerShow">
+            <div class="range-info-wrap">
+                <div class="range-title flex flex-ac flex-jcb"><span class="blod">{{$t('brightness')}}</span><span>{{currentBrightness}}%</span></div>
+                <div class="range-info">
+                    <div :id="colorId + 'brightness'" data-type="brightness" class="range-slider"></div>
+                </div>
+            </div>
+            <div class="range-info-wrap">
+                <div class="range-title flex flex-ac flex-jcb"><span class="blod">{{$t('btnTemperature')}}</span><span>{{currentTemperature * 50 + 2000}}K</span></div>
+                <div class="range-info">
+                    <div :id="colorId + 'temperature'" data-type="temperature" class="range-slider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="control flex flex-ac">
+        <div @click="close()" class="flex-1 control-item flex flex-ac flex-v" :class="{'active': !currentStatus}">
+            <div><i class="icon-power"></i></div>
+            <span v-show="!currentStatus">{{$t('openLight')}}</span>
+            <span v-show="currentStatus">{{$t('closeLight')}}</span>
+        </div>
+        <div @click="showPicker" class="flex-1 control-item flex flex-ac flex-v" :class="{'active': pickerShow && currentStatus}">
+            <div><i class="icon-cg"></i></div>
+            <span>{{$t('colorLight')}}</span>
+        </div>
+        <div @click="hidePicker" class="flex-1 control-item flex flex-ac flex-v" :class="{'active': !pickerShow && currentStatus}">
+            <div><i class="icon-bg"></i></div>
+            <span>{{$t('whiteLight')}}</span>
+        </div>
+    </div>
+</div>

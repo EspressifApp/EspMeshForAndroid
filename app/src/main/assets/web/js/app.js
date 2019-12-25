@@ -16,6 +16,7 @@ require.config({
         "routers":"../app/js/router",
         "i18n":"vue/vue-i18n.min",
         "Util":"utils",
+        "Common":"common",
          "zh":"../lang/zh",
          "en":"../lang/en"
     },
@@ -26,8 +27,8 @@ require.config({
         "jquery.ui.touch-punch" : ["jQuery", "jquery.ui"],
     }
 });
-require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "routers", "touch", "Vuex", "i18n", "zh", "en", "jquery.ui", "jquery.ui.touch-punch"],
-    function(IScroll, $, FastClick, Vue, VueRouter, MINT, Util, routers, touch, Vuex, VueI18n, zh, en) {
+require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Common", "Util", "routers", "touch", "Vuex", "i18n", "zh", "en", "jquery.ui", "jquery.ui.touch-punch"],
+    function(IScroll, $, FastClick, Vue, VueRouter, MINT, Common, Util, routers, touch, Vuex, VueI18n, zh, en) {
     Vue.use(VueRouter);
     //Vue.use(ELEMENT);
     Vue.use(MINT);
@@ -61,6 +62,7 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "
             searchName:"",
             scanDeviceList: [],
             conScanDeviceList: [],
+            ibeaconList: [],
             siteList: [],
             wifiInfo: "",
             blueInfo: false,
@@ -87,6 +89,9 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "
             },
             setRoomList: function(state, list){
                 state.roomList = list;
+            },
+            setIbeaconList: function(state, list){
+                state.ibeaconList = list;
             },
             setRecentList: function(state, list){
                 state.mixList = list;
@@ -160,9 +165,9 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "
         store: store,
         router: router,
         mounted: function() {
+            Common.registerMint(MINT, Util);
             window.onLocaleGot = this.onLocaleGot;
             window.onGetAppInfo = this.onGetAppInfo;
-            //espmesh.userGuestLogin();
             espmesh.getLocale();
             espmesh.getAppInfo();
         },

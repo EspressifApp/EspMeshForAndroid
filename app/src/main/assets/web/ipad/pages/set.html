@@ -1,0 +1,54 @@
+<transition name="moves">
+    <div v-show="flag" class="add-info operate-way">
+        <div class="init-width main-wrap flex ">
+            <div class="left flex flex-v">
+                <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span> {{$t('set')}}</h4>
+                <ul class="flex-1">
+                    <li class="flex flex-ac flex-jcb left-item active">
+                        <div class="flex flex-ac">
+                            <span class="name">{{$t('aboutUs')}}</span>
+                        </div>
+                        <span class="icon-right"></span>
+                    </li>
+                </ul>
+            </div>
+            <div class="right flex flex-v flex-1">
+                <div class="init-width flex flex-v">
+                    <h4 class="app-title">{{$t('aboutUs')}}</h4>
+                    <div class="about-device">
+                        <div class="about-img">
+                            <div class="icon-content">
+                            </div>
+                            <div class="icon-name">
+                                {{$t('appName')}}
+                            </div>
+                        </div>
+                        <div class="about-info margin-top-30">
+                            <div class="about-item">
+                                <div class="item-name flex-1 flex flex-jcb">
+                                    <span>{{$t('softwareVersion')}}</span>
+                                    <span v-if="!newVersion">{{appInfo.version_name}}</span>
+                                    <span class="new-title" v-else>New</span>
+                                </div>
+                            </div>
+                            <div @click="accessUs" class="about-item flex">
+                                <div class="item-name flex-1 flex flex-jcb">
+                                    <span>{{$t('officialWebsite')}}</span>
+                                    <span>{{$t('httpUrlShow')}}</span>
+                                </div>
+                                <div class="item-power-small">
+                                    <i class="icon-right font-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="position-absolute btn-register-wrapper scan-btn">
+                            <button type="submit" class="btn register-btn about-new-btn" @click="newVersionShow">{{$t('checkUpdates')}}</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <v-newVersion v-on:newVersionShow="hideThis" ref="newVersion"></v-newVersion>
+    </div>
+</transition>

@@ -11,7 +11,8 @@ define(["vue", "MINT", "txt!../../pages/attr.html"],
                 deviceMacs:[],
                 device: {},
                 deviceName: "",
-                attrList: []
+                attrList: [],
+                switchValue: false,
             }
         },
         computed: {
@@ -64,6 +65,29 @@ define(["vue", "MINT", "txt!../../pages/attr.html"],
                 })
                 return true;
             },
+            getRelay: function(cid) {
+                if (this.device.tid >= MIN_RELAY && this.device.tid <= MAX_RELAY && cid == STATUS_CID) {
+                    return true;
+                }
+                return false;
+            },
+            getCurValue: function(value) {
+                if (value === STATUS_ON) {
+                    this.switchValue =  true;
+                } else {
+                    this.switchValue = false
+                }
+            },
+            changeSwitch: function() {
+                var self = this;
+                setTimeout(function() {
+                    console.log(self.switchValue)
+                    var val = self.switchValue ? 1 : 0;
+                    console.log(val);
+                    self.setAttr(STATUS_CID, val);
+                }, 50)
+
+            },
             isShowInput: function(perms) {
                 var self = this, flag = true;
                 if (self.isReadable(perms) && !self.isWritable(perms)) {
@@ -75,6 +99,9 @@ define(["vue", "MINT", "txt!../../pages/attr.html"],
                 var self = this;
                 $.each(self.device.characteristics, function(i, item) {
                     if (self.isReadable(item.perms) || self.isWritable(item.perms)) {
+                        if (self.getRelay(item.cid)) {
+                            self.getCurValue(item.value);
+                        }
                         self.attrList.push(item);
                     }
                 });

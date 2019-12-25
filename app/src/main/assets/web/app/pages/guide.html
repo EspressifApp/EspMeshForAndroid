@@ -1,0 +1,64 @@
+
+<div class="init-width">
+    <transition name="ups">
+        <div v-show="flag" class="operate-wrapper">
+            <div class="mask"></div>
+            <div class="guide-wrapper flex flex-v">
+                <div class="guide-header flex flex-ac">
+                    <div @click="hideGuideContent" v-show="isGuideContent" class="flex-50">
+                        <span class="flex-50 guide-icon  icon-left"></span>
+                    </div>
+                    <div class="flex-1">{{guideTitle}}</div>
+                    <div @click="hide" class="flex-50">
+                        <span class="flex-50 guide-icon icon-cross" style="font-size: 15px;"></span>
+                    </div>
+                </div>
+                <div v-show="!isGuideContent" class="guide-content flex-1">
+                    <div @click="showGuideContent(item)" class="guide-item" v-for="item in guideList">
+                        <div class="guide-item-icon">
+                            <span class="iconfont" :class="item.icon"></span>
+                        </div>
+                        <div class="guide-item-name">
+                            <span class="name">{{item.name}}</span>
+                            <span class="desc">{{$t('suchAs')}}{{item.desc}}</span>
+                        </div>
+                        <div class="guide-item-power">
+                            <span class="iconfont icon-right"></span>
+                        </div>
+                    </div>
+                </div>
+                <div v-show="isGuideContent" class="guide-content guide-info flex-1">
+                    <div class="ready">
+                        <div class="info-title">| {{$t('preparation')}}</div>
+                        <div v-for="item in step" class="guide-info-item flex flex-ac">
+                            <div class="guide-info-icon flex-50">
+                                <span class="iconfont" :class="item.icon" style="font-size: 40px"></span>
+                            </div>
+                            <div class="flex-1">
+                                <div>{{item.step}}</div>
+                                <div>{{item.info}}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="problem-desc">
+                        <div class="info-title desc-title">{{$t('above')}}
+                            <span class="red">{{$t('stepProblems')}}</span>{{$t('trySteps')}}
+                        </div>
+                        <div v-for="item in problem">{{item}}</div>
+                    </div>
+                    <div class="guide-prompt">{{$t('tips')}}</div>
+                </div>
+                <div class="guide-btn">
+                    <button @click="addDevice" class="btn register-btn">{{$t('blueSearch')}}</button>
+                    <div class="shop-btn">
+                        <span @click="openBrowser">
+                            {{$t('buy')}}>>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>
+
+

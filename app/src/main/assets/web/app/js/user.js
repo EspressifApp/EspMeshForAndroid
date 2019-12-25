@@ -28,6 +28,22 @@ define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../
                 }
 
             },
+            ibeaconLen: function() {
+                var self = this, list = [], macs = [];
+                var ibeaconList = self.$store.state.ibeaconList;
+                $.each(ibeaconList, function(i, item) {
+                    if (macs.indexOf(item.bssid) == -1) {
+                        macs.push(item.bssid)
+                    }
+                })
+                var deviceList = self.$store.state.deviceList;
+                $.each(deviceList, function(i, item) {
+                    if (macs.indexOf(item.mac) != -1) {
+                        list.push(item);
+                    }
+                })
+                return list.length;
+            },
         },
         methods:{
             setFun: function () {
@@ -65,6 +81,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../
             },
             changeCloud: function() {
                 espmesh.mainPageLoad("cloud");
+            },
+            changeAWSCloud: function() {
+                espmesh.mainPageLoad("aws")
             },
             onBackUser: function() {
                 var startTime = 0;

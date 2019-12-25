@@ -49,7 +49,8 @@ public class EspWebActivity extends AppCompatActivity {
         deviceNotifier.setListenTopology(true);
         getLifecycle().addObserver(deviceNotifier);
 
-        mBleNotifyThread = new MainBleNotifyThread(this);
+        mBleNotifyThread = new MainBleNotifyThread();
+        mBleNotifyThread.observeBleInfo(this, bleArray -> evaluateJavascript(JSCallbacks.onScanBLE(bleArray)));
         getLifecycle().addObserver(mBleNotifyThread);
     }
 

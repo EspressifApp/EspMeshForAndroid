@@ -1,0 +1,114 @@
+<transition name="moves">
+    <div v-show="addFlag" :class="isJoin ? 'control-content bg-light-grey' : 'add-info operate-way'">
+        <div class="title-info">
+            <h4 class="app-title"><span @click="hide"><i :class="isJoin ? 'icon-cross' : 'icon-left'" class="icon-left back"></i></span>{{$t('scanDevice')}}({{selected}}/{{count}})</h4>
+            <div v-show="!blueEnable"  @click="showBlueFail" class="right-top right-40">
+                <span class="right-icon"><i class="icon-bluetooth icon-position"><i class="icon-cancel-circled"></i></i></span>
+            </div>
+            <span v-show="!isJoin" @click="showFlag" class="icon-more right-top"></span>
+            <ul v-show="flagUl" class="add-ul">
+                <li @click.stop="importDevice($event)"><i class="icon-daoru"></i><span>{{$t('importDevice')}}</span></li>
+            </ul>
+        </div>
+        <div @click="hideFlag" class="selected-radio filter-wrapper flex flex-jcb flex-ac">
+            <div class="input-info">
+                <div @click="showHeightFun" class="cell-down">
+                    <span class="icon-right" :class="{'active': showHeight}"></span>
+                </div>
+                <input type="search" v-model="searchReset" class="form-control" :placeholder="$t('search')">
+            </div>
+            <div @click="selectAllDevice($event)" class="radio-info flex flex-ac flex-jce"><span :id="selectAllId" class="span-radio"
+                       :class="{'active': (selected == count && count != 0)}"><span></span></span></div>
+        </div>
+        <div @click="hideFlag" class="filter-content">
+            <div class="filter-info" :class="{'height-70': showHeight}">
+                <div class="filter-item">
+                    <span class="filter-name"><i class="icon-rss"></i></span>
+                    <div class="filter-term display-flex flex flex-ac">
+                        <span class="rssi">RSSI:&nbsp;&nbsp;</span>
+                        <div :id="sliderId" class="div-slider"></div>
+                    </div>
+                    <span class="filter-value">{{rssiValue}}</span>
+                </div>
+                <div class="filter-item">
+                    <span class="filter-name"><i class="icon-mark" :class="{'red': showFilter}"></i></span>
+                    <div class="filter-term">{{$t('favoritesDesc')}}</div>
+                    <span class="filter-value" @click="showFilterFun"><i :class="[showFilter ? 'icon-check' : 'icon-uncheck']"></i></span>
+                </div>
+            </div>
+
+        </div>
+        <div @click="hideFlag" class="content-info scan-device" :id="resetId" :class="{'height': showHeight}">
+            <div class="overflow-touch flex flex-m">
+                <div @click="selectMac(item.mac)" v-for="item in list" class="item flex-1">
+                    <div class="item-info flex flex-ac">
+                        <div @click.stop="saveScanMac(item.mac)" class="item-icon-circle flex flex-ac flex-jcc">
+                            <i :class="getIcon(item.tid)"></i>
+                            <span v-show="showMark(item.mac)"><i class="icon-mark"></i></span>
+                        </div>
+                        <div class="item-name flex-1 flex flex-v">
+                            <span>{{item.name}}({{getPosition(item.position)}})</span>
+                            <span class="desc"><img class="item-img" :src="getRssiIcon(item.rssi)"/>&nbsp;&nbsp;&nbsp;Mac: {{item.bssid}}</span>
+                        </div>
+                        <div class="item-power-small">
+                            <span :data-value="item.mac" class="span-radio" :class="{'active': isSelected(item.mac)}"><span></span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-show="showFooterInfo && !isJoin" class="position-absolute btn-register-wrapper scan-btn">
+            <button :class="{'bg-gray': selected <= 0}" type="submit" class="btn register-btn" @click="addDevice">{{$t('next')}}</button>
+        </div>
+        <div v-show="isJoin" class="position-absolute btn-register-wrapper scan-btn">
+            <button :class="{'bg-gray': selected <= 0}" type="submit" class="btn register-btn" @click="conDevice">{{$t('confirmBtn')}}</button>
+        </div>
+        <div @click="showDescInfo" v-show="showFooterInfo" class="proble-info flex flex-ac">
+            <i class="icon-problem"></i>{{$t('noSearch')}}
+        </div>
+        <transition>
+            <div v-show="showDesc" class="prompt-wrapper">
+                <div @click="hideDescInfo" class="mask"></div>
+                <div class="prompt-info">
+                    <div class="prompt-header flex flex-ac">
+                        <div class="prompt-blue flex-1 fon">
+                            <div class="prompt-round flex flex-ac flex-jcc">
+                                <i class="icon-mobile"><i class="icon-bluetooth"></i></i>
+                            </div>
+                            <span>{{$t('blueIsEnabled')}}</span>
+                        </div>
+                        <div class="prompt-line flex-1 flex flex-ac flex-jcc flex-v">
+                            <span class="line-desc flex flex-ac"><i class="icon-map"></i>{{$t('lessMeters')}}</span>
+                            <span class="line"></span>
+                        </div>
+                        <div class="prompt-light flex-1">
+                            <div class="prompt-round flex flex-ac flex-jcc">
+                                <i class="icon-light"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="prompt-content">
+                        <h4>{{$t('addDevices')}}</h4>
+                        <ul class="prompt-ul">
+                            <li>1. {{$t('devicePowered')}}</li>
+                            <li>2. {{$t('deviceNoConfig')}}</li>
+                            <li>3. {{$t('less20Meters')}}</li>
+                            <li>4. {{$t('devicesWell')}}</li>
+                            <li>5. {{$t('blueMal')}}&emsp;<span @click="setBluetooth" class="green-color">{{$t('goReboot')}}</span></li>
+                            <li v-show="systemInfo">6. {{$t('locationEnabled')}}&emsp;<span @click="setLocation" class="green-color">{{$t('goEnable')}}</span></li>
+                        </ul>
+                        <div class="result-flex flex flex-ac flex-jcc">
+                            <button @click="hideDescInfo" class="btn register-btn">{{$t('gotIt')}}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+        <v-addDevice v-on:addDeviceShow="onBackReset" ref="device"></v-addDevice>
+        <v-importDevice v-on:importShow="onBackReset" :importId="importId" ref="import"></v-importDevice>
+        <v-blueFail v-on:blueFailShow="onBackReset" ref="blueFail"></v-blueFail>
+    </div>
+</transition>
+
+
+

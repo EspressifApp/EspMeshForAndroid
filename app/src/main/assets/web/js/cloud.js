@@ -162,7 +162,6 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Util", "
         mounted: function() {
             window.onLocaleGot = this.onLocaleGot;
             window.onGetAppInfo = this.onGetAppInfo;
-            //espmesh.userGuestLogin();
             espmesh.getLocale();
             espmesh.getAppInfo();
         },

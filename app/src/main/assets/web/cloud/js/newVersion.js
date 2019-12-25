@@ -39,7 +39,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/newVersion.html"],
                 if (this.$store.state.systemInfo != "Android") {
                     notes = this.newAppInfo.notes
                 } else {
-                    notes = Util.Base64.decode(this.newAppInfo.notes);
+                    if (!Util._isEmpty(this.newAppInfo.notes)) {
+                        notes = Util.Base64.decode(this.newAppInfo.notes);
+                    }
                 }
                 if (notes.indexOf("\n") != -1) {
                     this.appDesc = notes.split("\n");

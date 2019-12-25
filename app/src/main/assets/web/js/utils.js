@@ -1,5 +1,74 @@
 define(function(){
     var Utils = {
+        // 设置状态栏的颜色--灰色
+        setStatusBarGray: function() {
+            this.setStatusBar(115, 125, 137, 255, true);
+        },
+        // 设置状态栏的颜色--黑色
+        setStatusBarBLack: function() {
+            this.setStatusBar(17, 20, 29, 255, true);
+        },
+        // 设置状态栏的颜色--蓝色
+        setStatusBarBlue: function() {
+            this.setStatusBar(62, 194, 252, 255, true);
+        },
+        // 设置状态栏的颜色--白色
+        setStatusBarWhite: function() {
+            this.setStatusBar(255, 255, 255, 255, false);
+        },
+        // 设置状态栏的颜色
+        setStatusBar: function(r, g, b, a, flag) {
+            espmesh.setStatusBar(JSON.stringify({"background": [r, g, b, a], "defaultStyle": flag}))
+        },
+        // 打开手机设置界面(蓝牙、位置等)
+        gotoSystemSettings: function(name) {
+            espmesh.gotoSystemSettings(name);
+        },
+        // 通讯方法
+        requestDevicesMulticast: function(data) {
+            espmesh.requestDevicesMulticast(data);
+        },
+        // 转换bssid
+        convert: function(bssid) {
+            var strs = bssid.split(":"), meshIds = [];
+            for (var i = 0; i < strs.length; i++ ) {
+                meshIds.push(parseInt(strs[i], 16));
+            }
+            return meshIds;
+        },
+        // 提示
+        toast: function(MINT, msg) {
+            var mintStr = MINT.Toast({
+                message: msg,
+                position: 'bottom',
+                duration: 2000
+            });
+            return mintStr;
+        },
+        // 设置默认的群组名称
+        setGroupName: function(tid) {
+            var name = "";
+            if (tid >= MIN_SWITCH && tid <= MAX_SWITCH) {
+                name = "Switch_" + tid;
+            } else if (tid >= MIN_SENSOR && tid <= MAX_SENSOR) {
+                name = "Sensor_" + tid;
+            } else if (tid >= MIN_LIGHT && tid <= MAX_LIGHT) {
+                name = "Light_" + tid;
+            } else {
+                name = "Other_" + tid;
+            }
+            return name;
+        },
+        // 获取群组名称
+        getGroupName: function(groups, id, name) {
+            $.each(groups, function(i, item) {
+                if (item.id == id) {
+                    name = item.name;
+                    return false;
+                }
+            })
+            return name;
+        },
         Base64: {
             _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
             encode: function(e) {
@@ -108,7 +177,7 @@ define(function(){
                 if (i < str.length - 1) {
                     var sub = str.substr(i, 2);
                     if (sub != "00") {
-                        arr.push(str.substr(i, 2));
+                         arr.push(str.substr(i, 2));
                     }
 
                 }
@@ -295,26 +364,23 @@ define(function(){
             } else if (rssi >= -75) {
                 return "images/signal3.png"
             } else if (rssi >= -80) {
-                return "images/signal2.png"
+                 return "images/signal2.png"
             } else if (rssi >= -90) {
-                return "images/signal1.png"
+                 return "images/signal1.png"
             } else {
-                return "images/signal0.png"
+                 return "images/signal0.png"
             }
         },
         getWIFIRssiIcon: function(rssi) {
-            if (rssi > 0) {
-                return "";
-            } else if (rssi >= -55) {
-                return "images/signal4.png"
-            } else if (rssi >= -65) {
-                return "images/signal3.png"
-            } else if (rssi >= -70) {
-                return "images/signal2.png"
-            } else if (rssi >= -75) {
-                return "images/signal1.png"
+            if (rssi <= MIN_RSSI) {
+                return "images/signal0.png";
+            } else if (rssi >= MAX_RSSI) {
+                return "images/signal4.png";
             } else {
-                return "images/signal0.png"
+                var inputRange = (MAX_RSSI - MIN_RSSI);
+                var outputRange = 4;
+                var num = ((rssi - MIN_RSSI) * outputRange / inputRange).toFixed(0);
+                return "images/signal"+num+".png";
             }
         },
         sortBy: function(attr,rev){
@@ -343,6 +409,14 @@ define(function(){
                 return "";
             }
         },
+        getPOrN: function(position, name) {
+            var obj = name,
+                objP = this.getPosition(position);
+            if (!this._isEmpty(objP)) {
+                obj = objP;
+            }
+            return obj;
+        },
         obj2key: function (obj, keys){
             var n = keys.length,
                 key = [];
@@ -364,11 +438,13 @@ define(function(){
             return arr;
         },
         addBgClass: function(e) {
-            var doc = $(e.currentTarget).parent().parent().parent();
-            doc.addClass("bg-white");
-            setTimeout(function() {
-                doc.removeClass("bg-white");
-            }, 500)
+            if (e) {
+                var doc = $(e.currentTarget).parent().parent().parent();
+                doc.addClass("bg-white");
+                setTimeout(function() {
+                    doc.removeClass("bg-white");
+                }, 500)
+            }
         },
         setName: function(name, mac) {
 //            mac = "_" + mac.substr(mac.length - 4);
@@ -530,9 +606,42 @@ define(function(){
             }
             return flag;
         },
+        // 组装蓝牙扫描到的设备信息
         assemblyObject: function(item, self) {
             return {mac: item.mac, name: item.name, rssi: item.rssi, bssid: item.bssid,
-                position: self.getPairInfo(item.mac), tid: item.tid, beacon: item.beacon, only_beacon: item.only_beacon};
+                position: this.getPairInfo(self, item.mac), tid: item.tid, beacon: item.beacon, only_beacon: item.only_beacon};
+
+        },
+        // 组装蓝牙扫描到的设备信息
+        assemblyObjectNoPosition: function(item, self) {
+            return {mac: item.mac, name: item.name, rssi: item.rssi, bssid: item.bssid,
+                 tid: item.tid, beacon: item.beacon, only_beacon: item.only_beacon};
+
+        },
+        blueNameDecode: function(self, blueDevices) {
+            var that = this;
+            if (self.$store.state.systemInfo == "Android") {
+                $.each(blueDevices, function(i, item) {
+                    item.name = that.Base64.decode(item.name);
+                    blueDevices.splice(i, 1, item)
+                })
+            }
+            return blueDevices;
+        },
+        // 获取配置的位置信息
+        getPairInfo: function(self, mac) {
+            var position = "";
+            var staMac = this.staMacForBleMacs([mac]);
+            console.log(staMac);
+            if (staMac.length > 0) {
+                $.each(self.resetPairList, function(i, item) {
+                    if (item.mac == staMac[0]) {
+                        position = item.floor + "-" + item.area + "-" + item.code;
+                        return false;
+                    }
+                });
+            }
+            return position;
         },
         stringToBytes: function (str) {
             var ch, st, re = [];
@@ -548,6 +657,15 @@ define(function(){
                 re = re.concat( st.reverse() );
             }
             return re;
+        },
+        // 判断设备是否有位置信息没有测返回'N/A'
+        getPositionOrNA: function(position) {
+            var str = this.getPosition(position);
+            if (!this._isEmpty(str)) {
+                return str;
+            } else {
+                return "N/A";
+            }
         },
         _isEmpty: function (str) {
             if (str === "" || str === null || str === undefined || str === "null" || str === "undefined" ) {
@@ -691,7 +809,7 @@ define(function(){
             self._addRequestEvent(parentMac, events, deviceIp);
         },
         setModelEvent: function(name, childMacs, cid, subCid, h, s, b, flag, type, eventClass, execCid, isLong,
-                                defaultValue, compare) {
+            defaultValue, compare) {
             var self = this;
             var eventModel = "";
             if (flag) {
@@ -810,7 +928,7 @@ define(function(){
             return event;
         },
         _assemblyButtonEvent: function (name, cid, mac, subCid, type, eventClass, isLong,
-                                        defaultValue, compare) {
+            defaultValue, compare) {
             var event = {
                 "name": name,
                 "trigger_cid": cid,

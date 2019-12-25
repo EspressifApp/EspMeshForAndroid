@@ -1,0 +1,45 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way bg-blue flex flex-v" :class="{'failure-bg': !success}">
+            <div class="title-info">
+                <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{title}}</h4>
+                <span v-show="!success" @click="conWifi" class="icon-reset right-top"></span>
+            </div>
+            <div class="flex-1 flex">
+                <div class="flex-1 reset-bg flex flex-jcc">
+                    <div v-if="!success" class="content flex flex-ac flex-jcc">
+                        <div class="schedule failure flex flex-v flex-ac flex-jcc">
+                            <p><i class="icon-android-alert"></i></p>
+                            <p class="failure-desc">{{desc}}</p>
+                        </div>
+                    </div>
+                    <div v-else class="content flex flex-ac flex-jcc">
+                        <div class="schedule flex flex-v flex-ac flex-jcc">
+                            <p><span>{{value}}</span><small>%</small></p>
+                            <p>{{desc}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 position-relative flex flex-ac ">
+                    <div v-if="!success" class="process-desc">
+                        <h3 class="text-center">{{$t('confailTitleDesc')}}</h3>
+                        <ul class="network-desc">
+                            <li>{{$t('problemDesc1')}}</li>
+                            <li>{{$t('problemDesc2')}}</li>
+                            <li>{{$t('problemDesc3')}}</li>
+                            <li>{{$t('problemDesc4')}}</li>
+                        </ul>
+                    </div>
+                    <div v-else class="process-desc">
+                        <h3 class="text-center"></h3>
+                        <ul class="network-desc" id="con-status-desc">
+                            <li v-for="item in textList">{{item}}</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

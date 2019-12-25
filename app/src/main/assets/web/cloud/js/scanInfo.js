@@ -128,10 +128,7 @@ define(["vue","MINT", "Util", "txt!../../pages/scanInfo.html"],
                     if (!Util._isEmpty(res)) {
                         res = JSON.parse(res).result;
                         if (res.length > 0 && res[0].status_code == 0) {
-                            MINT.Toast({
-                                message: self.$t('editSuccessDesc'),
-                                position: 'bottom',
-                            });
+                            Util.toast(MINT, self.$t('editSuccessDesc'));
                             self.scanInfo.type = self.type;
                             self.scanInfo.notice_threshold = self.notice_threshold;
                             self.scanInfo.esp_module_filter = self.esp_module_filter;
@@ -141,16 +138,10 @@ define(["vue","MINT", "Util", "txt!../../pages/scanInfo.html"],
                                 self.hide();
                             }, 1000);
                         } else {
-                            MINT.Toast({
-                                message: self.$t('editFailDesc'),
-                                position: 'bottom',
-                            });
+                            Util.toast(MINT, self.$t('editFailDesc'));
                         }
                     } else {
-                        MINT.Toast({
-                            message: self.$t('editFailDesc'),
-                            position: 'bottom',
-                        });
+                        Util.toast(MINT, self.$t('editFailDesc'));
                     }
                     console.log(JSON.stringify(self.scanInfo));
                     MINT.Indicator.close();

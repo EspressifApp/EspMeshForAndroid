@@ -65,18 +65,12 @@ define(["vue","MINT", "Util", "txt!../../pages/ibeaconInfo.html"],
                     if (!Util._isEmpty(res)) {
                          res = JSON.parse(res).result;
                          if (res.status_code == 0) {
-                             MINT.Toast({
-                                 message: self.$t('editSuccessDesc'),
-                                 position: 'bottom',
-                             });
+                             Util.toast(MINT, self.$t('editSuccessDesc'));
                              setTimeout(function() {
                                  self.hide();
                              }, 1000);
                          } else {
-                             MINT.Toast({
-                                 message: self.$t('editFailDesc'),
-                                 position: 'bottom',
-                             });
+                             Util.toast(MINT, self.$t('editFailDesc'));
                          }
                      }
                      MINT.Indicator.close();

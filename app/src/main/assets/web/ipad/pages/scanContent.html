@@ -1,0 +1,46 @@
+<transition>
+    <div v-show="addFlag" class="control-content bg-light-grey flex flex-v">
+        <div class="title-info">
+            <h4 class="app-title">附近设备</h4>
+        </div>
+        <div class="sort-wrap flex flex-ac">
+            <label>排序：</label>
+            <ul class="flex flex-ac">
+                <li @click.stop="sortByTime">
+                    <span>按时间排序</span>&nbsp;
+                    <span v-show="timeSort" class="icon-up" :class="{'sort-down': !isAsc}"></span>
+                </li>
+                <li @click.stop="sortByRssi">
+                    <span>按信号排序</span>&nbsp;
+                    <span v-show="rssiSort" class="icon-up" :class="{'sort-down': !isAsc}"></span>
+                </li>
+                <li @click.stop="clearDevice">
+                    <span>清除信息</span>
+                </li>
+            </ul>
+        </div>
+
+        <div @click="hideMore" class="input-info">
+            <i class="icon-search"></i>
+            <input type="search" v-model="searchMac" class="form-control" :placeholder="$t('searchByMac')">
+        </div>
+        <div @click="hideMore" class="content-info  scancontent-info">
+            <div class="overflow-touch flex flex-m">
+                <div v-for="item in list" class='item item-width50'>
+                    <div class="item-info flex flex-ac">
+                        <div class='item-icon-circle flex flex-ac flex-jcc'>
+                            <i class="scancontent-icon" :class="item.type == 2 ? 'icon-bluetooth' : 'icon-wifi'"></i>
+                        </div>
+                        <div class='info-wrapper'>
+                            <div class='item-time'>[{{format("yyyy-MM-dd hh:mm:ss", item.time)}}]</div>
+                            <div class='item-org'>{{item.org}}</div>
+                            <div></div>
+                            <div class='item-mac'>MAC:&nbsp;{{item.mac}},&nbsp;Type:&nbsp;{{getType(item.type)}},&nbsp;Rssi:&nbsp;{{item.rssi}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</transition>

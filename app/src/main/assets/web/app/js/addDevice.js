@@ -1,5 +1,5 @@
-define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
-    function(v, MINT, Util, addDevice, conDevice) {
+define(["vue", "MINT", "Common", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
+    function(v, MINT, Common, Util, addDevice, conDevice) {
 
     var AddDevice = v.extend({
 
@@ -93,51 +93,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
         },
         methods:{
             show: function() {
-                var self = this;
-                self.wifiInfo = this.$store.state.wifiInfo;
-                window.onLoadAPs = self.onLoadAPs;
-                window.onLoadMeshIds = self.onLoadMeshIds;
-                self.apList = [];
-                self.wifiName = self.$t('no');
-                self.password = "";
-                self.showNext = false;
-                self.onBackAddDevice();
-                self.getLoadAPs();
-                self.nextInput();
-                self.getMeshId();
-                espmesh.stopBleScan();
-                self.addFlag = true;
-                self.isMore = false;
-                self.moreObj = {};
-                self.meshType = null,
-                self.customData = null;
-                self.votePercentage = null;
-                self.voteMaxCount = null;
-                self.backoffRssi = null;
-                self.scanMinCount = null;
-                self.scanFailCount = null;
-                self.monitorCount = null;
-                self.rootHealing = null;
-                self.rootEnable = null;
-                self.fixEnable = null;
-                self.capacityNum = null;
-                self.maxLayer = null;
-                self.maxConnect = null;
-                self.assocExpire = null;
-                self.beaconInterval = null;
-                self.passiveScan = null;
-                self.monitorDuration = null;
-                self.cnxRssi = null;
-                selectRssi = null;
-                self.switchRssi = null;
-                self.xonQsiz = null;
-                self.retransmitEnable = null;
-                self.dataDrop = null;
-                self.meshPwd = null;
-                this.selected = "2";
-                setTimeout(function() {
-                    self.configWifi();
-                }, 1000);
+                Common.initNetworkShow(this);
             },
             getLoadAPs: function() {
                 espmesh.loadAPs();
@@ -178,33 +134,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
                 }
             },
             showPassword: function () {
-                this.showPwd = !this.showPwd;
-                if (this.type == "password") {
-                    this.type = "text";
-                } else {
-                    this.type = "password";
-                }
+                Common.showPassword(this);
             },
             nextInput: function(){
-                var self = this,
-                    txts = $(".form-input input");
-                for(var i = 0; i < txts.length;i++){
-                    var t = txts[i];
-                    t.index = i;
-                    t.onkeyup = function(){
-                        var val = $(this).val();
-                        var reg = /^[0-9a-fA-F]{1,2}$/;
-                        if (reg.test(val)) {
-                            if (val.length >= 2) {
-                                var next = this.index + 1;
-                                if(next > txts.length - 1) return;
-                                txts[next].focus();
-                            }
-                        } else {
-                            self.selectSwitch($(this).attr("data-value"));
-                        }
-                    }
-                }
+                Common.nextInput(this);
             },
             selectSwitch: function(val) {
                 var self = this;
@@ -224,16 +157,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
 
             },
             setMeshID: function(id) {
-                var self = this;
-                if (!Util._isEmpty(id)) {
-                    var ids = id.split(":");
-                    self.meshIdOne = ids[0];
-                    self.meshIdTwo = ids[1];
-                    self.meshIdThr = ids[2];
-                    self.meshIdFour = ids[3];
-                    self.meshIdFive = ids[4];
-                    self.meshIdSex = ids[5];
-                }
+                Common.splitMeshId(this, id);
             },
             hideParent: function () {
                 this.$emit("addDeviceShow");
@@ -254,94 +178,22 @@ define(["vue", "MINT", "Util", "txt!../../pages/addDevice.html", "./conDevice"],
             onMeshChange: function() {
                 var self = this;
                 var values = this.$refs.picker.getValues()[0];
-                if (!Util._isEmpty(values)) {
-                    var ids = values.split(":");
-                    self.meshIdOne = ids[0];
-                    self.meshIdTwo = ids[1];
-                    self.meshIdThr = ids[2];
-                    self.meshIdFour = ids[3];
-                    self.meshIdFive = ids[4];
-                    self.meshIdSex = ids[5];
-                }
+                Common.splitMeshId(this, values);
                 self.hideMesh();
-
             },
             hideMesh: function() {
                 this.showMesh = false;
                 window.onBackPressed = this.hide;
             },
-
             nextStep: function () {
-                var self = this;
-                if (!this.$store.state.blueInfo) {
-                    MINT.Toast({
-                        message: self.$t('bleConDesc'),
-                        position: 'bottom',
-                    });
-                    return false;
-                }
-                if (this.$store.state.systemInfo == "Android") {
-                    var sdk = espmesh.getSDKInt();
-                    if (sdk >= 23) {
-                        var locationCon = espmesh.isLocationEnable();
-                        if (!locationCon) {
-                            MINT.Toast({
-                                message: self.$t('locationConDesc'),
-                                position: 'bottom',
-                            });
-                            return false;
-                        }
-                    }
-                }
-                if (self.wifiName == self.$t('no')) {
-                    MINT.Toast({
-                        message: self.$t('wifiNoDesc'),
-                        position: 'bottom',
-                    });
-                    return false;
-                }
-                if (Util._isEmpty(self.meshIdOne) || Util._isEmpty(self.meshIdTwo) || Util._isEmpty(self.meshIdThr) ||
-                    Util._isEmpty(self.meshIdFour) || Util._isEmpty(self.meshIdFive) || Util._isEmpty(self.meshIdSex)) {
-                    MINT.Toast({
-                        message: self.$t('meshIdDesc'),
-                        position: 'bottom',
-                    });
-                    return false;
-                }
-                if (parseInt(self.meshIdOne) == 0 && parseInt(self.meshIdTwo) == 0 && parseInt(self.meshIdThr) == 0 &&
-                     parseInt(self.meshIdFour) == 0 && parseInt(self.meshIdFive) == 0 &&
-                     parseInt(self.meshIdSex) == 0) {
-                     self.meshId = "11:11:11:11:11:11";
-                } else {
-                    self.meshId = self.meshIdOne + ":" + self.meshIdTwo + ":" + self.meshIdThr + ":" + self.meshIdFour +
-                        ":" + self.meshIdFive + ":" + self.meshIdSex;
-                }
-                self.moreObj = {custom_data: self.customData, mesh_password: self.meshPwd, mesh_type: self.meshType, vote_percentage: self.votePercentage, vote_max_count: self.voteMaxCount,
-                    backoff_rssi: self.backoffRssi, scan_min_count: self.scanMinCount, scan_fail_count: self.scanFailCount, monitor_ie_count: self.monitorCount,
-                    root_healing_ms: self.rootHealing, root_conflicts_enable: self.rootEnable, fix_root_enable: self.fixEnable,
-                    capacity_num: self.capacityNum, max_layer: self.maxLayer, max_connection: self.maxConnect,
-                    assoc_expire_ms: self.assocExpire, beacon_interval_ms: self.beaconInterval, passive_scan_ms: self.passiveScan,
-                    monitor_duration_ms: self.monitorDuration, cnx_rssi: self.cnxRssi, select_rssi: self.selectRssi,
-                    switch_rssi: self.switchRssi, xon_qsize: self.xonQsize, retransmit_enable:self.retransmitEnable,
-                    data_drop_enable: self.dataDrop};
-                if(self.showNext) {
-                     MINT.MessageBox.confirm(self.$t('wifiConfirmDesc'), self.$t('configNet'),{
-                            confirmButtonText: self.$t('carryOn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
-                        self.$refs.con.show();
-                    });
-                } else {
-                    self.$refs.con.show();
-                }
+                Common.startWifi(this);
             },
             configWifi: function () {
                 var self = this;
                 if (self.wifiInfo.frequency) {
                     var frequency = self.wifiInfo.frequency;
                     if (frequency > 4900 && frequency < 5900) {
-                        MINT.Toast({
-                            message: self.$t('wifiDesc'),
-                            position: 'bottom',
-                        });
+                        Util.toast(MINT, self.$t('wifiDesc'));
                         self.showNext = true;
                     } else {
                         self.showNext = false;

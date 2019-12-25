@@ -143,11 +143,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                         }, 1000);
                     });
                 } else {
-                    MINT.Toast({
-                        message: self.$t('selectPairDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('selectPairDesc'));
                 }
 
             },
@@ -250,11 +246,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                 } else {
                     espmesh.deleteHWDevices(JSON.stringify(macs));
                     self.getPair();
-                    MINT.Toast({
-                        message: self.$t('delSuccessDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('delSuccessDesc'))
                 }
                 MINT.Indicator.close();
 
@@ -287,18 +279,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/pair.html", "../js/setPair" ],
                     });
                     espmesh.deleteHWDevices(JSON.stringify(tag.macs));
                     self.getPair();
-                    MINT.Toast({
-                        message: self.$t('delSuccessDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('delSuccessDesc'));
                     self.$store.commit("setList", self.deviceList);
                 } else {
-                    MINT.Toast({
-                        message: self.$t('delFailDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('delFailDesc'));
                 }
             }
         },

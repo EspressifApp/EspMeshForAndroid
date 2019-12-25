@@ -33,19 +33,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/login.html", "../js/register", "
             login: function () {
                 var self = this;
                 if (Util._isEmpty(self.username)) {
-                    MINT.Toast({
-                        message: self.$t('emailDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('emailDesc'));
                     return false;
                 }
                 if (Util._isEmpty(self.password)) {
-                    MINT.Toast({
-                        message: self.$t('passwordDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('passwordDesc'));
                     return false;
                 }
                 var userInfo = {
@@ -65,11 +57,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/login.html", "../js/register", "
                                     path: redirect
                                 });
                             } else {
-                                MINT.Toast({
-                                    message: self.$t('loginFailDesc'),
-                                    position: 'bottom',
-                                    duration: 2000
-                                });
+                                Util.toast(MINT, self.$t('loginFailDesc'));
                             }
                         }, 1000);
 
@@ -103,11 +91,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/login.html", "../js/register", "
                                     path: redirect
                                 });
                             } else {
-                                MINT.Toast({
-                                    message: self.$t('loginFailDesc'),
-                                    position: 'bottom',
-                                    duration: 2000
-                                });
+                                Util.toast(MINT, self.$t('loginFailDesc'));
+
                             }
                         }, 1000);
 
@@ -126,11 +111,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/login.html", "../js/register", "
                 var startTime = 0;
                 var self = this;
                 window.onBackPressed = function () {
-                    MINT.Toast({
-                        message: self.$t('exitProgramDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('exitProgramDesc'))
                     if (startTime == 0) {
                         startTime = new Date().getTime();
                     } else {

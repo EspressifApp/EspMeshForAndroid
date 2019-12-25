@@ -141,11 +141,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-devices.html", "..
                             self.$refs.autoBtn.show();
                         }, 100)
                     } else {
-                        MINT.Toast({
-                            message: self.$t('请选择设备！'),
-                            position: 'bottom',
-                            duration: 2000
-                        });
+                        Util.toast(MINT, self.$t('selectDeviceDesc！'));
                     }
                 },
                 delEvent: function (parentMac) {

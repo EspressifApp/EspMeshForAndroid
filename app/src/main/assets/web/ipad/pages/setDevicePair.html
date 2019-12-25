@@ -1,0 +1,61 @@
+<transition name="moves">
+    <div v-show="flag" class="control-content">
+        <div class="title-info">
+            <h4 class="app-title">
+                <span @click="hide"><i class="icon-cross back"></i></span>
+                {{$t('location')}}
+            </h4>
+        </div>
+        {{getDeviceInfo}}
+        <div class="ibeacon-content info-content">
+            <div class="info-item flex flex-ac flex-jcb">
+                <span class="info-disc-span">{{$t('floor')}}</span>
+                <el-select
+                        v-model="floor"
+                        filterable
+                        allow-create
+                        change="onFloorChange"
+                        default-first-option>
+                    <el-option
+                            v-for="item in floorArray"
+                            :key="item"
+                            :label="item"
+                            :value="item">
+                    </el-option>
+                </el-select>
+            </div>
+            <div class="info-item flex flex-ac flex-jcb">
+                <span class="info-disc-span">{{$t('area')}}</span>
+                <el-select
+                        v-model="area"
+                        filterable
+                        allow-create
+                        change="onAreaChange"
+                        default-first-option>
+                    <el-option
+                            v-for="item in areaArray"
+                            :key="item"
+                            :label="item"
+                            :value="item">
+                    </el-option>
+                </el-select>
+            </div>
+            <div class="info-item flex flex-ac flex-jcb">
+                <span class="info-disc-span">{{$t('code')}}</span>
+                <input v-model="serialNum" class="form-control">
+            </div>
+            <div class="info-item flex flex-ac flex-jcb">
+                <span class="info-disc-span">Mac</span>
+                <input v-model="mac" readonly class="form-control">
+            </div>
+            <div v-show="!showEdit" class="text-center">
+                <button type="submit" class="btn margin-top-30 register-btn"
+                        @click="savePair">{{$t('confirmBtn')}}</button>
+            </div>
+            <div v-show="showEdit" class="text-center">
+                <button type="submit" class="btn margin-top-30 register-btn"
+                        @click="editPair">{{$t('editBtn')}}</button>
+            </div>
+        </div>
+    </div>
+</transition>

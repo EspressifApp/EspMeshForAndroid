@@ -1,4 +1,4 @@
-define(["vue", "MINT", "txt!../../pages/register.html"], function(v, MINT, register) {
+define(["vue", "MINT", "Util", "txt!../../pages/register.html"], function(v, MINT, Util, register) {
 
     var Register = v.extend({
 
@@ -17,43 +17,23 @@ define(["vue", "MINT", "txt!../../pages/register.html"], function(v, MINT, regis
             register: function () {
                 var self = this;
                 if (self._isEmpty(self.email)) {
-                    MINT.Toast({
-                        message: '请输入用户邮箱!',
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, '请输入用户邮箱!');
                     return false;
                 }
                 if (self._isEmpty(self.username)) {
-                    MINT.Toast({
-                        message: '请输入用户名称!',
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, '请输入用户名称!');
                     return false;
                 }
                 if (self._isEmpty(self.password)) {
-                    MINT.Toast({
-                        message: '请输入用户密码!',
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, '请输入用户密码!');
                     return false;
                 }
                 if (self._isEmpty(self.repassword)) {
-                    MINT.Toast({
-                        message: '请输入确认密码!',
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, '请输入确认密码!');
                     return false;
                 }
                 if (self.repassword != self.password) {
-                    MINT.Toast({
-                        message: '两次输入的密码不一致!',
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, '两次输入的密码不一致!');
                     return false;
                 }
                 MINT.Indicator.open();
@@ -64,19 +44,10 @@ define(["vue", "MINT", "txt!../../pages/register.html"], function(v, MINT, regis
                     if (!self._isEmpty(res)) {
                         res = JSON.parse(res);
                         if (res.status == 0) {
-                            MINT.Toast({
-                                message: "注册成功",
-                                position: 'bottom',
-                                duration: 2000
-                            });
+                            Util.toast(MINT, "注册成功");
                             self.hide();
                         } else {
-                            MINT.Toast({
-                                message: "注册失败",
-                                position: 'bottom',
-                                duration: 2000
-                            });
-
+                            Util.toast(MINT, "注册失败");
                         }
                     }
 

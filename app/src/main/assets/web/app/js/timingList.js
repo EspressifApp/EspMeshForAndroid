@@ -130,19 +130,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/timingList.html", "./timingDevic
                         }
                     })
                 } else {
-                    MINT.Toast({
-                      message: self.$t('deleteFailDesc'),
-                      position: 'bottom',
-                      duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('deleteFailDesc'));
                 }
 
             } else {
-                MINT.Toast({
-                  message: self.$t('deleteFailDesc'),
-                  position: 'bottom',
-                  duration: 2000
-                });
+                Util.toast(MINT, self.$t('deleteFailDesc'));
             }
 
             MINT.Indicator.close();

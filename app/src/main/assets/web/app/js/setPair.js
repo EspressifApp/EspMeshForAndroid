@@ -163,52 +163,34 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
             savePair: function() {
                 var self = this, flag = false;
                 if (Util._isEmpty(self.floor)) {
-                    MINT.Toast({
-                        message: self.$t('floorDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+
+                    Util.toast(MINT, self.$t('floorDesc'));
                     return false;
                 }
                 if (Util._isEmpty(self.area)) {
-                    MINT.Toast({
-                        message: self.$t('areaDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+
+                    Util.toast(MINT, self.$t('areaDesc'));
                     return false;
                 }
                 if (Util._isEmpty(self.serialNum)) {
-                    MINT.Toast({
-                        message: self.$t('codeDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+
+                    Util.toast(MINT, self.$t('codeDesc'));
                     return false;
                 }
                 if (Util._isEmpty(self.mac)) {
-                    MINT.Toast({
-                        message: self.$t('macDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+
+                    Util.toast(MINT, self.$t('macDesc'));
                     return false;
                 }
                 if (self._isCodeExist(self.serialNum)) {
-                    MINT.Toast({
-                        message: self.$t('existCodeDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+
+                    Util.toast(MINT, self.$t('existCodeDesc'));
                     return false;
                 }
                 self.mac = self.mac.toLowerCase();
                 if (self._isExist(self.mac)) {
-                    MINT.Toast({
-                        message: self.$t('existMacDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+
+                    Util.toast(MINT, self.$t('existMacDesc'));
                     return false;
                 }
                 MINT.Indicator.open();
@@ -225,11 +207,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                     } else {
                         espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
                             "floor": self.floor, "area":  self.area}]));
-                        MINT.Toast({
-                            message: self.$t('saveSuccessDesc'),
-                            position: 'bottom',
-                            duration: 2000
-                        });
+
+                        Util.toast(MINT, self.$t('saveSuccessDesc'));
                         self.mac = "";
                         self.getNum();
                     }
@@ -272,20 +251,13 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                     });
                     espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
                         "floor": self.floor, "area":  self.area}]));
-                    MINT.Toast({
-                        message: tag.suc,
-                        position: 'bottom',
-                        duration: 2000
-                    });
+
+                    Util.toast(MINT, tag.suc);
                     self.mac = "";
                     self.getNum();
                     self.$store.commit("setList", self.deviceList);
                 } else {
-                    MINT.Toast({
-                        message: tag.fail,
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, tag.fail);
                 }
 
 
@@ -361,35 +333,23 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                     }
                 })
                 if (Util._isEmpty(self.floor)) {
-                    MINT.Toast({
-                        message: self.$t('floorDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+
+                    Util.toast(MINT, self.$t('floorDesc'));
                     return false;
                 }
                 if (Util._isEmpty(self.area)) {
-                    MINT.Toast({
-                        message: self.$t('areaDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+
+                    Util.toast(MINT, self.$t('areaDesc'));
                     return false;
                 }
                 if (Util._isEmpty(self.serialNum)) {
-                    MINT.Toast({
-                        message: self.$t('codeDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+
+                    Util.toast(MINT, self.$t('codeDesc'));
                     return false;
                 }
                 if (self._isEditExist(self.serialNum) && self._isCodeExist(self.serialNum)) {
-                    MINT.Toast({
-                        message: self.$t('existCodeDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+
+                    Util.toast(MINT, self.$t('existCodeDesc'));
                     return false;
                 }
                 MINT.Indicator.open();
@@ -414,11 +374,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                         espmesh.deleteHWDevices(JSON.stringify([self.pairInfo.mac]));
                         espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
                                 "floor": self.floor, "area":  self.area}]));
-                        MINT.Toast({
-                            message: self.$t('editSuccessDesc'),
-                            position: 'bottom',
-                            duration: 2000
-                        });
+                        Util.toast(MINT, self.$t('editSuccessDesc'));
                         self.hide();
                     }
                     MINT.Indicator.close();
@@ -456,19 +412,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/setPair.html"],
                     espmesh.deleteHWDevices(JSON.stringify([self.pairInfo.mac]));
                     espmesh.saveHWDevices(JSON.stringify([{"mac": self.mac, "code": self.serialNum,
                         "floor": self.floor, "area":  self.area}]));
-                    MINT.Toast({
-                        message: tag.suc,
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, tag.suc);
                     self.$store.commit("setList", self.deviceList);
                     self.hide();
                 } else {
-                    MINT.Toast({
-                        message: tag.fail,
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, tag.fail);
                 }
 
             },

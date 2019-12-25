@@ -6,13 +6,13 @@
             <div class="ibeacon-content">
                 <div class="ibeacon-header">
                     <div class="ibeacon-distance">
-                        <span class="distance-title">距离(m)</span>
+                        <span class="distance-title">{{$t('distance')}}(m)</span>
                         <div class="ibeacon-distance-content">
                             <span>{{meter}}</span>
                         </div>
                     </div>
-                    <div class="ibeacon-device">
-                        <div class="ibeacon-device-icon">
+                    <div class="ibeacon-device flex flex-v flex-ac">
+                        <div class="ibeacon-device-icon flex flex-jcc flex-ac">
                             <i :class="getIcon()" :style="{'color': getColor()}"></i>
                         </div>
                         <span>{{ibeaconInfo.name}}</span>
@@ -30,15 +30,15 @@
                 <!--<div class="show-line"></div>-->
                 <!--</div>-->
                 <div @click="showInfo" class="ibeacon-middle">
-                    <p><span>Major:&emsp;</span>{{ibeaconInfo.major}}</p>
-                    <p><span>Minor:&emsp;</span>{{ibeaconInfo.minor}}</p>
-                    <p><span>UUID:&emsp;</span>{{ibeaconInfo.uuid}}</p>
-                    <p><span>发送功率:&emsp;</span>{{ibeaconInfo.power}}</p>
+                    <p class="flex flex-jcb"><span>Major:&emsp;</span>{{ibeaconInfo.major}}</p>
+                    <p class="flex flex-jcb"><span>Minor:&emsp;</span>{{ibeaconInfo.minor}}</p>
+                    <p class="flex flex-jcb"><span>UUID:&emsp;</span>{{ibeaconInfo.uuid}}</p>
+                    <p class="flex flex-jcb"><span>{{$t('transmitPower')}}:&emsp;</span>{{ibeaconInfo.power}}</p>
                 </div>
                 <div class="ibeacon-footer">
-                    <p @click="showInfo"><span>参数配置</span><span><i class="icon-right font-lg"></i></span></p>
+                    <p @click="showInfo"><span>{{$t('parameterConfig')}}</span><span><i class="icon-right font-lg"></i></span></p>
                     <!--<p><span>防篡改模式设置</span><span><i class="icon-right font-lg"></i></span></p>-->
-                    <p><span>距离校准</span><span><i class="icon-right font-lg"></i></span></p>
+<!--                    <p><span>{{$t('distanceCalibration')}}</span><span><i class="icon-right font-lg"></i></span></p>-->
                 </div>
             </div>
         </div>

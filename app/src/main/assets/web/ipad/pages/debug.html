@@ -1,0 +1,26 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{$t('topology')}}
+                </h4>
+                <i @click="refresh" class="icon-loop right-top"></i>
+            </div>
+            <div class="debug-navbar">
+                <mt-navbar v-show="titleList.length > 1" v-model="selected">
+                    <mt-tab-item v-for="item in titleList" :id="item">{{setTitle(item)}}</mt-tab-item>
+                </mt-navbar>
+            </div>
+            <div class="content-info chart">
+                <div class="overflow-touch">
+                    <div :id="item.mac" class="debug-chart" v-for="item in chartList">
+                        {{debugChart(item, item.mac)}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <v-debugInfo v-on:debugInfoShow="hideThis" :debug="debugInfo" ref="debugInfo"></v-debugInfo>
+</div>

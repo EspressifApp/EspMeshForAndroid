@@ -1,5 +1,9 @@
 # Update Log
 
+## v1.2.0
+- Support Gateway device
+- Add sniffer
+
 ## v1.1.0
 - Add Aliyun APIs
 - Merge meshblufi module and apptools module into appmesh module

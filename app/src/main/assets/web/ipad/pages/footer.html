@@ -1,0 +1,24 @@
+<footer v-show="showFooter" class="footer-info">
+    <ul>
+        <li  @click="showDevice($event)" :class="{'active': current === device}">
+            <i class="icon-light"></i>
+            <span>{{$t('nav.device')}}</span>
+        </li>
+        <li @click="showGroup($event)" :class="{'active': current === group}">
+            <i class="icon-groups"></i>
+            <span>{{$t('nav.group')}}</span>
+        </li>
+<!--        <li @click="showRoom($event)" :class="{'active': current === room}">-->
+<!--            <i class="icon-door"></i>-->
+<!--            <span>{{$t('nav.room')}}</span>-->
+<!--        </li>-->
+        <!--<li @click="showAssociation($event)" :class="{'active': current === association}">-->
+            <!--<i class="icon-guanlian"></i>-->
+            <!--<span>关联</span>-->
+        <!--</li>-->
+        <li @click="showUser($event)" :class="{'active': current === user}">
+            <i class="icon-person"></i>
+            <span>{{$t('nav.user')}}</span>
+        </li>
+    </ul>
+</footer>

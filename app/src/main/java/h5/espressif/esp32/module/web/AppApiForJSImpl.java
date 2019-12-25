@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -43,6 +44,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import h5.espressif.esp32.module.Utils;
 import h5.espressif.esp32.module.action.EspActionDeviceConfigure2;
@@ -2468,6 +2470,133 @@ class AppApiForJSImpl implements EspWebConstants {
             mActivity.getWindow().getDecorView().setSystemUiVisibility(styleFlags);
             mActivity.getWindow().setStatusBarColor(bgColor);
         });
+    }
+
+    void openBrowser(String url) {
+        mActivity.runOnUiThread(() -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            Uri uri = Uri.parse(url);
+            intent.setData(uri);
+            mActivity.startActivity(intent);
+        });
+    }
+
+    private Map<String, String> json2Map(JSONObject json) throws JSONException {
+        if (json == null) {
+            return null;
+        }
+
+        Map<String, String> map = new HashMap<>();
+        Iterator<String> iterator = json.keys();
+        while (iterator.hasNext()) {
+            String key = iterator.next();
+            Object value = json.get(key);
+            map.put(key, value.toString());
+        }
+        return map;
+    }
+
+    private EspHttpResponse executeHttpRequest(String url, String method, Map<String, String> headers, byte[] content)
+            throws IllegalArgumentException {
+        EspHttpResponse response;
+        switch (method) {
+            case EspHttpUtils.METHOD_GET: {
+                response = EspHttpUtils.Get(url, null, headers);
+                break;
+            }
+            case EspHttpUtils.METHOD_POST: {
+                response = EspHttpUtils.Post(url, content, null, headers);
+                break;
+            }
+            case EspHttpUtils.METHOD_PUT: {
+                response = EspHttpUtils.Put(url, content, null, headers);
+                break;
+            }
+            case EspHttpUtils.METHOD_DELETE: {
+                response = EspHttpUtils.Delete(url, content, null, headers);
+                break;
+            }
+            default: {
+                throw new IllegalArgumentException("Unsupported Method");
+            }
+        }
+
+        return response;
+    }
+
+    void httpRequest(String request) {
+        String url;
+        Map<String, String> headers;
+        String method;
+        String content;
+        String callback;
+
+        try {
+            JSONObject requestJSON = new JSONObject(request);
+            url = requestJSON.getString("url");
+            method = requestJSON.getString("method");
+            JSONObject headersJSON = requestJSON.optJSONObject("headers");
+            headers = json2Map(headersJSON);
+            content = requestJSON.has("content") ? requestJSON.get("content").toString() : "";
+            callback = requestJSON.getString(KEY_CALLBACK);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        Observable.just(new AtomicReference<EspHttpResponse>())
+                .subscribeOn(Schedulers.io())
+                .filter(ref -> {
+                    try {
+                        EspHttpResponse response = executeHttpRequest(url, method, headers,
+                                content.getBytes());
+                        ref.set(response);
+                        return callback != null;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(ref -> {
+                    EspHttpResponse response = ref.get();
+                    int code;
+                    String message;
+                    JSONObject respHeaders;
+                    String respContent;
+                    if (response == null) {
+                        code = 600;
+                        message = "Connect failed";
+                        respHeaders = null;
+                        respContent = "";
+                    } else {
+                        code = response.getCode();
+                        message = response.getMessage();
+                        respHeaders = new JSONObject();
+                        for (EspHttpHeader header : response.getHeaders()) {
+                            try {
+                                respHeaders.put(header.getName(), header.getValue());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        byte[] contentData = response.getContent();
+                        respContent = contentData != null ? Utils.base64(contentData) : "";
+                    }
+
+                    try {
+                        JSONObject respJSON = new JSONObject()
+                                .put("code", code)
+                                .put("message", message)
+                                .put("headers", respHeaders)
+                                .put("content", respContent);
+                        String script = String.format("%s(\'%s\')", callback, respJSON.toString());
+                        mActivity.evaluateJavascript(script);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                })
+                .subscribe();
 
 
     }

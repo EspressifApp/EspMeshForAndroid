@@ -5,7 +5,6 @@ import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 
@@ -17,10 +16,6 @@ import java.net.UnknownHostException;
 import java.util.Locale;
 
 public class NetUtil {
-    public static final int WIFI_SECURITY_OPEN = 0x00;
-    public static final int WIFI_SECURITY_WEP = 0x01;
-    public static final int WIFI_SECURITY_WPA = 0x02;
-
     public static final String WIFI_SSID_NONE = "<unknown ssid>";
 
     public static boolean isNetworkAvailable(Context context) {
@@ -355,115 +350,38 @@ public class NetUtil {
         return InetAddress.getByAddress(quads);
     }
 
-    public static byte[] getOriginalSsidBytes(WifiInfo info) {
+    public static byte[] getSSIDRawData(WifiInfo info) {
         try {
             Method method = info.getClass().getMethod("getWifiSsid");
-            if (method == null) {
-                return null;
-            }
             method.setAccessible(true);
             Object wifiSsid = method.invoke(info);
             if (wifiSsid == null) {
                 return null;
             }
             method = wifiSsid.getClass().getMethod("getOctets");
-            if (method == null) {
-                return null;
-            }
             method.setAccessible(true);
             return (byte[]) method.invoke(wifiSsid);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public static byte[] getOriginalSsidBytes(ScanResult scanResult) {
+    public static byte[] getSSIDRawData(ScanResult scanResult) {
         try {
             Field field = scanResult.getClass().getField("wifiSsid");
-            if (field == null) {
-                return null;
-            }
             field.setAccessible(true);
             Object wifiSsid = field.get(scanResult);
             if (wifiSsid == null) {
                 return null;
             }
             Method method = wifiSsid.getClass().getMethod("getOctets");
-            if (method == null) {
-                return null;
-            }
             method.setAccessible(true);
             return (byte[]) method.invoke(wifiSsid);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
+        } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
 
         return null;
-    }
-
-    public static WifiConfiguration newWifiConfigration(int security, String ssid, String password, boolean hide) {
-        WifiConfiguration config = new WifiConfiguration();
-        config.allowedAuthAlgorithms.clear();
-        config.allowedGroupCiphers.clear();
-        config.allowedKeyManagement.clear();
-        config.allowedPairwiseCiphers.clear();
-        config.allowedProtocols.clear();
-
-        config.SSID = "\"" + ssid + "\""; // ##
-        config.hiddenSSID = hide; // ##
-        config.status = WifiConfiguration.Status.ENABLED;
-
-        switch (security) {
-            case WIFI_SECURITY_OPEN: // OPEN
-                config.wepKeys[0] = "\"" + "\"";
-                config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-                config.wepTxKeyIndex = 0;
-                break;
-            case WIFI_SECURITY_WEP: // WEP
-                config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-                config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-                config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
-                if (password != null && password.length() > 0) {
-                    int length = password.length();
-                    // WEP-40, WEP-104, and 256-bit WEP (WEP-232?)
-                    if ((length == 10 || length == 26 || length == 58) && password.matches("[0-9A-Fa-f]*")) {
-                        config.wepKeys[0] = password; // ##
-                    } else {
-                        config.wepKeys[0] = '"' + password + '"'; // ##
-                    }
-                }
-                break;
-            case WIFI_SECURITY_WPA: // WPA
-                config.preSharedKey = "\"" + password + "\""; // ##
-
-                config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-                // for WPA
-                config.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
-                // for WPA2
-                config.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-                config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-                config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_EAP);
-                config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
-                config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-                config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-                config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-                break;
-            default:
-                return null;
-        }
-        return config;
     }
 }

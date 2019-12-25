@@ -321,11 +321,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                     }
                 })
                 if (existMacs.length == 0) {
-                    MINT.Toast({
-                        message: self.$t('deviceNoExistDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('deviceNoExistDesc'));
                     self.hideSuccess();
                     return false;
                 }
@@ -358,11 +354,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/otaInfo.html" ], function(v, MIN
                         }
                     })
                     if (existMacs.length == 0) {
-                        MINT.Toast({
-                            message: self.$t('deviceNoExistDesc'),
-                            position: 'bottom',
-                            duration: 2000
-                        });
+                        Util.toast(MINT, self.$t('deviceNoExistDesc'));
                         self.hideSuccess();
                         return false;
                     }

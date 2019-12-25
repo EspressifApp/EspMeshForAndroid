@@ -9,7 +9,7 @@
                 </div>
                 <span @click="showFlag" class="icon-more right-top"></span>
                 <ul v-show="flagUl" class="add-ul">
-                    <li @click.stop="importDevice($event)"><i class="icon-import"></i><span>{{$t('importDevice')}}</span></li>
+                    <li @click.stop="importDevice($event)"><i class="icon-daoru"></i><span>{{$t('importDevice')}}</span></li>
                 </ul>
             </div>
             <div @click="hideFlag" class="selected-radio filter-wrapper">
@@ -28,7 +28,7 @@
                         <span class="filter-name"><i class="icon-rss"></i></span>
                         <div class="filter-term display-flex">
                             <span class="rssi">RSSI:&nbsp;&nbsp;</span>
-                            <div id="resetSlider" class="div-slider"></div>
+                            <div :id="sliderId" class="div-slider"></div>
                         </div>
                         <span class="filter-value">{{rssiValue}}</span>
                     </div>

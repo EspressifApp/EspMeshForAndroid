@@ -1,0 +1,186 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way bgcolor add-device-wrapper">
+            <h4 class="app-title no-bg"><span @click="hide"><i class="icon-left back"></i></span>{{$t('confirmWIFI')}}</h4>
+            <div class="config-img flex flex-ac">
+                <img src="images/welcome.png">
+            </div>
+            <div class="register-wrapper add-device" :class="{'content-height': isMore}">
+                <div class="content" :class="{'content-bottom': isMore}">
+                    <div class="position-relative">
+                        {{currentWifi}}
+                        <span class="add-wifi-desc">{{$t('currentWIFI')}}:</span>
+                        <input v-model="wifiName" type="text" class="form-control add-wifi" >
+                    </div>
+                    <div class="position-relative">
+                        <span class="add-wifi-desc">Mesh ID:</span>
+                        <input readonly type="text"
+                               class="form-control add-wifi"  >
+                        <div class="form-input">
+                            <input maxlength="2" data-value="1" v-model="meshIdOne" class="input-control">
+                            <input maxlength="2" data-value="2" v-model="meshIdTwo" class="input-control">
+                            <input maxlength="2" data-value="3" v-model="meshIdThr" class="input-control">
+                            <input maxlength="2" data-value="4" v-model="meshIdFour" class="input-control">
+                            <input maxlength="2" data-value="5" v-model="meshIdFive" class="input-control">
+                            <input maxlength="2" data-value="6" v-model="meshIdSex" class="input-control">
+                        </div>
+                        <div @click="selectMesh" class="cell-down">
+                            <i class="icon-right"></i>
+                        </div>
+                    </div>
+                    <div class="position-relative">
+                        <i @click="showPassword" class="i-eye" :class="icon"></i>
+                        <input :placeholder="$t('inputPwd')" v-model="password" :type="type" class="form-control" >
+                    </div>
+
+                    <div class="position-relative more-wrapper flex flex-ac flex-jce" @click="selectMore">
+                        <div class="more-radio">
+                            <a>ESP-Mesh Config</a>
+                        </div>
+                    </div>
+                    <div class="more-info config-content" v-show="isMore">
+
+                        <div class="position-relative">
+                            <input placeholder="Mesh password" v-model="meshPwd"  class="form-control" >
+                        </div>
+                        <mt-navbar v-model="selected">
+                            <mt-tab-item id="2">Custom Data</mt-tab-item>
+                            <mt-tab-item id="1">Mesh Config</mt-tab-item>
+                        </mt-navbar>
+                        <mt-tab-container v-model="selected">
+                            <mt-tab-container-item id="2">
+                                <div class="position-relative">
+                                    <input placeholder="Custom data" v-model="customData"  class="form-control" >
+                                </div>
+                            </mt-tab-container-item>
+                            <mt-tab-container-item id="1">
+                                <div class="position-relative">
+                                    <div class="margin-bottom-7">Mesh type</div>
+                                    <div class="flex flex-ac">
+                                        <div @click="selectType(0)" class="flex flex-ac margin-right-7">
+                                    <span class="span-radio margin-right-7" :class="{'active': meshType == 0}">
+                                        <span></span></span>
+                                            <span>IDLE</span>
+                                        </div>
+                                        <div @click="selectType(1)" class="flex flex-ac margin-right-7">
+                                    <span class="span-radio margin-right-7" :class="{'active': meshType == 1}">
+                                        <span></span></span>
+                                            <span>Root</span>
+                                        </div>
+                                        <div @click="selectType(2)" class="flex flex-ac margin-right-7">
+                                    <span class="span-radio margin-right-7" :class="{'active': meshType == 2}">
+                                        <span></span></span>
+                                            <span>Node</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Vote percentage" v-model="votePercentage"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Vote max count" v-model="voteMaxCount"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Backoff RSSI" v-model="backoffRssi"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Scan min count" v-model="scanMinCount"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Scan fail count" v-model="scanFailCount"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Monitor ie count" v-model="monitorCount"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Root healing MS" v-model="rootHealing"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <div @click="selectRoot()" class="flex flex-ac">
+                                    <span class="span-radio margin-right-7" :class="{'active': rootEnable}">
+                                        <span></span></span>
+                                        <span>Root conflicts enable</span>
+                                    </div>
+                                </div>
+                                <div class="position-relative">
+                                    <div @click="selectFix()" class="flex flex-ac">
+                                    <span class="span-radio margin-right-7" :class="{'active': fixEnable}">
+                                        <span></span></span>
+                                        <span>Fix root enable</span>
+                                    </div>
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Capacity number" v-model="capacityNum"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Max layer" v-model="maxLayer"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Max connection" v-model="maxConnect"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Assoc expire MS" v-model="assocExpire"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Beacon interval MS" v-model="beaconInterval"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Passive scan MS" v-model="passiveScan"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Monitor duration MS" v-model="monitorDuration"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="CNX RSSI" v-model="cnxRssi"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Select RSSI" v-model="selectRssi"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="Switch RSSI" v-model="switchRssi"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <input placeholder="XON qsize" v-model="xonQsize"  class="form-control" >
+                                </div>
+                                <div class="position-relative">
+                                    <div @click="selectRetransmit()" class="flex flex-ac">
+                                    <span class="span-radio margin-right-7" :class="{'active': retransmitEnable}">
+                                        <span></span></span>
+                                        <span>Retransmit enable</span>
+                                    </div>
+                                </div>
+                                <div class="position-relative">
+                                    <div @click="selectDataDrop()" class="flex flex-ac">
+                                    <span class="span-radio margin-right-7" :class="{'active': dataDrop}">
+                                        <span></span></span>
+                                        <span>Data drop enable</span>
+                                    </div>
+                                </div>
+                            </mt-tab-container-item>
+                        </mt-tab-container>
+                    </div>
+                </div>
+                <div class="position-relative btn-register-wrapper flex flex-jcc" :class="{'config-btn': isMore}">
+                    <button type="submit" class="btn register-btn" @click="nextStep">{{$t('next')}}</button>
+                </div>
+            </div>
+            <transition name="ups">
+                <div v-show="showMesh" class="operate-wrapper">
+                    <div @click="hideMesh" class="mask"></div>
+                    <div class="operate-info info-content">
+                        <div class="picker-toolbar">
+                            <span @click="hideMesh" class="mint-datetime-action mint-datetime-cancel">取消</span>
+                            <span @click="onMeshChange" class="mint-datetime-action mint-datetime-confirm">确定</span>
+                        </div>
+                        <mt-picker ref="picker" :slots="slots1"></mt-picker>
+                    </div>
+                </div>
+            </transition>
+        </div>
+    </transition>
+    <v-conDevice ref="con" v-on:conShow="onBackAddDevice"
+                 :meshId="meshId" :password="password" :wifiName="wifiName" :moreObj="moreObj" ></v-conDevice>
+</div>
+
+

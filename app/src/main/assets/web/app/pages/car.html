@@ -1,0 +1,60 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{deviceName}}
+                </h4>
+            </div>
+            <div class="content-info attr attr-car" id="attr-wraaper">
+                <div class="left">
+                    <div class="direction-wrap">
+                        <div class="direction direction-left">
+                            <span class="iconfont icon-zuoshang icon"></span>
+                        </div>
+                        <div class="direction direction-up">
+                            <span class="iconfont icon-zuoshang icon"></span>
+                        </div>
+                        <div class="direction direction-right">
+                            <span class="iconfont icon-zuoshang icon"></span>
+                        </div>
+                        <div class="direction direction-down">
+                            <span class="iconfont icon-zuoshang icon"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="middle">
+                    <div class="round round-top"></div>
+                    <div class="content">
+                        <div class="img-wrap">
+                            <img class="img-info" src="">
+                        </div>
+                    </div>
+                    <div class="round round-bottom"></div>
+                </div>
+                <div class="right">
+                    <div class="photograph">
+                        <div class="direction">
+                            <span class="iconfont icon-paizhao icon-photo"></span>
+                        </div>
+                    </div>
+                    <div class="oblique-wrap">
+                        <div class="direction left-up">
+                            <span class="iconfont icon-zuoshang icon"></span>
+                        </div>
+                        <div class="direction right-up">
+                            <span class="iconfont icon-zuoshang icon"></span>
+                        </div>
+                        <div class="direction right-down">
+                            <span class="iconfont icon-zuoshang icon"></span>
+                        </div>
+                        <div class="direction left-down">
+                            <span class="iconfont icon-zuoshang icon"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>

@@ -12,7 +12,8 @@
                 </mt-navbar>
                 <mt-tab-container swipeable="true" v-model="active">
                     <mt-tab-container-item v-for="item in roomList"  :id="item.roomKey">
-                        <div @click="roomItem(item, isShow(item.macs))" v-show="item.roomKey != 'create'" class="room-info flex">
+                        <div @click="roomItem(item, isShow(item.macs))" v-show="item.roomKey != 'create'"
+                             class="room-info flex">
                             <div class="room-info-image">
                                 <img :src="'images/' + item.url">
                             </div>
@@ -20,10 +21,13 @@
                                 <div class="room-title flex-1 flex flex-ac flex-jcb">
                                     <span>{{item.name}}</span><span @click.stop="showOperate(item)" class="icon-more"></span>
                                 </div>
-                                <div class="room-desc">房间设备数量:&ensp;<span>{{getDeviceList(item.macs).length}}</span></div>
+                                <div class="room-desc">{{$t('roomDevice')}}:&ensp;<span>
+                                    {{getDeviceList(item.macs).length}}</span></div>
                                 <div v-show="isShow(item.macs)" class="room-info-btn flex flex-jcb">
-                                    <button :class="{'active': !getStatusByRoom(item.macs)}" @click.stop="operateClose(item.macs, 0, item.roomKey, $event)">OFF</button>
-                                    <button :class="{'active': getStatusByRoom(item.macs)}" @click.stop="operateClose(item.macs, 1, item.roomKey, $event)">ON</button>
+                                    <button :class="{'active': !getStatusByRoom(item.macs)}"
+                                            @click.stop="operateClose(item.macs, 0, item.roomKey, $event)">OFF</button>
+                                    <button :class="{'active': getStatusByRoom(item.macs)}"
+                                            @click.stop="operateClose(item.macs, 1, item.roomKey, $event)">ON</button>
                                 </div>
                             </div>
                         </div>
@@ -46,8 +50,10 @@
                                     </div>
                                     <div class="item-power">
                                         <div v-show="isLigth(device.tid)" class="switch-wrapper">
-                                            <span :class="{'active': !getStatus(device.characteristics)}" @click.self.stop="close([device.mac], 0, null, $event, false)">OFF</span>
-                                            <span :class="{'active': getStatus(device.characteristics)}" @click.self.stop="close([device.mac], 1, null, $event, false)">ON</span>
+                                            <span :class="{'active': !getStatus(device.characteristics)}"
+                                                  @click.self.stop="close([device.mac], 0, null, $event, false)">OFF</span>
+                                            <span :class="{'active': getStatus(device.characteristics)}"
+                                                  @click.self.stop="close([device.mac], 1, null, $event, false)">ON</span>
                                         </div>
                                     </div>
                                 </div>
@@ -97,8 +103,8 @@
                         </div>
                     </li>
                     <li @click="editName"><span>{{$t('editName')}}</span></li>
-                    <li @click="editRoom"><span>编辑房间</span></li>
-                    <li @click="delRoom"><span class="icon-orange">删除</span></li>
+                    <li @click="editRoom"><span>{{$t('editRoom')}}</span></li>
+                    <li @click="delRoom"><span class="icon-orange">{{$t('deleteBtn')}}</span></li>
                     <li @click="hideOperate" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
                 </ul>
             </div>
@@ -106,6 +112,7 @@
     </transition>
 
     <v-addRoom v-on:addRoomShow="onBackRoom" :roomExistKeys="roomExistKeys" :roomInfo="roomInfo" ref="addRoom"></v-addRoom>
-    <v-operateDevice v-on:operateShow="onBackRoom" :isDevice="isDevice" :isRoom="isRoom" :colorId="colorId" :temperatureId="temperatureId"
+    <v-operateDevice v-on:operateShow="onBackRoom" :isDevice="isDevice" :isRoom="isRoom" :colorId="colorId"
+                     :temperatureId="temperatureId"
                      ref="operate"></v-operateDevice>
 </div>

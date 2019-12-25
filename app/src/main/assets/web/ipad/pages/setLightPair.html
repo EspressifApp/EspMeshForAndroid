@@ -1,0 +1,270 @@
+<transition name="moves">
+    <div v-show="flag" class="add-info operate-way">
+        <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>设置位置</h4>
+        <div class="init-width set-office-wrap">
+            <div class="set-office">
+                <div class="bg-office">
+                    <div class="info bg-light">
+                        <div>
+                            <div  @click="editPosition('ESP_button_2021')" :class="{'active': isExist('ESP_button_2021')}"
+                                  class="flex flex-ac esp-btn-wrap">
+                                <span :key="item" v-for="(item, index) in getKeys('ESP_button_2021')" :id="'ESP_button_2021-' + item"
+                                      class="icon-association icon-kaiguan-small icon-kaiguan-00" :class="'icon-kaiguan-0' + index"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <span id="2021" @click="editPosition('', 'sensor', '2021')" :class="{'active': isExist(getRoomName('2021'))}"
+                                  class="icon-association icon-people icon-top"></span>
+                            <span id="2022" @click="editPosition('', 'sensor', '2022')" :class="{'active': isExist(getRoomName('2022'))}"
+                                  class="icon-association icon-people icon-middle"></span>
+                            <span id="2023" @click="editPosition('', 'sensor', '2023')" :class="{'active': isExist(getRoomName('2023'))}"
+                                  class="icon-association icon-people icon-bottom"></span>
+                        </div>
+                        <div class="light-wrap">
+                            <div :title="getSerial('light-1')" @click="editPosition(getSerial('light-1'))"
+                                 :class="{'active': isExist(getSerial('light-1'))}" class="light light-1 device-target">
+                                <div class="light-inner"></div>
+                            </div>
+                            <div :title="getSerial('light-27')" @click="editPosition(getSerial('light-27'))"
+                                 :class="{'active': isExist(getSerial('light-27'))}"
+                                 class="round-wrap flex flex-v light no-bg light-27 device-target">
+                                <div class="flex-1 flex flex-ac" v-for="item in 3" :key="item">
+                                    <div class="round"></div>
+                                </div>
+                            </div>
+                            <div :title="getSerial('light-28')" @click="editPosition(getSerial('light-28'))"
+                                 :class="{'active': isExist(getSerial('light-28'))}"
+                                 class="round-wrap flex flex-v light no-bg light-28 device-target">
+                                <div class="flex-1 flex flex-ac" v-for="item in 3" :key="item">
+                                    <div class="round"></div>
+                                </div>
+                            </div>
+                            <div :title="getSerial('light-29')" @click="editPosition(getSerial('light-29'))"
+                                 :class="{'active': isExist(getSerial('light-29'))}"
+                                 class="round-wrap flex light no-bg light-29 device-target">
+                                <div class="flex-1 flex flex-jcc" v-for="item in 3" :key="item">
+                                    <div class="round"></div>
+                                </div>
+                            </div>
+                            <div :title="getSerial('light-30')" @click="editPosition(getSerial('light-30'))"
+                                 :class="{'active': isExist(getSerial('light-30'))}"
+                                 class="round-wrap flex light no-bg light-30 device-target">
+                                <div class="flex-1 flex flex-jcc" v-for="item in 3" :key="item">
+                                    <div class="round"></div>
+                                </div>
+                            </div>
+                            <div class="light-round flex flex-jcc flex-ac">
+                                <div :title="getSerial('light-A-1')" @click="editPosition(getSerial('light-A-1'))"
+                                     :class="{'active': isExist(getSerial('light-A-1'))}" class="round-wrap flex-1 light-A-1 device-target">
+                                    <div class="round" v-for="item in 2" :key="item"></div>
+                                </div>
+                                <div :title="getSerial('light-B-1')" @click="editPosition(getSerial('light-B-1'))"
+                                     :class="{'active': isExist(getSerial('light-B-1'))}" class="round-wrap flex-1 light-B-1 device-target">
+                                    <div class="round" v-for="item in 2" :key="item"></div>
+                                </div>
+                                <div :title="getSerial('light-C-1')" @click="editPosition(getSerial('light-C-1'))"
+                                     :class="{'active': isExist(getSerial('light-C-1'))}" class="round-wrap flex-1 light-C-1 device-target">
+                                    <div class="round" v-for="item in 2" :key="item"></div>
+                                </div>
+                                <div :title="getSerial('light-C-2')" @click="editPosition(getSerial('light-C-2'))"
+                                     :class="{'active': isExist(getSerial('light-C-2'))}" class="round-wrap flex-1 light-C-2 device-target">
+                                    <div class="round" v-for="item in 2" :key="item"></div>
+                                </div>
+                                <div :title="getSerial('light-C-3')" @click="editPosition(getSerial('light-C-3'))"
+                                     :class="{'active': isExist(getSerial('light-C-3'))}" class="round-wrap flex-1 light-C-3 device-target">
+                                    <div class="round" v-for="item in 2" :key="item"></div>
+                                </div>
+                                <div :title="getSerial('light-D-1')" @click="editPosition(getSerial('light-D-1'))"
+                                     :class="{'active': isExist(getSerial('light-D-1'))}" class="round-wrap flex-1 light-D-1 device-target">
+                                    <div class="round" v-for="item in 2" :key="item"></div>
+                                </div>
+                            </div>
+                            <div class="light-middle">
+                                <div :title="getSerial('light-2')" @click="editPosition(getSerial('light-2'))"
+                                     :class="{'active': isExist(getSerial('light-2'))}" class="light-2 device-target"></div>
+                                <div :title="getSerial('light-31')" @click="editPosition(getSerial('light-31'))"
+                                     :class="{'active': isExist(getSerial('light-31'))}" class="light-31 device-target"></div>
+                                <div :title="getSerial('light-32')" @click="editPosition(getSerial('light-32'))"
+                                     :class="{'active': isExist(getSerial('light-32'))}" class="light-32 device-target"></div>
+                                <div :title="getSerial('light-33')" @click="editPosition(getSerial('light-33'))"
+                                     :class="{'active': isExist(getSerial('light-33'))}" class="light-33 device-target"></div>
+                            </div>
+                            <div class="light-down">
+                                <div :title="getSerial('light-3')" @click="editPosition(getSerial('light-3'))"
+                                     :class="{'active': isExist(getSerial('light-3'))}" class="light-3 device-target">
+                                </div>
+                                <div :title="getSerial('light-34')" @click="editPosition(getSerial('light-34'))"
+                                     :class="{'active': isExist(getSerial('light-34'))}" class="light-34 device-target">
+                                </div>
+                                <div :title="getSerial('light-35')" @click="editPosition(getSerial('light-35'))"
+                                     :class="{'active': isExist(getSerial('light-35'))}" class="light-35 device-target">
+                                </div>
+                                <div :title="getSerial('light-36')" @click="editPosition(getSerial('light-36'))"
+                                     :class="{'active': isExist(getSerial('light-36'))}" class="light-36 device-target">
+                                </div>
+                            </div>
+                            <div class="light-top-B">
+                                <div :title="getSerial('light-4')" @click="editPosition(getSerial('light-4'))"
+                                     :class="{'active': isExist(getSerial('light-4'))}" class="light light-4 device-target"></div>
+                                <div :title="getSerial('light-37')" @click="editPosition(getSerial('light-37'))"
+                                     :class="{'active': isExist(getSerial('light-37'))}" class="light light-37 device-target"></div>
+                            </div>
+                            <div class="light-top-B light-top-B-right">
+                                <div :title="getSerial('light-5')" @click="editPosition(getSerial('light-5'))"
+                                     :class="{'active': isExist(getSerial('light-5'))}" class="light light-5 device-target"></div>
+                                <div :title="getSerial('light-38')" @click="editPosition(getSerial('light-38'))"
+                                     :class="{'active': isExist(getSerial('light-38'))}" class="light light-38 device-target"></div>
+                            </div>
+                            <div class="light-middle-B light-middle-B-top">
+                                <div :title="getSerial('light-39')" @click="editPosition(getSerial('light-39'))"
+                                     :class="{'active': isExist(getSerial('light-39'))}"
+                                     class="round-wrap flex light no-bg light-39 device-target">
+                                    <div class="flex-1 flex flex-jcc" v-for="item in 3" :key="item">
+                                        <div class="round"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="light-middle-B light-middle-B-bottom">
+                                <div :title="getSerial('light-40')" @click="editPosition(getSerial('light-40'))"
+                                     :class="{'active': isExist(getSerial('light-40'))}"
+                                     class="round-wrap flex light no-bg light-40 device-target">
+                                    <div class="flex-1 flex flex-jcc" v-for="item in 3" :key="item">
+                                        <div class="round"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="light-middle-B light-middle-B-bottom light-middle-B-left">
+                                <div :title="getSerial('light-41')" @click="editPosition(getSerial('light-41'))"
+                                     :class="{'active': isExist(getSerial('light-41'))}"
+                                     class="round-wrap flex light no-bg light-41 device-target">
+                                    <div class="flex-1 flex flex-jcc" v-for="item in 3" :key="item">
+                                        <div class="round"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="light-middle-B">
+                                <div :title="getSerial('light-6')" @click="editPosition(getSerial('light-6'))"
+                                     :class="{'active': isExist(getSerial('light-6'))}" class="light light-6 device-target"></div>
+                                <div :title="getSerial('light-42')" @click="editPosition(getSerial('light-42'))"
+                                     :class="{'active': isExist(getSerial('light-42'))}" class="light light-42 device-target"></div>
+                            </div>
+                            <div class="light-middle-B light-middle-B-right">
+                                <div :title="getSerial('light-7')" @click="editPosition(getSerial('light-7'))"
+                                     :class="{'active': isExist(getSerial('light-7'))}" class="light light-7 device-target"></div>
+                                <div :title="getSerial('light-43')" @click="editPosition(getSerial('light-43'))"
+                                     :class="{'active': isExist(getSerial('light-43'))}" class="light light-43 device-target"></div>
+                            </div>
+                            <div :title="getSerial('light-8')" @click="editPosition(getSerial('light-8'))"
+                                 :class="{'active': isExist(getSerial('light-8'))}" class="light light-8 device-target"></div>
+                            <div :title="getSerial('light-9')" @click="editPosition(getSerial('light-9'))"
+                                 :class="{'active': isExist(getSerial('light-9'))}" class="light light-9 device-target"></div>
+                            <div class="light-group flex flex-v" :class="'light-group-' + item" v-for="item in 12" :key="item">
+                                <div :title="getSerialGroup(item)" @click="editPosition(getSerialGroup(item))"
+                                     :class="{'active': isExist(getSerialGroup(item))}" class="flex-1 flex flex-ae device-target" v-for="itemSub in 3" :key="itemSub">
+                                    <div class="round" ></div>
+                                </div>
+                            </div>
+                            <div :title="getSerial('light-10')" @click="editPosition(getSerial('light-10'))"
+                                 :class="{'active': isExist(getSerial('light-10'))}"  class="light light-split light-10  device-target">
+                                <span class="horizontal-line"></span>
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-11')" @click="editPosition(getSerial('light-11'))"
+                                 :class="{'active': isExist(getSerial('light-11'))}"  class="light light-split light-11  device-target">
+                                <span class="horizontal-line"></span>
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-12')" @click="editPosition(getSerial('light-12'))"
+                                 :class="{'active': isExist(getSerial('light-12'))}"  class="light light-split light-12  device-target">
+                                <span class="horizontal-line"></span>
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-14')" @click="editPosition(getSerial('light-14'))"
+                                 :class="{'active': isExist(getSerial('light-14'))}"  class="light light-split light-14 device-target">
+                                <span class="horizontal-line"></span>
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-15')" @click="editPosition(getSerial('light-15'))"
+                                 :class="{'active': isExist(getSerial('light-15'))}"  class="light light-split light-15 device-target">
+                                <span class="horizontal-line"></span>
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-16')" @click="editPosition(getSerial('light-16'))"
+                                 :class="{'active': isExist(getSerial('light-16'))}"  class="light light-split light-16 device-target">
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-49')" @click="editPosition(getSerial('light-49'))"
+                                 :class="{'active': isExist(getSerial('light-49'))}"
+                                 class="light light-split light-bottom light-49 device-target">
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-17')" @click="editPosition(getSerial('light-17'))"
+                                 :class="{'active': isExist(getSerial('light-17'))}"  class="light light-split light-bottom light-17 device-target">
+                                <span class="horizontal-line"></span>
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-18')" @click="editPosition(getSerial('light-18'))"
+                                 :class="{'active': isExist(getSerial('light-18'))}" class="light light-split light-bottom light-18 device-target">
+                                <span class="horizontal-line"></span>
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-19')" @click="editPosition(getSerial('light-19'))"
+                                 :class="{'active': isExist(getSerial('light-19'))}" class="light light-split light-bottom light-19 device-target">
+                                <span class="horizontal-line"></span>
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-20')" @click="editPosition(getSerial('light-20'))"
+                                 :class="{'active': isExist(getSerial('light-20'))}" class="light light-split light-bottom light-20 device-target">
+                                <span class="horizontal-line"></span>
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-21')" @click="editPosition(getSerial('light-21'))"
+                                 :class="{'active': isExist(getSerial('light-21'))}" class="light light-split light-bottom light-21 device-target">
+                                <span class="horizontal-line"></span>
+                                <span class="horizontal-line"></span>
+                            </div>
+                            <div :title="getSerial('light-22')" @click="editPosition(getSerial('light-22'))"
+                                 :class="{'active': isExist(getSerial('light-22'))}"  class="light light-22 device-target"></div>
+                            <div :title="getSerial('light-23')" @click="editPosition(getSerial('light-23'))"
+                                 :class="{'active': isExist(getSerial('light-23'))}"  class="light light-23 device-target"></div>
+                            <div :title="getSerial('light-24')" @click="editPosition(getSerial('light-24'))"
+                                 :class="{'active': isExist(getSerial('light-24'))}"  class="light light-24 device-target"></div>
+                            <div :title="getSerial('light-25')" @click="editPosition(getSerial('light-25'))"
+                                 :class="{'active': isExist(getSerial('light-25'))}"  class="light light-25 device-target"></div>
+                            <div :title="getSerial('light-26')" @click="editPosition(getSerial('light-26'))"
+                                 :class="{'active': isExist(getSerial('light-26'))}"  class="light light-26 device-target"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-show="showSave" class="save-wrap">
+            <div @click="cancelSave" class="mask"></div>
+            <div class="save-content">
+                <h4 class="">保存位置信息</h4>
+                <div class="position-info">
+                    <div class="control-item">
+                        <label>位置信息</label>
+                        <input v-model="position" readonly class="form-control" placeholder="请输入位置"/>
+                    </div>
+                    <div class="control-item">
+                        <label>MAC地址</label>
+                        <div class="input-wrap" v-if="deviceType=== 'sensor'">
+                            <textarea  v-model="mac" class="textarea-control" placeholder="请输入MAC地址"></textarea>
+                        </div>
+                        <div class="input-wrap" v-else>
+                            <input  v-model="mac" class="form-control" placeholder="请输入MAC地址"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-item">
+                    <label></label>
+                    <div class="btn-item">
+                        <button @click="savePosition" class="btn">确定</button>
+                        <button @click="cancelSave" class="btn danger">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</transition>

@@ -57,13 +57,16 @@
         <div v-show="showSelect" class="ota-upgrade">
             <div @click="hideSelectRoom" class="mask"></div>
             <div class="upgrade-info btn-select">
-                <h3>选择房间</h3>
+                <h3>{{$t('selectRoomDesc')}}</h3>
                 <div class="command-select" id="btn-select-device">
-                    <div v-show="item.roomKey != 'create'" @click="selectRoom(item.roomKey)" class="event-item" v-for="item in roomList">
+                    <div v-show="item.roomKey != 'create'" @click="selectRoom(item.roomKey)"
+                         class="event-item" v-for="item in roomList">
                         <div class="event-item-name">{{item.name}}</div>
                         <div class="event-item-power">
                             <span :data-value="item.roomKey"
-                                  class="span-radio" :class="{'active': selectCurrentRoom == item.roomKey}"><span></span></span>
+                                  class="span-radio" :class="{'active': selectCurrentRoom == item.roomKey}">
+                                <span></span>
+                            </span>
                         </div>
                     </div>
                 </div>

@@ -1,0 +1,46 @@
+<transition name="moves">
+    <div v-show="flag" class="control-content bg-light-grey">
+        <div class="title-info">
+            <h4 class="app-title">
+                <span @click="hide"><i class="icon-cross back"></i></span>
+                {{groupInfo.name}}
+            </h4>
+        </div>
+        <div class="selected-radio selected-radio-pad flex flex-ac flex-jcb">
+            <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
+            <div v-show="isEdit" @click="selectAllDevice($event)" class="select-small-radio flex flex-ac flex-jce"><span class="span-radio"
+                       :class="{'active': (selected == total && deviceList.length != 0)}"><span></span></span></div>
+        </div>
+        <div class="content-info flex-wrapper padding-bottom-50 flex flex-v">
+            <div class="input-info">
+                <i class="icon-search"></i>
+                <input v-model="searchName" type="search" class="form-control" :placeholder="$t('search')">
+            </div>
+            <div class="overflow-touch flex-1">
+                <div class="flex flex-m">
+                    <div v-for="item in list" class="item item-half">
+                        <div @click="selectMac(item.mac)" class="item-info flex flex-ac">
+                            <div class="item-icon-circle flex flex-ac flex-jcc">
+                                <i class="icon-light"></i>
+                            </div>
+                            <div class="item-name flex-1 flex flex-v">
+                                <span>{{getPosition(item.position)}}</span>
+                                <span :class="{'desc': showDesc(item.position)}">{{item.name}}
+                                <span v-show="showDesc(item.position)">({{item.version}})</span></span>
+                                <span class="desc" v-show="!showDesc(item.position)">{{item.version}}</span>
+                            </div>
+                            <div class="item-power-small">
+                            <span :data-value="item.mac"
+                                  class="span-radio" :class="{'active': isSelected(item.mac)}"><span></span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-if="!groupInfo.is_user && isEdit"  class="position-relative text-center">
+                <button type="submit" class="btn register-btn margin-top-15"
+                        @click="save">{{$t('confirmBtn')}}</button>
+            </div>
+        </div>
+    </div>
+</transition>

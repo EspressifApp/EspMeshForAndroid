@@ -54,6 +54,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 groupList: [],
                 attrList: [],
                 isSelectedMacs: [],
+                switchValue: false,
             }
         },
         computed: {
@@ -97,6 +98,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 $("#" +self.colorSelectedAllId).addClass("active");
                 self.isShowSet();
                 $(".slider-input").slider('destroy');
+                Util.setStatusBarBlue();
                 self.showFlag = true;
             },
             sortList: function(list) {
@@ -117,6 +119,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
             hide: function () {
                 this.$emit("groupColorShow");
                 this.showFlag = false;
+                Util.setStatusBarBlue();
                 this.$refs.color.hideColor();
             },
             showDesc: function(position) {
@@ -153,6 +156,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 }
             },
             onBackGroupColor: function () {
+                if (this.operateCurrent == 1) {
+                    Util.setStatusBarBLack();
+                }
                 window.onBackPressed = this.hide;
             },
             showOperate: function () {
@@ -164,11 +170,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 this.otaMacs = [];
                 this.otaMacs = this.getMacs();
                 if (this.otaMacs.length == 0) {
-                    MINT.Toast({
-                        message: self.$t('deviceOtaDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('deviceOtaDesc'));
                     return false;
                 }
                 this.$refs.ota.show();
@@ -347,10 +349,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
             editName: function () {
                 var self = this;
                 if (self.group.is_user) {
-                    MINT.Toast({
-                        message: self.$t('prohibitEditDesc'),
-                        position: 'middle',
-                    });
+                    Util.toast(MINT, self.$t('prohibitEditDesc'));
                 } else{
                     self.hideOperate();
                     MINT.MessageBox.prompt(self.$t('editNameInput'), self.$t('addGroupTitle'),
@@ -368,10 +367,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 var self = this,
                     doc = $(e.currentTarget);
                 if (self.group.is_user) {
-                    MINT.Toast({
-                        message: self.$t('prohibitDelDesc'),
-                        position: 'middle',
-                    });
+                    Util.toast(MINT, self.$t('prohibitDelDesc'));
                 } else {
                     MINT.MessageBox.confirm(self.$t('delGroupDesc'), self.$t('delGroupTitle'),{
                         confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
@@ -465,9 +461,12 @@ define(["vue", "MINT", "Util", "txt!../../pages/groupColor.html", "../js/colorPi
                 var self = this;
                 self.groupMacs = self.getMacs();
                 if (id == 1) {
+                    Util.setStatusBarBLack();
                     setTimeout(function() {
                         self.$refs.color.show();
                     }, 200)
+                } else {
+                    Util.setStatusBarBlue();
                 }
                 self.operateCurrent = id;
             },

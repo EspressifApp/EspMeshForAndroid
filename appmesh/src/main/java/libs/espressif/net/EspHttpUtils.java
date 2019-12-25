@@ -21,6 +21,7 @@ import java.util.TreeMap;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import libs.espressif.collection.EspCollections;
 import libs.espressif.log.EspLog;
 
 public class EspHttpUtils {
@@ -53,6 +54,7 @@ public class EspHttpUtils {
     private static final int TIMEOUT_NO_RESPONSE = 1;
 
     private static final char[] SPEC_CHARS = {'+', '*', ':'};
+
     /**
      * Execute Http Get request.
      *
@@ -137,38 +139,28 @@ public class EspHttpUtils {
             String file = targetURL.getFile();
             if (file != null) {
                 for (char c : SPEC_CHARS) {
-                    String asciiStr = String.format("%%%02X", (int)c);
+                    String asciiStr = String.format("%%%02X", (int) c);
                     file = file.replace(String.valueOf(c), asciiStr);
                 }
                 targetURL = new URL(targetURL.getProtocol(), targetURL.getHost(), targetURL.getPort(), file);
             }
             HttpURLConnection connection = (HttpURLConnection) targetURL.openConnection();
             connection.setRequestMethod(method);
-            int timeoutConn = -1;
-            int timeoutSO = -1;
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                if (entry == null) {
-                    continue;
+            EspCollections.forEach(headers, (name, value) -> {
+                if (name == null || value == null) {
+                    return;
                 }
+                connection.addRequestProperty(name, value);
+            });
 
-                connection.addRequestProperty(entry.getKey(), entry.getValue());
-            }
-
-            if (params != null) {
-                timeoutConn = params.getConnectTimeout();
-                timeoutSO = params.getSOTimeout();
-            }
-            if (timeoutConn <= 0) {
-                timeoutConn = TIMEOUT_CONNECT;
-            }
+            int timeoutConn = (params != null && params.getConnectTimeout() > 0) ? params.getConnectTimeout()
+                    : TIMEOUT_CONNECT;
+            int timeoutSO = (params != null && params.getSOTimeout() >= 0) ? params.getSOTimeout()
+                    : (method.equals(METHOD_GET) ? TIMEOUT_SO_GET : TIMEOUT_SO_POST);
             connection.setConnectTimeout(timeoutConn);
-            if (timeoutSO < 0) {
-                timeoutSO = method.equals(METHOD_GET) ? TIMEOUT_SO_GET : TIMEOUT_SO_POST;
-            }
             connection.setReadTimeout(timeoutSO);
 
-            if (params != null && params.isTrustAllCerts()
-                    && targetURL.getProtocol().equalsIgnoreCase(HTTPS)) {
+            if (params != null && params.isTrustAllCerts() && targetURL.getProtocol().equalsIgnoreCase(HTTPS)) {
                 HttpsURLConnection httpsConn = (HttpsURLConnection) connection;
                 SSLUtils.trustAllHosts(httpsConn);
                 httpsConn.setHostnameVerifier(SSLUtils.DO_NOT_VERIFY);
@@ -335,7 +327,7 @@ public class EspHttpUtils {
             }
 
             StringBuilder statusMessage = new StringBuilder();
-            for (int statusIndex = 2; statusIndex < statusValues.length; statusIndex ++) {
+            for (int statusIndex = 2; statusIndex < statusValues.length; ++statusIndex) {
                 statusMessage.append(statusValues[statusIndex]);
                 if (statusIndex < statusValues.length - 1) {
                     statusMessage.append(" ");

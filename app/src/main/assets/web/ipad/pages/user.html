@@ -1,0 +1,100 @@
+<div class="init-width">
+    <div class="title-info">
+        <h4 class="app-title">{{$t('nav.user')}}</h4>
+    </div>
+    <div class="content-info">
+        <div class="overflow-touch flex flex-m">
+            <div class="item-block flex flex-jcc flex-ac flex-v">
+                <div class="item-block-icon blue-purple flex flex-jcc flex-ac">
+                    <i class="icon-wifi"></i>
+                </div>
+                <div class="item-block-name">
+                    <span>{{$t('network')}} ({{currentWifi}})</span>
+                </div>
+            </div>
+            <div @click="scanFun" class="item-block flex flex-jcc flex-ac flex-v">
+                <div class="item-block-icon yellow flex flex-jcc flex-ac">
+                    <i class="icon-statistics"></i>
+                </div>
+                <div class="item-block-name">
+                    <span>{{$t('statistical')}}</span>
+                </div>
+            </div>
+            <div @click="ibeaconFun" class="item-block flex flex-jcc flex-ac flex-v">
+                <div class="item-block-icon red flex flex-jcc flex-ac">
+                    <i class="icon-iBeacon"></i>
+                    <span class="badge">{{$store.state.deviceList.length}}</span>
+                </div>
+                <div class="item-block-name">
+                    <span>ibeacon</span>
+                </div>
+            </div>
+            <div @click="blueFun" class="item-block flex flex-jcc flex-ac flex-v">
+                <div class="item-block-icon orange flex flex-jcc flex-ac">
+                    <i class="icon-bluetooth"></i>
+                </div>
+                <div class="item-block-name">
+                    <span>蓝牙设备</span>
+                </div>
+            </div>
+            <div  @click="associationFun"  class="item-block flex flex-jcc flex-ac flex-v">
+                <div class="item-block-icon green flex flex-jcc flex-ac">
+                    <i class="icon-guanlian"></i>
+                </div>
+                <div class="item-block-name">
+                    <span>{{$t('association')}}</span>
+                </div>
+            </div>
+            <div @click="pairFun" class="item-block flex flex-ac flex-jcc flex-v">
+                <div class="item-block-icon blue-green flex flex-jcc flex-ac">
+                    <i class="icon-radar"></i>
+                </div>
+                <div class="item-block-name">
+                    <span>{{$t('pair')}}</span>
+                </div>
+            </div>
+            <div @click="bugFun" class="item-block flex flex-jcc flex-ac flex-v">
+                <div class="item-block-icon rotate-180 purple flex flex-jcc flex-ac">
+                    <i class="icon-network"></i>
+                </div>
+                <div class="item-block-name">
+                    <span>{{$t('topology')}}</span>
+                </div>
+            </div>
+            <div @click="demoFun" class="item-block flex flex-jcc flex-ac flex-v">
+                <div class="item-block-icon yellow-purple">
+                    <i class="icon-texiao"></i>
+                </div>
+                <div class="item-block-name">
+                    <span>Demo</span>
+                </div>
+            </div>
+            <div @click="setFun" class="item-block flex flex-jcc flex-ac flex-v">
+                <div class="item-block-icon blue flex flex-jcc flex-ac">
+                    <i class="icon-gear"></i>
+                </div>
+                <div class="item-block-name">
+                    <span>{{$t('set')}}</span>
+                </div>
+            </div>
+            <div @click="officeFun" class="item-block flex flex-jcc flex-ac flex-v">
+                <div class="item-block-icon blue flex flex-jcc flex-ac">
+                    <i class="icon-gear"></i>
+                </div>
+                <div class="item-block-name">
+                    <span>{{$t('办公室')}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <v-footer :current="user" ref="footer"></v-footer>
+    <v-demo :demoShow="onBackUser" ref="demo"></v-demo>
+    <v-debug v-on:debugShow="onBackUser" ref="debug"></v-debug>
+    <v-scan v-on:scanShow="onBackUser" ref="scan"></v-scan>
+    <v-deviceIbeacon v-on:deviceIbeaconShow="onBackUser" ref="ibeacon"></v-deviceIbeacon>
+    <v-blueList v-on:blueShow="onBackUser" ref="blueList"></v-blueList>
+    <v-association v-on:associationShow="onBackUser" ref="association"></v-association>
+    <v-pair v-on:pairShow="onBackUser" ref="pair"></v-pair>
+    <v-set v-on:setShow="onBackUser" ref="set"></v-set>
+    <v-setLightPair v-on:officeShow="onBackUser" ref="office"></v-setLightPair>
+</div>

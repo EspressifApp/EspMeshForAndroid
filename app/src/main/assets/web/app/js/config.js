@@ -130,7 +130,6 @@ define(["vue","MINT", "Util", "txt!../../pages/config.html"],
                     }
                 },
                 showSelectRoom: function(key) {
-                    console.log(key);
                     this.currentGroup = key;
                     this.selectCurrentRoom = this.group_config[key];
                     this.showSelect = true;
@@ -175,10 +174,7 @@ define(["vue","MINT", "Util", "txt!../../pages/config.html"],
                     for(var i in self.group_config) {
                         var room = self.group_config[i];
                         if (Util._isEmpty(room)) {
-                            MINT.Toast({
-                                message: '请选择房间',
-                                position: 'bottom',
-                            });
+                            Util.toast(MINT, self.$t("selectRoomDesc"))
                             return false;
                         }
                         break;
@@ -274,7 +270,6 @@ define(["vue","MINT", "Util", "txt!../../pages/config.html"],
                         }
                     }
                     var list = this.getRoomByDevice();
-                    console.log(JSON.stringify(list));
                     $.each(list, function(i, item) {
                         var key = item.key;
                         if (roomKeys.indexOf(key) != -1) {
@@ -289,7 +284,6 @@ define(["vue","MINT", "Util", "txt!../../pages/config.html"],
                             roomKeys.push(key);
                         }
                     });
-                    console.log(JSON.stringify(roomList));
                     if (roomList.length > 0) {
                         var list = [];
                         $.each(roomList, function(i, item) {
@@ -305,28 +299,16 @@ define(["vue","MINT", "Util", "txt!../../pages/config.html"],
                         res = JSON.parse(res);
                         if (!Util._isEmpty(res.result)) {
                             if (res.result.status_code == 0) {
-                                MINT.Toast({
-                                    message: '配置成功',
-                                    position: 'bottom',
-                                });
+                                Util.toast(MINT, this.$t("saveSuccessDesc"))
                                 this.hide();
                             } else {
-                                MINT.Toast({
-                                    message: '配置失败',
-                                    position: 'bottom',
-                                });
+                                Util.toast(MINT, this.$t("saveFailDesc"))
                             }
                         } else {
-                            MINT.Toast({
-                                message: '配置失败',
-                                position: 'bottom',
-                            });
+                            Util.toast(MINT, this.$t("saveFailDesc"))
                         }
                     } else {
-                        MINT.Toast({
-                            message: '配置失败',
-                            position: 'bottom',
-                        });
+                        Util.toast(MINT, this.$t("saveFailDesc"))
                     }
 
                 }

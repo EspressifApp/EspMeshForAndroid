@@ -1,0 +1,67 @@
+<transition name="moves">
+    <div v-show="flag" class="add-info operate-way">
+        <div class="init-width main-wrap flex ">
+            <div class="left flex flex-v">
+                <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{groupInfo.name}}</h4>
+                <div class="input-info">
+                    <i class="icon-search"></i>
+                    <input v-model="searchName" type="search" class="form-control" :placeholder="$t('searchGroup')">
+                </div>
+                <ul class="flex-1">
+                    <li v-show="isShowGroup(item.device_macs, item.is_user)" @click="selectDevice(item)"
+                        :class="{'active': selectId == item.id}"
+                        class="flex flex-ac flex-jcb left-item"
+                        v-for="item in groupList">
+                        <div class="flex flex-ac">
+                            <span class="icon icon-groups"></span>
+                            <span class="name">{{item.name}}</span>
+                        </div>
+                        <span class="icon-right"></span>
+                    </li>
+                </ul>
+            </div>
+            {{monitorGroups}}
+            <div class="right flex flex-v flex-1">
+                <div class="init-width flex flex-v">
+                    <h4 class="app-title">控制</h4>
+                    <div class="device-info flex flex-ac">
+                        <div class="device-icon flex flex-ac flex-jcc">
+                            <i class="icon-groups"></i>
+                            <span>{{getDevicesByGroup(groupInfo.device_macs)}}</span>
+                        </div>
+                        <div class="device-name flex-1 flex flex-v">
+                            <span>{{groupInfo.name}}</span>
+                        </div>
+                        <div v-show="isShowPower(groupInfo.device_macs)"
+                             @click.stop="close(groupInfo.device_macs, getStatusByGroup(groupInfo.device_macs))"
+                             class="device-power flex flex-jcc flex-ac"
+                             :class="{'active': getStatusByGroup(groupInfo.device_macs)}">
+                            <i class="icon-power"></i>
+                        </div>
+                    </div>
+                    <div class="control-icon flex flex-ac">
+                        <span @click="showGroupInfo" class="icon-list flex-1"></span>
+                        <span @click="editName" class="icon-edit flex-1"></span>
+                        <span @click="dissolutionGroup" class="icon-bin flex-1"></span>
+                        <span @click="delGroupDevices" class="icon-reset flex-1"></span>
+                        <span @click="editGroupInfo" class="icon-lights flex-1"></span>
+                        <span @click="showJoin" class="icon-wangluo flex-1"></span>
+                        <span @click="showOta" class="icon-co_upgrade flex-1"></span>
+                        <span @click="showCommand" class="icon-send flex-1"></span>
+                    </div>
+                    <div v-show="isShowPower(groupInfo.device_macs)" class="color-wrap flex-1" >
+                        <v-color :colorId="colorId" :temperatureId="temperatureId" :colorType="operateType"
+                                 :macs="deviceMacs" isAss="false" :isRoom="isRoom" ref="color"></v-color>
+                    </div>
+                </div>
+                <v-otaInfo v-on:oatShow="hideThis" :otaId="otaId" :macs="deviceMacs" ref="ota"></v-otaInfo>
+                <v-command v-on:commandShow="hideThis" :commandMacs="deviceMacs" ref="command"></v-command>
+                <v-groupDevices v-on:groupDevicesShow="initHide" :isEdit="isEdit" :groupInfo="groupInfo"
+                                ref="groupDevices"></v-groupDevices>
+                <v-resetDevice v-on:resetShow="hideThis" :macs="deviceMacs" :isJoin="isJoin"
+                               :selectAllId="selectAllId" :importId="importId"
+                               :resetId="resetId" :sliderId="sliderId" ref="device"></v-resetDevice>
+            </div>
+        </div>
+    </div>
+</transition>

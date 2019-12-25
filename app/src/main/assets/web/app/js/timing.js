@@ -139,25 +139,13 @@ define(["vue", "MINT", "Util", "txt!../../pages/timing.html", "./calendar", "./t
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
                     if (res.result.length > 0) {
-                        MINT.Toast({
-                          message: self.$t('saveSuccessDesc'),
-                          position: 'bottom',
-                          duration: 2000
-                        });
+                        Util.toast(MINT, self.$t('saveSuccessDesc'));
                         self.hideParent();
                     } else {
-                        MINT.Toast({
-                          message: self.$t('saveFailDesc'),
-                          position: 'bottom',
-                          duration: 2000
-                        });
+                        Util.toast(MINT, self.$t('saveFailDesc'));
                     }
                 } else {
-                    MINT.Toast({
-                      message: self.$t('saveFailDesc'),
-                      position: 'bottom',
-                      duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('saveFailDesc'));
                 }
                 MINT.Indicator.close();
             }

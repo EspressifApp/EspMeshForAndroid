@@ -1,5 +1,9 @@
 # 更新记录
 
+## v1.2.0
+- 支持网关设备
+- 增加 Sniffer 功能
+
 ## v1.1.0
 - 增加阿里云开发接口
 - 合并meshblufi模块和apptools模块到appmesh模块

@@ -18,6 +18,10 @@ public class MeshApp extends EspApplication {
         super.onCreate();
         MultiDex.install(this);
 
+        initAliyun();
+    }
+
+    private void initAliyun() {
         try {
             Class<?> aliInitCls = Class.forName("aliyun.espressif.mesh.AliInitialize");
             Method initMethod = aliInitCls.getMethod("initAliyun", Application.class);

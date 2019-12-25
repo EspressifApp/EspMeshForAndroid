@@ -46,10 +46,12 @@ define(["vue","MINT", "Util", "txt!../../pages/operateDevice.html", "../js/color
                 self.addFlag = true;
                 setTimeout(function() {
                     self.$refs.color.show()
+                    Util.setStatusBarBLack();
                 })
             },
             hide: function () {
                 this.addFlag = false;
+                Util.setStatusBarBlue();
                 this.$store.commit("setShowScanBle", true);
                 this.$emit("operateShow");
             },

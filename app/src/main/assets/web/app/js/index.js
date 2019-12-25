@@ -1,10 +1,10 @@
-define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./resetDevice",
+define(["vue", "MINT", "Common", "Util", "txt!../../pages/index.html", "../js/footer", "./resetDevice",
 "./operateDevice", "./addGroup", "./load", "./aboutDevice", "./otaInfo", "./automation",
  "./ibeacon", "./scanDevice", "./remind", "./attr", "./setDevicePair", "./joinDevice", "./command",
- "./sendIP", "./blueFail", "./wifiFail", "./config", "./newVersion"],
-    function(v, MINT, Util, index, footer, resetDevice, operateDevice, addGroup, load, aboutDevice,
+ "./sendIP", "./blueFail", "./wifiFail", "./config", "./newVersion", "./guide", "./car"],
+    function(v, MINT, Common, Util, index, footer, resetDevice, operateDevice, addGroup, load, aboutDevice,
         otaInfo, automation, ibeacon, scanDevice, remind, attr, setDevicePair, joinDevice, command,
-        sendIP, blueFail, wifiFail, config, newVersion) {
+        sendIP, blueFail, wifiFail, config, newVersion, guide, car) {
 
     var Index = v.extend({
 
@@ -71,7 +71,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 espmesh.hideCoverImage();
                 espmesh.checkAppVersion();
                 self.loadHWDevices();
-                self.reload();
+                Common.reload(self);
             }, 500)
         },
         computed: {
@@ -92,7 +92,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                     });
 
                     if (Util._isEmpty(self.searchName)) {
-                        self.indexList = self.sortList(self.deviceList);
+                        self.indexList = Util.sortList(self.deviceList);
                     } else {
                         var searchList = [];
                         $.each(self.deviceList, function(i, item) {
@@ -100,7 +100,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                                 searchList.push(item);
                             }
                         })
-                        self.indexList = self.sortList(searchList);
+                        self.indexList = Util.sortList(searchList);
                     }
                     setTimeout(function(){
                         var list = [];
@@ -168,18 +168,12 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 }
             },
             addDevice: function (event) {
-                var self = this;
-                self.flag = false;
-                if (!self.isWifiConnect) {
-                    self.showWifiFail();
-                    return false;
-                }
-                if (!self.blueEnable) {
-                    self.showBlueFail();
-                    return false;
-                }
-                self.$store.commit("setShowScanBle", false);
-                self.$refs.device.show();
+                Common.addDevice(this);
+            },
+            showGuide: function() {
+                this.flag = false;
+                this.$store.commit("setShowScanBle", false);
+                this.$refs.guide.show();
             },
             joinDevice: function (event) {
                 this.flag = false;
@@ -190,44 +184,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                  espmesh.newWebView(VIDEO_URL);
             },
             addGroup: function () {
-                var self = this;
-                this.flag = false;
-                if (Util._isEmpty(self.deviceList)) {
-                    self.deviceList = [];
-                }
-                self.groupList = self.$store.state.groupList;
-                MINT.MessageBox.prompt(self.$t('addGroupDesc'), self.$t('addGroupTitle'),
-                    {inputValue: "", inputPlaceholder: self.$t('addGroupInput'),
-                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn'),
-                    inputValidator: function(val) {
-                                return Util.isExistGroup(self.groupList, val)
-                              }, inputErrorMessage: self.$t('isExistGroupDesc')
-                    }).then(function(obj) {
-                        setTimeout(function() {
-                            self.$refs.group.show();
-                            self.groupName = obj.value;
-                        }, 100)
-                });
-
-            },
-            sortList: function(list) {
-                var self = this, emptyList = [], arrayList = [];
-                $.each(list, function(i, item) {
-                    if (!Util._isEmpty(item.position)) {
-                        arrayList.push(item);
-                    } else {
-                        emptyList.push(item);
-                    }
-                });
-                arrayList.sort(Util.sortBySub("position"));
-                emptyList.sort(Util.sortBy("name"));
-                $.each(emptyList, function(i, item) {
-                    arrayList.push(item);
-                });
-                return arrayList;
+               Common.addGroup(this);
             },
             loadHWDevices: function() {
-                espmesh.loadHWDevices();
+                Common.loadHWDevices(this)
             },
             getBxColor: function(layer, tsfTime) {
                 return Util.getBxColor(layer);
@@ -236,143 +196,16 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 return Util.getWIFIRssiIcon(rssi);
             },
             setPairs: function() {
-                var self = this, position = "", pairMacs = [],
-                pairs = self.$store.state.siteList;
-                $.each(pairs, function(i, item) {
-                    pairMacs.push(item.mac);
-                });
-                $.each(self.deviceList, function(i, item) {
-                    if (!Util._isEmpty(item.position)) {
-                        position = item.position.split("-");
-                        espmesh.saveHWDevices(JSON.stringify([{"mac": item.mac, "code": position[2],
-                            "floor": position[0], "area":  position[1]}]));
-                    } else {
-                        $.each(pairs, function(j, itemSub) {
-                            if (itemSub.mac == item.mac) {
-                                item.position = itemSub.floor + "-" + itemSub.area + "-" + itemSub.code;
-                                self.deviceList.splice(i, 1, item);
-                                var data = '{"' + MESH_MAC + '": "' + item.mac +
-                                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
-                                        '"position":"' + item.position + '"}';
-                                espmesh.requestDevice(data);
-                                self.$store.commit("setList", self.deviceList);
-                                return  false;
-                            }
-                        });
-                    }
-                });
-                self.loadHWDevices();
+                Common.setPairs(this);
             },
             setPair: function(device) {
-                var self = this, position = "", pairMacs = [],
-                pairs = self.$store.state.siteList;
-                $.each(pairs, function(i, item) {
-                    pairMacs.push(item.mac);
-                });
-                if (!Util._isEmpty(device.position)) {
-                    position = device.position.split("-");
-                    espmesh.saveHWDevices(JSON.stringify([{"mac": device.mac, "code": position[2],
-                        "floor": position[0], "area":  position[1]}]));
-
-                } else {
-                    $.each(pairs, function(i, item) {
-                        if (item.mac == device.mac) {
-                            device.position = item.floor + "-" + item.area + "-" + item.code;
-                            var data = '{"' + MESH_MAC + '": "' + device.mac +
-                                    '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_POSITION + '",' +
-                                    '"position":"' + device.position + '"}';
-                            espmesh.requestDevice(data);
-                            return  false;
-                        }
-                    });
-                }
-                self.loadHWDevices();
-                return device;
+                return Common.setPair(this, device);
             },
             loadGroups: function() {
-                espmesh.loadGroups();
+                Common.loadGroups(this);
             },
             setGroup: function() {
-                var self = this, tidList = [], meshList = [], meshMacs = [], macs = [], name = "", list = [],
-                     oldGroups = self.$store.state.groupList;
-                $.each(oldGroups, function(i, item) {
-                    if (item.is_mesh) {
-                        item.device_macs = [];
-                        espmesh.saveGroups(JSON.stringify([item]));
-                    }
-                })
-                $.each(self.deviceList, function(i, item) {
-                    macs = [];
-                    if (tidList.indexOf(item.tid) == -1 && !Util._isEmpty(item.tid)) {
-                        tidList.push(item.tid);
-                        name = self.setName(item.tid);
-                        $.each(self.deviceList, function(j, itemSub) {
-                            if (item.tid == itemSub.tid) {
-                                macs.push(itemSub.mac);
-                            }
-                        });
-                        list.push({id: item.tid, name: self.getGroupName(oldGroups, item.tid, name),
-                            is_user: true, is_mesh: false, device_macs: macs});
-                    }
-
-                    if (item.mesh_id) {
-                        if (meshList.indexOf(item.mesh_id) == -1) {
-                            meshList.push(item.mesh_id);
-                        }
-
-                    }
-                });
-                if (meshList.length > 1) {
-                    self.showScanDevice = false;
-                    $.each(meshList, function(i, item) {
-                        meshMacs = [];
-                        $.each(self.deviceList, function(j, itemSub) {
-                            if (item == itemSub.mesh_id) {
-                                meshMacs.push(itemSub.mac);
-                            }
-                        });
-                        var id = parseInt(item, 16),
-                             name = "mesh_id(" + item + ")";
-                        if (id == 0) {
-                            id = parseInt("111111111111", 16);
-                        }
-                        list.push({id: id, name: self.getGroupName(oldGroups, id, name),
-                            is_user: true, is_mesh: true, device_macs: meshMacs})
-                    })
-                }  else {
-                    self.showScanDevice = true;
-                }
-                espmesh.saveGroups(JSON.stringify(list));
-                self.loadGroups();
-            },
-            getGroupName: function(groups, id, name) {
-                $.each(groups, function(i, item) {
-                    if (item.id == id) {
-                        name = item.name;
-                        return false;
-                    }
-                })
-                return name;
-            },
-            setName: function(tid) {
-                var name = "";
-                if (tid >= MIN_SWITCH && tid <= MAX_SWITCH) {
-                    name = "Switch_" + tid;
-                } else if (tid >= MIN_SENSOR && tid <= MAX_SENSOR) {
-                    name = "Sensor_" + tid;
-                } else if (tid >= MIN_LIGHT && tid <= MAX_LIGHT) {
-                    name = "Light_" + tid;
-                } else {
-                    name = "Other_" + tid;
-                }
-                return name;
-            },
-            getAllMacs: function () {
-                var macs = [], self = this;
-                $.each(self.deviceList, function(i, item){
-                    macs.push(item.mac);
-                });
-                return macs;
+                Common.setGroup(this);
             },
             linkShow: function(item) {
                 if (!Util._isEmpty(item.mlink_trigger)) {
@@ -386,55 +219,13 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 }
             },
             conReload: function() {
-                var self = this;
-                self.showAdd = false;
-                self.hideTrue = true;
-                self.$refs.remind.hide();
-                self.$store.commit("setShowScanBle", true);
-                if (self.deviceList.length <= 0) {
-                    self.stopBleScan();
-                    self.loadDesc = self.$t('loadCon');
-                    if (!self.loadShow) {
-                        self.showLoad();
-                        setTimeout(function() {
-                            self.loadShow = false;
-                        }, 110);
-
-                    }
-                }
-                setTimeout(function() {
-                    self.hideLoad();
-                    if (self.deviceList.length <= 0) {
-                        MINT.Toast({
-                          message: self.$t('pullDownDesc'),
-                          position: 'bottom',
-                        });
-                    };
-                    if (self.$store.state.showScanBle) {
-                        self.onBackIndex();
-                    }
-                }, 20000);
-                setTimeout(function() {
-                    self.stopBleScan();
-                });
-            },
-            reload: function() {
-                var self = this;
-                setTimeout(function(){
-                    if (!self.wifiFlag) {
-                        self.stopBleScan();
-                    }
-                    self.showLoad();
-                    self.$store.commit("setList", []);
-                    self.loadList = [];
-                    espmesh.scanDevicesAsync();
-                }, 50);
+                Common.conReload(this)
             },
             showUl: function () {
                 this.flag = !this.flag;
                 if (this.flag) {
                     window.onBackPressed = this.hideUl;
-                    this.stopBleScan();
+                    Common.stopBleScan();
                     this.$store.commit("setShowScanBle", false);
                 } else {
                     this.$store.commit("setShowScanBle", true);
@@ -467,16 +258,17 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 this.$store.commit("setShowScanBle", false);
                 setTimeout(function() {
                     if (self.deviceList.length > 0) {
+                        self.deviceInfo = item;
+                        self.$store.commit("setDeviceInfo", self.deviceInfo);
+                        Common.stopBleScan();
                         if (tid >= MIN_LIGHT && tid <= MAX_LIGHT) {
-                            self.deviceInfo = item;
-                            self.$store.commit("setDeviceInfo", self.deviceInfo);
-                            self.stopBleScan();
                             self.$refs.operate.show();
                         } else if (tid != BUTTON_SWITCH) {
-                            self.deviceInfo = item;
-                            self.$store.commit("setDeviceInfo", self.deviceInfo);
-                            self.stopBleScan();
-                            self.$refs.attr.show();
+                            if (tid >= MIN_CAR && tid <= MAX_CAR) {
+                                self.$refs.car.show();
+                            } else {
+                                self.$refs.attr.show();
+                            }
                         }
                     }
                 }, 50)
@@ -492,21 +284,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 this.$refs.report.show();
             },
             showBlueFail: function() {
-                var self = this;
-                self.$store.commit("setShowScanBle", false);
-                self.stopBleScan();
-                setTimeout(function() {
-                    self.$refs.blueFail.show();
-                })
-
+                Common.showBlueFail(this);
             },
             showWifiFail: function() {
-                var self = this;
-                self.$store.commit("setShowScanBle", false);
-                self.stopBleScan();
-                setTimeout(function() {
-                    self.$refs.wifiFail.show();
-                })
+               Common.showWifiFail(this);
             },
             showOta: function () {
                 this.infoShow = false;
@@ -514,6 +295,45 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 this.otaMacs.push(this.deviceInfo.mac);
                 this.$store.commit("setShowScanBle", false);
                 this.$refs.ota.show();
+            },
+            showOtaBack: function() {
+                var self = this;
+                self.cancelOperate();
+                window.onOtaBack = self.onOtaBack;
+                MINT.MessageBox.confirm("当前版本：" + self.deviceInfo.version + "，确定要回退到上一个版本？", "版本回退",{
+                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
+                    MINT.Indicator.open();
+                    setTimeout(function() {
+                        var mac = self.deviceInfo.mac;
+                        var data = '{"' + MESH_MAC + '": "' + mac +
+                                '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + OTA_FALLBACK + '","' +
+                                DEVICE_DELAY + '": ' + DELAY_TIME + ',"callback": "onOtaBack", "tag": { "mac": "'+
+                                        mac +'"}}';
+                        espmesh.requestDevice(data);
+                    }, 1000);
+
+                }).catch(function(err){
+                    window.onBackPressed = self.hide;
+                });
+            },
+            onOtaBack: function(res) {
+                var self= this;
+                if (!Util._isEmpty(res)) {
+                    res = JSON.parse(res);
+                    if (!Util._isEmpty(res.result)) {
+                        if (!Util._isEmpty(res.result.status_code) && res.result.status_code == 0) {
+                        } else {
+                            Util.toast(MINT, self.$t('版本回退失败'))
+                        }
+                    } else {
+                        Util.toast(MINT, self.$t('版本回退失败'))
+                    }
+
+                } else {
+                    Util.toast(MINT, self.$t('版本回退失败'))
+                }
+                MINT.Indicator.close();
+                window.onBackPressed = self.hide;
             },
             showPair: function() {
                 this.infoShow = false;
@@ -559,9 +379,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 }
                 return flag;
             },
-            hideDel: function (e) {
-                $("#content-info .item").removeClass("active");
-            },
             getIcon: function (tid) {
                 return Util.getIcon(tid);
             },
@@ -574,155 +391,45 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
 
             },
             isLigth: function (tid) {
-                if (tid >= MIN_LIGHT && tid <= MAX_LIGHT) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return Common.isLigth(tid)
             },
             isSensor: function (tid, characteristics) {
-                if (tid >= MIN_SENSOR && tid <= MAX_SENSOR) {
-                    var temperature = false, humidity = false, luminance = false;
-                    if (!Util._isEmpty(characteristics)) {
-                        $.each(characteristics, function(i, item) {
-                            if (item.cid == SENSOR_TEMPERATURE_CID && item.name == SENSOR_TEMPERATURE_NAME) {
-                                temperature = true;
-                            } else if (item.cid == SENSOR_HUMIDITY_CID && item.name == SENSOR_HUMIDITY_NAME) {
-                                humidity = true;
-                            } else if (item.cid == SENSOR_LUMINANCE_CID && item.name == SENSOR_LUMINANCE_NAME) {
-                                luminance = true;
-                            }
-                        });
-                    }
-                    if (temperature && humidity && luminance) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
+                return Common.isSensor(tid, characteristics)
             },
             getSensorTemperature: function(characteristics) {
-                var temperature = 0;
-                if (!Util._isEmpty(characteristics)) {
-                    $.each(characteristics, function(i, item) {
-                        if (item.cid == SENSOR_TEMPERATURE_CID && item.name == SENSOR_TEMPERATURE_NAME) {
-                            temperature = item.value;
-                        }
-                    });
-                }
-                return temperature;
+                return Common.getSensorTemperature(characteristics);
             },
             getSensorHumidity: function(characteristics) {
-                var humidity = 0;
-                if (!Util._isEmpty(characteristics)) {
-                    $.each(characteristics, function(i, item) {
-                        if (item.cid == SENSOR_HUMIDITY_CID && item.name == SENSOR_HUMIDITY_NAME) {
-                            humidity = item.value;
-                            return false;
-                        }
-                    });
-                }
-                return humidity;
+                return Common.getSensorHumidity(characteristics);
             },
             getSensorLuminance: function(characteristics) {
-                var luminance = 0;
-                if (!Util._isEmpty(characteristics)) {
-                    $.each(characteristics, function(i, item) {
-                        if (item.cid == SENSOR_LUMINANCE_CID && item.name == SENSOR_LUMINANCE_NAME) {
-                            luminance = item.value;
-                            return false;
-                        }
-                    });
-                }
-                return luminance;
+                return Common.getSensorLuminance(characteristics);
+            },
+            hide: function() {
+                this.onBackIndex();
             },
             delDevice: function (e) {
-                var doc = $(e.currentTarget),
-                    self = this;
-                MINT.MessageBox.confirm(self.$t('deleteDeviceDesc'), self.$t('reconfigure'),{
-                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
-                    self.cancelOperate();
-                    MINT.Indicator.open();
-                    setTimeout(function() {
-                        var mac = self.deviceInfo.mac;
-                        var data = '{"' + MESH_MAC + '": "' + mac +
-                                '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + RESET_DEVICE + '","' +
-                                DEVICE_DELAY + '": ' + DELAY_TIME + ',"callback": "onDelDevice", "tag": { "mac": "'+
-                                        mac +'"}}';
-                        espmesh.requestDevice(data);
-                    }, 1000);
-
-                }).catch(function(err){
-                    self.onBackIndex();
-                });
+                Common.delDevice(this)
+            },
+            onDelDevice: function(res) {
+               Common.onDelDevice(this, res);
             },
             getColor: function (characteristics, tid) {
                 return Util.getColor(characteristics, tid);
             },
-
             editName: function () {
-                var self = this;
-                self.cancelOperate();
-                MINT.MessageBox.prompt(self.$t('editNameInput'), self.$t('editNameDesc'),
-                    {inputValue: self.deviceInfo.name, inputPlaceholder: self.$t('addGroupInput'),
-                    inputValidator:function(v){if (Util.stringToBytes(v).length > 32){return false} {}},
-                    inputErrorMessage: self.$t('longDesc'),
-                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj) {
-                    self.deviceInfo.name = obj.value;
-                    var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
-                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + RENAME_DEVICE + '",' +
-                        '"name":' + JSON.stringify(obj.value) + ',"callback": "onEditName"}';
-                    setTimeout(function(){
-                        espmesh.requestDevice(data);
-                    }, 600);
-                }).catch(function(err) {
-                    self.onBackIndex();
-                });
+                Common.editName(this);
+            },
+            onEditName: function(res) {
+                Common.onEditName(this, res);
+                this.onBackIndex();
             },
             getStatus: function(characteristics) {
-                var self = this, status = 0;
-                if (!Util._isEmpty(characteristics)) {
-                    $.each(characteristics, function(i, item) {
-                        if (item.cid == STATUS_CID) {
-                            status = item.value;
-                        }
-                    });
-                }
-                return (status == STATUS_ON ? true : false);
+                return Common.getStatus(characteristics);
             },
             close: function (mac, status, e) {
                 Util.addBgClass(e);
-                var self = this, meshs = [], deviceStatus = 0, position = 0;
-                $.each(self.deviceList, function(i, item){
-                    if (item.mac == mac) {
-                        self.deviceList.splice(i, 1);
-                        position = i;
-                        self.deviceInfo = item;
-                        return false;
-                    }
-                });
-                var characteristics = [];
-                $.each(self.deviceInfo.characteristics, function(i, item) {
-                    if (item.cid == STATUS_CID) {
-                        deviceStatus = item.value;
-                        item.value = parseInt(status);
-                    }
-                    characteristics.push(item);
-                });
-                if (!deviceStatus == status) {
-                    meshs.push({cid: STATUS_CID, value: parseInt(status)});
-                    var data = '{"' + MESH_MAC + '": "' + self.deviceInfo.mac +
-                        '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","'+NO_RESPONSE+'": true,"' + MESH_REQUEST + '": "' + SET_STATUS + '",' +
-                        '"characteristics":' + JSON.stringify(meshs) + '}';
-
-                    self.deviceInfo.characteristics = characteristics;
-                    self.deviceList.splice(position, 0, self.deviceInfo);
-                    espmesh.requestDevice(data);
-                } else {
-                    self.deviceList.splice(position, 0, self.deviceInfo);
-                }
+                Common.close(this, mac, status);
             },
             closeDevice: function(mac) {
                 var self = this, status = 0;
@@ -739,8 +446,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
             },
             showOperate: function (item) {
                 var self = this, status = 0;
-                self.stopBleScan();
-                console.log("显示");
+                Common.stopBleScan();
                 self.$store.commit("setShowScanBle", false);
                 var mac = item.mac;
                 $.each(self.deviceList, function(i, item) {
@@ -778,10 +484,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 self.$store.commit("setList", self.deviceList);
                 setTimeout(function() {
                     if (!self.loadShow) {
+                        self.$refs.load.hide();
+                        console.log("下拉刷新");
                         self.loadShow = true;
                         self.$store.commit("setShowScanBle", true);
-                        self.stopBleScan();
-                        self.$refs.load.hide();
+                        Common.stopBleScan();
                         espmesh.scanDevicesAsync();
                     } else {
                         self.pullLoad = false;
@@ -800,459 +507,38 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
                 }
                 return flag;
             },
-            getDevices: function(macs, names) {
-                var self = this, lists = [];
-                if (macs.length > 0) {
-                    var staMacs = Util.staMacForBleMacs(macs);
-                    $.each(self.deviceList, function(i, item) {
-                        var mac = item.mac;
-                        var bleMac = Util.bleMacForStaMac(mac);
-                        if (staMacs.indexOf(mac) < 0) {
-                            lists.push(item);
-                        } else {
-//                            if (names[bleMac] && names[bleMac] == item.name) {
-//                                lists.push(item);
-//                            }
-                        }
-                    });
-                    self.deviceList = lists;
-                    self.$store.commit("setList", self.deviceList);
-                }
-            },
             clearListMacs: function() {
                 this.listMacs = [];
             },
-            getPOrN: function(position, name) {
-                var self = this, obj = name,
-                    objP = self.getPosition(position);
-                if (!Util._isEmpty(objP)) {
-                    obj = objP;
-                }
-                return obj;
-            },
-            onDelDevice: function(res) {
-                var self = this;
-                if (!Util._isEmpty(res)) {
-                    res = JSON.parse(res);
-                    if (!Util._isEmpty(res.result)) {
-                        if (!Util._isEmpty(res.result.status_code) && res.result.status_code == 0) {
-                            espmesh.removeDevicesForMacs(JSON.stringify([res.tag.mac]));
-                            $.each(self.deviceList, function(i, item) {
-                                if (item.mac == res.tag.mac) {
-                                    self.deviceList.splice(i, 1);
-                                    return false;
-                                }
-                            })
-                            self.$store.commit("setList", self.deviceList);
-                        } else {
-                            MINT.Toast({
-                              message: self.$t('deleteFailDesc'),
-                              position: 'bottom',
-                              duration: 2000
-                            });
-                        }
-                    } else {
-                        MINT.Toast({
-                          message: self.$t('deleteFailDesc'),
-                          position: 'bottom',
-                          duration: 2000
-                        });
-                    }
-
-                } else {
-                    MINT.Toast({
-                      message: self.$t('deleteFailDesc'),
-                      position: 'bottom',
-                      duration: 2000
-                    });
-                }
-                MINT.Indicator.close();
-                self.onBackIndex();
-            },
-            onLoadHWDevices: function(res) {
-                this.$store.commit("setSiteList", JSON.parse(res));
-            },
-            onLoadGroups: function(res) {
-                console.log(res);
-                this.$store.commit("setGroupList", JSON.parse(res));
-            },
-            onEditName: function(res) {
-                var self = this;
-                res = JSON.parse(res);
-                if (res.result.status_code == 0) {
-                    $.each(self.deviceList, function(i, item){
-                        if (item.mac == self.deviceInfo.mac) {
-                            self.deviceList.splice(i, 1, self.deviceInfo);
-                            return false;
-                        }
-                    });
-                }
-                self.$store.commit("setList", self.deviceList);
-                self.onBackIndex();
-            },
             onDeviceFound: function (device) {
-                var self = this;
-                if (Util._isEmpty(self.deviceList)) {
-                    self.deviceList = [];
-                }
-                if (!Util._isEmpty(device) && !self.loadShow) {
-                    device = JSON.parse(device);
-                    var isExist = true;
-                    if (self.temporaryAddList.length == 0) {
-                        setTimeout(function() {
-                            var num = self.temporaryAddList.length,
-                                macs = [];
-                            if (num != 0) {
-                                var onLine = self.$t('deviceOnline'),
-                                    onLineText = self.getPOrN(device.position, device.name);
-                                self.showAdd = false;
-                                if (!Util._isEmpty(INSTANCE_TOAST)) {
-                                    INSTANCE_TOAST.close();
-                                }
-                                if (num > 1) {
-                                    onLine = self.$t('deviceOnlineNum');
-                                    onLineText = num;
-                                }
-                                INSTANCE_TOAST = MINT.Toast({
-                                    message: onLine + ":" + onLineText,
-                                    position: 'bottom',
-                                });
-                                self.deviceList = self.$store.state.deviceList;
-                                $.each(self.deviceList, function(i, item) {
-                                    macs.push(item.mac);
-                                })
-                                $.each(self.temporaryAddList, function(i, item) {
-                                    if (macs.indexOf(item.macs) == -1) {
-                                        self.deviceList.push(item);
-                                    }
-                                })
-                                self.deviceList = Util.uniqeByKeys(self.deviceList, ["mac"]);
-                                if (self.deviceList.length > 0) {
-                                    self.$store.commit("setDeviceIp", self.deviceList[0].host);
-                                }
-                                self.$store.commit("setList", self.deviceList);
-                                self.temporaryAddList = [];
-                                self.clearListMacs();
-                                self.setGroup();
-                            }
-                        }, 4000);
-                    }
-                    $.each(self.deviceList, function(i, item) {
-                        if (item.mac == device.mac) {
-                            isExist = false;
-                        }
-                    });
-                    if (isExist) {
-                        device = self.setPair(device);
-                        self.temporaryAddList.push(device);
-                    }
-                }
-
+                Common.onDeviceFound(this, device);
             },
             onDeviceLost: function (mac) {
-                var self = this;
-                if (!Util._isEmpty(mac) && !self.loadShow) {
-                    if (self.temporaryDelList.length == 0) {
-                        setTimeout(function() {
-                            var num = self.temporaryDelList.length;
-                            if (num != 0) {
-                                var item = {};
-                                for (var i = self.deviceList.length - 1; i >= 0; i--) {
-                                    var obj = self.deviceList[i];
-                                    if (self.temporaryDelList.indexOf(obj.mac) != -1) {
-                                        item = obj;
-                                        self.deviceList.splice(i, 1);
-                                    }
-                                }
-                                if (self.deviceList.length <= 0) {
-                                    self.showAdd = true;
-                                }
-                                var offLine = self.$t('deviceOffline'),
-                                    offLineText = self.getPOrN(item.position, item.name);
-                                if (!Util._isEmpty(INSTANCE_TOAST)) {
-                                    INSTANCE_TOAST.close();
-                                }
-                                if (num > 1) {
-                                    offLine = self.$t('deviceOfflineNum');
-                                    offLineText = num;
-                                }
-                                INSTANCE_TOAST = MINT.Toast({
-                                    message: offLine + ":" + offLineText,
-                                    position: 'bottom',
-                                });
-                                self.$store.commit("setList", self.deviceList);
-                                self.temporaryDelList = [];
-                                self.setGroup();
-                            }
-                        }, 3000);
-                    }
-                    self.temporaryDelList.push(mac);
-                    self.clearListMacs();
-                }
+               Common.onDeviceLost(this, mac);
             },
             onDeviceStatusChanged: function (item) {
-                var self = this,
-                    hueValue = 0,
-                    saturation = 0,
-                    luminance = 0;
-                if (!Util._isEmpty(item)) {
-                    item = JSON.parse(item);
-                    var mac = item.mac,
-                        characteristics = item.characteristics;
-                    $.each(self.deviceList, function(i, itemSub) {
-                        if (itemSub.mac == mac) {
-                            self.deviceList.splice(i, 1);
-                            itemSub.characteristics = characteristics;
-                            self.deviceList.push(itemSub);
-                            return false;
-                        }
-                    })
-                    self.$store.commit("setList", self.deviceList);
-                }
+                Common.onDeviceStatusChanged(this, item);
             },
             startBleScan: function() {
-                var self = this;
-                if (self.$store.state.blueInfo) {
-                    espmesh.startBleScan();
-                } else {
-                    MINT.Toast({
-                        message: self.$t('bleConDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
-                }
-
-            },
-            stopBleScan: function() {
-                clearTimeout(SCAN_DEVICE);
-                espmesh.stopBleScan();
+                Common.startBleScan(this);
             },
             onBackIndex: function() {
-                var self = this;
-                clearTimeout(SCAN_DEVICE);
-                self.blueEnable =  self.$store.state.blueInfo;
-                window.onBluetoothStateChanged = this.onBluetoothStateChanged;
-                if (self.$store.state.showScanBle) {
-                    window.onScanBLE = self.onScanBLE;
-                    window.onDeviceFound = self.onDeviceFound;
-                    window.onDeviceLost = self.onDeviceLost;
-                    setTimeout(function() {
-                        self.$store.commit("setConScanDeviceList", []);
-                    }, 60000);
-                    SCAN_DEVICE = setTimeout(function() {
-                        self.startBleScan();
-                    }, 10000);
-                }
-
-                var startTime = 0;
-                window.onBackPressed = function () {
-                    MINT.Toast({
-                        message: self.$t('exitProgramDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
-                    if (startTime == 0) {
-                        startTime = new Date().getTime();
-                    } else {
-                        if (new Date().getTime() - startTime < 2000) {
-                            espmesh.finish();
-                        } else {
-                            startTime = new Date().getTime();
-                        }
-                    }
-                }
+                Common.onBackIndex(this);
             },
             onWifiStateChanged: function(wifi) {
-                var self = this;
-                console.log(wifi);
-                var wifiInfo = this.$store.state.wifiInfo;
-                wifi = JSON.parse(wifi);
-                if (wifi.connected) {
-                    self.isWifiConnect = wifi.connected;
-                    if (wifi.encode) {
-                        wifi.ssid = Util.Base64.decode(wifi.ssid);
-                    }
-
-                    if (wifi.ssid == wifiInfo.ssid) {
-                        return false;
-                    }
-                    if (self.wifiNum != 0) {
-                        clearTimeout(WIFI_TIMER);
-                        WIFI_TIMER = setTimeout(function() {
-                            MINT.Toast({
-                                message: self.$t('wifiChangeDesc'),
-                                position: 'bottom',
-                                duration: 2000
-                            });
-                            if (!self.loadShow) {
-                                self.showAdd = false;
-                                self.wifiFlag = true;
-                                self.loadDesc = self.$t('loading');
-                                self.reload();
-                            }
-                        }, 3000);
-                    }
-                    self.wifiNum++;
-                    self.$store.commit("setWifiInfo", wifi);
-                } else {
-                    self.isWifiConnect = false;
-                    self.$store.commit("setWifiInfo", "");
-                }
+                Common.onWifiStateChanged(this, wifi);
             },
             onBluetoothStateChanged: function(blue) {
-                console.log(blue);
-                if (!Util._isEmpty(blue)) {
-                    blue = JSON.parse(blue);
-                    if (blue.enable || blue.enable == "true") {
-                        blue.enable = true;
-                    } else {
-                        blue.enable = false;
-                    }
-                    this.$store.commit("setBlueInfo", blue.enable);
-                    this.blueEnable =  blue.enable;
-                }
+                Common.onBluetoothStateChanged(this, blue);
             },
             onScanBLE: function (devices) {
-                console.log(devices);
-                var self = this,
-                    scanList = [], rssiList = [], notExist = [],
-                    rssiValue = self.$store.state.rssiInfo;
-                if (!Util._isEmpty(devices) && self.$store.state.showScanBle && self.showScanDevice && !self.loadShow) {
-                    var conScanDeviceList = self.$store.state.conScanDeviceList;
-                    devices = JSON.parse(devices);
-                    $.each(devices, function(i, item) {
-                        if (item.rssi >= rssiValue && Util.isMesh(item.name, item.version, item.beacon)) {
-                            rssiList.push(item);
-                        }
-                    })
-                    if (rssiList.length > 0) {
-                        var names = {};
-                        $.each(devices, function(i, item) {
-                            if (self.listMacs.indexOf(item.mac) == -1) {
-                                if (!Util._isEmpty(item.beacon)) {
-                                    if (item.beacon == BEACON_MDF) {
-                                        notExist.push(item.mac);
-                                        names[item.mac] = item.name;
-                                        self.listMacs.push(item.mac);
-                                    }
-                                } else {
-                                    notExist.push(item.mac);
-                                    names[item.mac] = item.name;
-                                    self.listMacs.push(item.mac);
-                                }
-                            }
-                        })
-                        if (Util._isEmpty(conScanDeviceList) || conScanDeviceList.length <= 0) {
-                            if (notExist.length > 0) {
-                                self.getDevices(notExist, names);
-                            }
-                            var len = self.deviceList.length;
-                            if (len > 0) {
-                                self.showAdd = false;
-                                self.$refs.remind.hide();
-                                self.$refs.scanDevice.show();
-                                self.$refs.scanDevice.onBackReset();
-                            } else {
-                                self.showAdd = true;
-                                self.$refs.scanDevice.hideThis();
-                                self.$refs.remind.show();
-                            }
-                            self.$store.commit("setScanDeviceList", rssiList);
-
-                        } else {
-                            $.each(rssiList, function(i, item) {
-                                if (conScanDeviceList.indexOf(item.bssid) <= -1) {
-                                    scanList.push(item);
-                                }
-                            });
-                            if (scanList.length > 0) {
-                                if (notExist.length > 0) {
-                                    self.getDevices(notExist, names);
-                                }
-                                var len = self.deviceList.length;
-                                if (len > 0) {
-                                    self.showAdd = false;
-                                    self.$refs.remind.hide();
-                                    self.$refs.scanDevice.show();
-                                } else {
-                                    self.showAdd = true;
-                                    self.$refs.scanDevice.hideParent();
-                                    self.$refs.remind.show();
-                                }
-                                self.$store.commit("setScanDeviceList", rssiList);
-                            }
-                        }
-                    }
-                }
+                Common.onScanBLE(this, devices);
             },
             onDeviceScanned: function(devices) {
-               var self = this;
-               self.deviceList = self.$store.state.deviceList;
-               if (!Util._isEmpty(devices)) {
-                   devices = JSON.parse(devices);
-                   if(devices.length > 0) {
-                       self.showAdd = false;
-                       var macs = [];
-                       $.each(self.deviceList, function(i, item){
-                           if (macs.indexOf(item.mac) == -1) {
-                               macs.push(item.mac);
-                           }
-                       })
-                       var flag = true;
-                       $.each(devices, function(j, item) {
-                           if (macs.indexOf(item.mac) == -1) {
-                               devices.push(item);
-                           }
-                       });
-                       self.deviceList = devices;
-                   }
-               }
-               if (self.deviceList.length <= 0) {
-                   self.showAdd = true;
-                   MINT.Toast({
-                       message: self.$t('notLoadDesc'),
-                       position: 'bottom',
-                   });
-               }
-               self.deviceList = Util.uniqeByKeys(self.deviceList, ["mac"]);
-               self.loadShow = false;
-               self.pullLoad = false;
-               self.hideLoad();
-               self.$refs.loadmore.onTopLoaded();
-               self.$store.commit("setList", self.deviceList);
-               setTimeout(function() {
-                   if (devices.length > 0) {
-                        self.setGroup()
-                        self.setPairs();
-                        self.clearListMacs();
-                   }
-                   if (self.$store.state.showScanBle) {
-                       self.startBleScan();
-                       self.onBackIndex();
-                       self.wifiFlag = false;
-                   }
-               }, 2000)
-
-
+               Common.onDeviceScanned(this, devices);
             },
             onDeviceScanning: function(devices) {
-                var self = this, macs = [];
-                if (!Util._isEmpty(devices)) {
-                    devices = JSON.parse(devices);
-                    self.deviceList = self.$store.state.deviceList;
-                    $.each(self.deviceList, function(i,item){
-                        macs.push(item.mac);
-                    });
-                    $.each(devices, function(i, item) {
-                        if (macs.indexOf(item.mac) < 0) {
-                            self.deviceList.push(item);
-                        }
-                    });
-                    if (self.deviceList.length > 0) {
-                        self.$store.commit("setDeviceIp", self.deviceList[0].host);
-                    }
-               }
-               self.$store.commit("setList", self.deviceList);
+                Common.onDeviceScanning(this, devices);
             },
             onCheckAppVersion: function(res) {
                 var self = this;
@@ -1284,8 +570,6 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
             window.onTopoScanned = this.onTopoScanned;
             window.onDelDevice = this.onDelDevice;
             window.onEditName = this.onEditName;
-            window.onLoadHWDevices = this.onLoadHWDevices;
-            window.onLoadGroups = this.onLoadGroups;
             window.onBluetoothStateChanged = this.onBluetoothStateChanged;
             window.onAddQueueTask = this.onAddQueueTask;
             window.onCheckAppVersion = this.onCheckAppVersion;
@@ -1310,7 +594,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/index.html", "../js/footer", "./
             "v-blueFail": blueFail,
             "v-wifiFail": wifiFail,
             "v-config": config,
-            "v-newVersion": newVersion
+            "v-newVersion": newVersion,
+            "v-guide": guide,
+            "v-car": car
         }
 
     });

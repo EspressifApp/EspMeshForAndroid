@@ -1,17 +1,78 @@
 <transition name="moves">
-    <div v-show="flag" class="operate-way">
-        <div @click="hideInfo" class="event-mask"></div>
-        <div class="event-content event-info active operate-bg" >
-            <div class="col-xs-12 no-padding">
-                <p class="event-title">{{deviceInfo.name}}<span @click="hideInfo" class="fa fa-times cancel-times"></span></p>
-            </div>
-            <div class="operate-way-info no-padding-bottom" id="content-info">
-                <div id="color-wrapper" class="color-wrapper">
-                    <v-color :colorId="colorId" :temperatureId="temperatureId" :colorType="operateType"
-                             :macs="deviceMacs" :isRoom="isRoom" ref="color"></v-color>
+    <div v-show="flag" class="add-info operate-way">
+        <div class="init-width main-wrap flex ">
+            <div class="left flex flex-v">
+                <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{deviceInfo.name}}</h4>
+                <div class="input-info">
+                    <i class="icon-search"></i>
+                    <input v-model="searchName" type="search" class="form-control" :placeholder="$t('searchGroup')">
                 </div>
+                <ul class="flex-1">
+                    <li @click="selectDevice(item)" :class="{'active': selectMac == item.mac}"
+                        class="flex flex-ac flex-jcb left-item"
+                        v-for="item in deviceList">
+                        <div class="flex flex-ac">
+                            <span class="icon" :class="getIcon(item.tid)"
+                                :style="{'color': getColor(item.characteristics, item.tid)}"></span>
+                            <div class="flex flex-v">
+                                <span v-show="showDesc(item.position)" class="name">{{getPosition(item.position)}}</span>
+                                <span :class="{'desc': showDesc(item.position)}">{{item.name}}</span>
+                            </div>
+
+                        </div>
+                        <span class="icon-right"></span>
+                    </li>
+                </ul>
+            </div>
+            {{list}}
+            <div class="right flex flex-v flex-1">
+                <div class="init-width flex flex-v">
+                    <h4 class="app-title"></span>控制</h4>
+                    <div class="device-info flex flex-ac">
+                        <div class="device-icon flex flex-ac flex-jcc">
+                            <i :class="getIcon(deviceInfo.tid)"
+                               :style="{'color': getColor(deviceInfo.characteristics, deviceInfo.tid)}"></i>
+                        </div>
+                        <div class="device-name flex-1 flex flex-v">
+                            <span>{{getPosition(deviceInfo.position)}}</span>
+                            <span v-show="!showDesc(deviceInfo.name)">{{deviceInfo.mac}}</span>
+                            <span v-show="showDesc(deviceInfo.name)"  :class="{'desc': showDesc(deviceInfo.position)}">
+                                {{deviceInfo.name}}
+                                <span v-show="showDesc(deviceInfo.position)">({{deviceInfo.version}})</span>
+                            </span>
+                            <span class="desc" v-show="!showDesc(deviceInfo.position)">
+                                {{deviceInfo.version}}
+                            </span>
+                        </div>
+                        <div v-show="isLigth(deviceInfo.tid)" @click.stop="close(deviceInfo.mac, getStatus(deviceInfo.characteristics), $event)"
+                             class="device-power flex flex-jcc flex-ac"
+                             :class="{'active': getStatus(deviceInfo.characteristics)}">
+                            <i class="icon-power"></i>
+                        </div>
+                    </div>
+                    <div class="control-icon flex flex-ac">
+                        <span @click="editName" class="icon-edit flex-1"></span>
+                        <span @click="delDevice" class="icon-reset flex-1"></span>
+                        <span @click="showAbout" class="icon-android-alert flex-1"></span>
+                        <span @click="showOta" class="icon-co_upgrade flex-1"></span>
+                        <span @click="showPair" class="icon-weizhi flex-1"></span>
+                        <span @click="showAssociation" class="icon-link flex-1"></span>
+                        <span @click="showCommand" class="icon-send flex-1"></span>
+                    </div>
+                    <div v-show="isLigth(deviceInfo.tid)" class="color-wrap flex-1" >
+                        <v-color :colorId="colorId" :temperatureId="temperatureId" :colorType="operateType"
+                                 :macs="deviceMacs" :isRoom="isRoom" isAss="false" ref="color"></v-color>
+                    </div>
+                    <div v-show="!isLigth(deviceInfo.tid)" class="attr-wrap flex-1">
+                        <v-attr ref="attr"></v-attr>
+                    </div>
+                </div>
+                <v-aboutDevice v-on:aboutShow="hideThis" :deviceInfo="deviceInfo" ref="aboutDevice"></v-aboutDevice>
+                <v-otaInfo v-on:oatShow="hideThis" :otaId="otaId" :macs="deviceMacs" ref="ota"></v-otaInfo>
+                <v-command v-on:commandShow="hideThis" :commandMacs="deviceMacs" ref="command"></v-command>
+                <v-setDevicePair v-on:setDevicePairShow="hideThis" ref="setDevicePair"></v-setDevicePair>
             </div>
         </div>
-
+        <v-association v-on:associationShow="hideThis" ref="association"></v-association>
     </div>
 </transition>

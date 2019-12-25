@@ -124,10 +124,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanDevice.html"],
                         } else {
                             self.$store.commit("setList", []);
                             MINT.Indicator.close();
-                            MINT.Toast({
-                                message: self.$t('noDeviceDesc'),
-                                position: 'bottom',
-                            });
+                            Util.toast(MINT, self.$t('noDeviceDesc'));
                             self.$parent.addDevice();
                         }
                     }

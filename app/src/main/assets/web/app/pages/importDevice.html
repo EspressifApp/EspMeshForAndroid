@@ -9,7 +9,7 @@
                 </h4>
                 <span @click="save" class="right-top save-info"><i class="icon-checkmark-round"></i></span>
             </div>
-            <div class="selected-radio">
+            <div class="selected-radio flex flex-ac flex-jcb">
                 <div>{{$t('selectDevice')}}({{selected}}/{{total}})</div>
                 <div @click="selectAllDevice($event)" class="select-all-radio flex flex-ac flex-jce"><span class="span-radio"
                            :class="{'active': (selected == total && selected != 0)}"><span></span></span></div>

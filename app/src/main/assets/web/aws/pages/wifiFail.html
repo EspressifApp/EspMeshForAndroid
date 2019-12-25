@@ -1,0 +1,26 @@
+
+<div class="init-width">
+    <transition>
+        <div v-show="flag" class="ota-upgrade fail-wrapper">
+            <div @click="hide" class="mask"></div>
+            <div class="upgrade-info fail-info">
+                <div class=fail-header>
+                    <span><i class="icon-wifi icon-position"><i class="icon-android-alert"></i></i></span>
+                </div>
+                <div class="fail-content">
+                    <h4>{{$t('noFound')}}</h4>
+                    <ul class="fail-ul">
+                        <li>1. {{$t('noWifi')}}&emsp;<span @click="setWifi" class="green">{{$t('goConnect')}}</span></li>
+                        <li>2. {{$t('noConfig')}}</li>
+                    </ul>
+                    <p>{{$t('reboot')}}</p>
+                    <div class="result-flex">
+                        <button @click="hide" class="btn register-btn">{{$t('gotIt')}}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>
+
+

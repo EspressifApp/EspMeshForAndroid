@@ -17,6 +17,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanContent.html"],
                     rssiSort: false,
                     moreFlag: false,
                     isAsc: false,
+                    strList: "",
                 }
             },
             computed: {
@@ -92,7 +93,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/scanContent.html"],
                 clearDevice: function() {
                     var self = this;
                     self.hideMore();
-                    MINT.MessageBox.confirm("确定要清除信息吗？", "清除信息",{
+                    MINT.MessageBox.confirm(self.$t("clearInfoDesc"), self.$t("clearInfo"),{
                         confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
                             setTimeout(function() {
                                 self.snifferList = [];

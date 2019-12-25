@@ -18,12 +18,12 @@ define(["vue","MINT", "Util", "txt!../../pages/scan.html", "../js/reports", "../
                 show: function() {
                     var self = this;
                     self.deviceList  = self.$store.state.deviceList
-                    self.onBackScan();
                     self.addFlag = true;
                     MINT.Indicator.open();
                     window.onGetScan = this.onGetScan;
                     setTimeout(function(){
                         self.getScan();
+                        self.onBackScan();
                     },500);
                 },
                 hide: function () {
@@ -132,14 +132,15 @@ define(["vue","MINT", "Util", "txt!../../pages/scan.html", "../js/reports", "../
                     return rgb;
                 },
                 onGetScan: function(res) {
-                    console.log();
-                    if (!Util._isEmpty(res)) {
+                    console.log(res);
+                    if (!Util._isEmpty(res) && res != "{}") {
                         this.scanInfo = JSON.parse(res).result;
                     } else {
                         this.scanInfo = {"enable": "", "type": "", "notice_threshold": "", "esp_module_filter": "",
                             "ble_scan_interval": "", "g_ble_scan_window": ""}
                     }
                     MINT.Indicator.close();
+                    window.onBackPressed = this.hide;
                 }
             },
             components: {

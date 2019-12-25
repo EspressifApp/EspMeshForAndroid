@@ -1,0 +1,44 @@
+<transition name="moves">
+    <div v-show="flag" class="add-info operate-way">
+        <div class="init-width main-wrap flex drop-wrap">
+            <div id="draggable-wrapper"></div>
+            <div class="left flex flex-v drop-left">
+                <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>长按拖拽</h4>
+                <ul id="lefticon" class="flex-1">
+                    <li v-for="item in list" class="flex flex-ac flex-jcb left-item">
+                        <div :data-status="getStatus(item.characteristics)" :data-tid="item.tid"
+                             :data-value="item.mac" class="iconitems itemindex flex flex-ac" :icontype="item.mac"
+                             :class="{'availability': getDisabled(item.mac)}">
+                            <i :class="getIcon(item.tid)"
+                               :style="{'color': getColor(item.characteristics, item.tid)}"></i>
+                            <span title="">{{item.name}}</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="right flex flex-v flex-1 drop-right">
+                <div class="init-width flex flex-v">
+                    <h4 class="app-title">关联</h4>
+                    <div id="draggable-info" class="draggable-info">
+                        <div id="canvas-wrapper">
+                            <div class="draggable-content" id="draggable-content">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="delete-device" class="delete-device">
+                <i class="icon-bin"></i>
+            </div>
+        </div>
+        <transition>
+            <div v-show="showColor" class="prompt-wrapper" >
+                <div @click="hideColorInfo" class="mask"></div>
+                <div class="assocition-color">
+                    <v-color :colorId="colorId" :temperatureId="temperatureId" :colorType="operateType"
+                             :macs="deviceMacs" isAss="true" :isRoom="isRoom" ref="color"></v-color>
+                </div>
+            </div>
+        </transition>
+    </div>
+</transition>

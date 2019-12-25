@@ -137,11 +137,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/timingAdd.html"], function(v, MI
                 var self = this;
                 var intervals = self.assembly();
                 if (intervals.length == 0) {
-                    MINT.Toast({
-                        message: "内容不能为空",
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('notEmpty'));
                     return false;
                 }
                 if (!Util._isEmpty(self.name)) {
@@ -171,25 +167,13 @@ define(["vue", "MINT", "Util", "txt!../../pages/timingAdd.html"], function(v, MI
                 if (!Util._isEmpty(res)) {
                     res = JSON.parse(res);
                     if (res.result.length > 0) {
-                        MINT.Toast({
-                          message: self.$t('saveSuccessDesc'),
-                          position: 'bottom',
-                          duration: 2000
-                        });
-                        this.hideThis();
+                        Util.toast(MINT, self.$t('saveSuccessDesc'));
+                        self.hideThis();
                     } else {
-                        MINT.Toast({
-                          message: self.$t('saveFailDesc'),
-                          position: 'bottom',
-                          duration: 2000
-                        });
+                        Util.toast(MINT, self.$t('saveFailDesc'));
                     }
                 } else {
-                    MINT.Toast({
-                      message: self.$t('saveFailDesc'),
-                      position: 'bottom',
-                      duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('saveFailDesc'));
                 }
                 MINT.Indicator.close();
             }

@@ -1,6 +1,6 @@
 define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../js/set", "../js/userinfo",
-        "../js/debug", "../js/selectDevice"],
-    function(v, MINT, Util, user, footer, set, userinfo, debug, selectDevice) {
+        "../js/debug", "../js/selectDevice", "../js/tm"],
+    function(v, MINT, Util, user, footer, set, userinfo, debug, selectDevice, tm) {
 
         var User = v.extend({
 
@@ -73,6 +73,14 @@ define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../
                 setFun: function () {
                     this.$refs.set.show();
                 },
+                tmFun: function () {
+                    if (this.$store.state.isLogin) {
+                        this.$refs.tm.show();
+                    } else {
+                        aliyun.aliUserLogin();
+                    }
+
+                },
                 otaFun: function () {
                     this.$refs.select.show();
                 },
@@ -113,14 +121,17 @@ define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../
                     var iotIds = [];
                     if (!Util._isEmpty(res)) {
                         res = JSON.parse(res);
-                        if (res.data.length > 0) {
-                            res.data.forEach(function(item) {
-                                if (item.status == 1 && iotIds.indexOf(item.iotId) == -1) {
-                                    iotIds.push(item.iotId);
-                                    self.otaList.push(item);
-                                }
-                            })
+                        if (res.code == 200) {
+                            if (res.data.length > 0) {
+                                res.data.forEach(function(item) {
+                                    if (item.status == 1 && iotIds.indexOf(item.iotId) == -1) {
+                                        iotIds.push(item.iotId);
+                                        self.otaList.push(item);
+                                    }
+                                })
+                            }
                         }
+
                     }
                 }
             },
@@ -129,7 +140,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/user.html", "../js/footer", "../
                 "v-set": set,
                 "v-userinfo": userinfo,
                 "v-debug": debug,
-                "v-selectDevice": selectDevice
+                "v-selectDevice": selectDevice,
+                "v-tm": tm
             }
 
         });

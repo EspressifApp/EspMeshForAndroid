@@ -37,6 +37,7 @@ import libs.espressif.log.EspLog;
 @SuppressLint("SetJavaScriptEnabled")
 public class MainWebHelper implements LifecycleObserver {
     private static final String ALIYUN_API_NAME = "aliyun";
+    private static final String MESH_API_NAME = "espmesh";
 
     private static final String FILE_PHONE = "app";
     private static final String FILE_PAD = "ipad";
@@ -103,7 +104,7 @@ public class MainWebHelper implements LifecycleObserver {
         webSettings.setTextZoom(100);
 
         if (AppUtil.isPad(mActivity)) {
-            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
             mWebView.loadUrl(getUrl(FILE_PAD));
         } else {
             mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -111,7 +112,7 @@ public class MainWebHelper implements LifecycleObserver {
             mWebView.loadUrl(getUrl(file));
         }
         mMeshApiForJS = new AppApiForJS(mActivity);
-        mWebView.addJavascriptInterface(mMeshApiForJS, AppApiForJS.NAME);
+        mWebView.addJavascriptInterface(mMeshApiForJS, MESH_API_NAME);
 
         mAliRequests = new SparseArray<>();
         initAliApi();
@@ -120,7 +121,7 @@ public class MainWebHelper implements LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void onDestroy() {
         mWebForm.removeAllViews();
-        mWebView.removeJavascriptInterface(AppApiForJS.NAME);
+        mWebView.removeJavascriptInterface(MESH_API_NAME);
         mWebView.removeJavascriptInterface(ALIYUN_API_NAME);
         mWebView.destroy();
         mMeshApiForJS.release();
@@ -165,13 +166,12 @@ public class MainWebHelper implements LifecycleObserver {
                     mActivity.runOnUiThread(runnable);
                 }
             });
+
+            mWebView.addJavascriptInterface(mAliApiForJS, ALIYUN_API_NAME);
+            mLog.d("Add AliApiForJS success");
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
                 | InstantiationException | InvocationTargetException e) {
             mLog.w("Create AliApiForJS instance failed");
-        }
-        if (mAliApiForJS != null) {
-            mWebView.addJavascriptInterface(mAliApiForJS, ALIYUN_API_NAME);
-            mLog.d("Add AliApiForJS success");
         }
     }
 

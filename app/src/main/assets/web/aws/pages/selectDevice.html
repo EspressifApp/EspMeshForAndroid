@@ -1,0 +1,49 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="title-info">
+                <h4 class="app-title">
+                    <span @click="hide"><i class="icon-left back"></i></span>
+                    {{$t('otaUpdate')}}
+                </h4>
+            </div>
+            <div class="selected-radio filter-wrapper">
+                <div class="input-info">
+                    <i class="icon-search"></i>
+                    <input type="search" v-model="searchName" class="form-control" :placeholder="$t('searchGroup')">
+                </div>
+            </div>
+            <div class="content-info flex-wrapper no-padding-bottom">
+                <div class="overflow-touch">
+                    <mt-loadmore :top-method="loadTop" @top-status-change="handleTopChange" ref="loadmore">
+                        <div @click="showOta(item.iotId, item.deviceName)" v-for="item in list" class="item item-device">
+                            <div class="item-icon-circle">
+                                <i class="icon-light" style="color: #fff"></i>
+                            </div>
+                            <div class="item-name">
+                                <span >{{item.deviceName}}</span>
+                                <span class="desc">{{getAliStatus(item.status)}}</span>
+                            </div>
+                            <div class="item-power-small">
+                                <i class="icon-right font-lg"></i>
+                            </div>
+                        </div>
+                        <div slot="top" class="mint-loadmore-top">
+                            <span v-show="topStatus !== 'loading'" :class="{ 'rotate': topStatus === 'drop' }">↓</span>
+                            <div v-show="topStatus === 'loading'" id="loader-wrapper-small">
+                                <div class="loader loader-small"></div>
+                                <div class="loader-section section-left"></div>
+                                <div class="loader-section section-right"></div>
+                            </div>
+                        </div>
+                    </mt-loadmore>
+
+                </div>
+            </div>
+            <!--<div  class="position-absolute btn-register-wrapper">-->
+                <!--<button :class="{'bg-gray': selected <= 0}" type="submit" class="btn register-btn" @click="startUpgrate">立即升级</button>-->
+            <!--</div>-->
+        </div>
+    </transition>
+    <v-ota v-on:otaShow="onBackSelectDevice" :deviceName="deviceName" :iotId="iotId" ref="ota"></v-ota>
+</div>

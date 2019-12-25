@@ -1,0 +1,32 @@
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="flag" class="add-info operate-way">
+            <div class="init-width main-wrap flex ">
+                <div class="left flex flex-v">
+                    <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>iBeacon{{$t('nav.device')}}</h4>
+                    <div class="input-info">
+                        <i class="icon-search"></i>
+                        <input v-model="searchName" type="search" class="form-control" :placeholder="$t('searchGroup')">
+                    </div>
+                    <ul class="flex-1">
+                        <li @click="showIbeacon(item)"
+                            :class="{'active': selectId == item.mac}"
+                            class="flex flex-ac flex-jcb left-item"
+                            v-for="item in list">
+                            <div class="flex flex-ac">
+                                <span :class="getIcon(item.tid)"
+                                      :style="{'color': getColor(item.characteristics, item.tid)}" class="icon"></span>
+                                <span class="name">{{item.name}}</span>
+                            </div>
+                            <span class="icon-right"></span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="right flex flex-v flex-1">
+                    <v-ibeacon v-on:ibeanShow="hideParent" :deviceInfo="deviceInfo" v-if="deviceInfo" ref="ibeacon"></v-ibeacon>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+</div>

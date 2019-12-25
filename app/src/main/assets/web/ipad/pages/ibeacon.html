@@ -1,0 +1,45 @@
+<transition>
+    <div v-show="addFlag" class="control-content flex flex-v">
+        <h4 class="app-title">iBeacon</h4>
+        <div class="ibeacon-content">
+            <div class="ibeacon-header margin-top-15">
+                <div class="ibeacon-distance">
+                    <span class="distance-title">距离(m)</span>
+                    <div class="ibeacon-distance-content">
+                        <span>{{meter}}</span>
+                    </div>
+                </div>
+                <div class="ibeacon-device flex flex-v flex-ac">
+                    <div class="ibeacon-device-icon flex flex-ac flex-jcc">
+                        <i style="font-size: 60px;" :class="getIcon()" :style="{'color': getColor()}"></i>
+                    </div>
+                    <span>{{ibeaconInfo.name}}</span>
+                    <span>{{deviceInfo.mac}}</span>
+                </div>
+                <div class="ibeacon-electricity">
+                    <span class="electricity-title">Rssi</span>
+                    <div class="ibeacon-electricity-content">
+                        <span>{{rssi}}</span>
+                    </div>
+                </div>
+            </div>
+            <!--<div class="ibeacon-line">-->
+            <!--<div >Rssi</div>-->
+            <!--<div class="show-line"></div>-->
+            <!--</div>-->
+            <div @click="showInfo" class="ibeacon-middle">
+                <p class="flex flex-jcb"><span>Major:&emsp;</span>{{ibeaconInfo.major}}</p>
+                <p class="flex flex-jcb"><span>Minor:&emsp;</span>{{ibeaconInfo.minor}}</p>
+                <p class="flex flex-jcb"><span>UUID:&emsp;</span>{{ibeaconInfo.uuid}}</p>
+                <p class="flex flex-jcb"><span>发送功率:&emsp;</span>{{ibeaconInfo.power}}</p>
+            </div>
+            <div class="margin-top-15 flex">
+                <button @click="showInfo" class="btn register-btn ibeacon-btn">参数配置</button>
+                <button  class="btn register-btn ibeacon-btn">距离校准</button>
+            </div>
+        </div>
+        <v-ibeaconInfo v-on:ibeanInfoShow="onBackIbean" :ibeaconInfo="ibeaconInfo" :deviceInfo="deviceInfo"
+                       v-if="ibeaconInfo" ref="ibeaconInfo"></v-ibeaconInfo>
+    </div>
+</transition>
+

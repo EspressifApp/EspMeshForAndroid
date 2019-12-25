@@ -1,0 +1,26 @@
+<transition name="moves">
+    <div v-show="flag" class="control-content flex flex-v">
+        <h4 class="app-title"><span @click="hide"><i class="icon-cross back"></i></span>{{$t('aboutDevice')}}</h4>
+        <div class="about-device flex-1">
+            <div class="about-icon">
+                <div class="icon-content">
+                    <i :style="{'color': getColor()}"
+                       :class="getIcon()"></i>
+                </div>
+                <div class="icon-name">
+                    {{deviceInfo.name}}
+                </div>
+            </div>
+            <div class="about-content">
+                <p class="flex flex-ac flex-jcb"><span>{{$t('deviceType')}}</span><span>{{getType()}}</span></p>
+                <p class="flex flex-ac flex-jcb"><span>MESH ID</span><span>{{deviceInfo.mesh_id}}</span></p>
+                <p class="flex flex-ac flex-jcb"><span>{{$t('macAddress')}}</span><span>{{deviceInfo.mac}}</span></p>
+                <p class="flex flex-ac flex-jcb"><span>{{$t('deviceVersion')}}</span><span>{{deviceInfo.version}}</span></p>
+                <p class="flex flex-ac flex-jcb"><span>{{$t('parentNode')}}</span><span>{{deviceInfo.mdf_version}}</span></p>
+                <p class="flex flex-ac flex-jcb"><span>{{$t('rootNode')}}</span><span>{{deviceInfo.idf_version}}</span></p>
+                <p class="flex flex-ac flex-jcb"><span>{{$t('deviceStatus')}}</span><span>{{getNetwork()}}</span></p>
+                <p class="flex flex-ac flex-jcb"><span>{{$t('deviceIP')}}</span><span>{{deviceInfo.host}}</span></p>
+            </div>
+        </div>
+    </div>
+</transition>

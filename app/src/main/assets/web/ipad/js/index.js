@@ -109,10 +109,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                 setTimeout(function() {
                      MINT.Indicator.close();
                     if (self.deviceList.length <= 0) {
-                        MINT.Toast({
-                          message: self.$t('refreshDesc'),
-                          position: 'bottom',
-                        });
+                        Util.toast(MINT, self.$t('refreshDesc'));
                     };
                     if (self.$store.state.showScanBle) {
                         self.onBackIndex();
@@ -230,7 +227,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
 
                         instance.registerConnectionType("basic", { anchor:"Continuous", connector:"StateMachine" });
 
-                        window.jsp = instance;
+                        window.jsp = instance
                         JSPLUMB_INSTANCE = instance;
                         var canvas = document.getElementById("topocontent");
                         self.initTouch("toporight-index");
@@ -1358,11 +1355,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                         if (macs.length <= 0) {
                             $("#" + mac).removeClass("active");
                         }
-                        MINT.Toast({
-                            message: 'failed to connect device',
-                            position: 'bottom',
-                            duration: 2000
-                        });
+                        Util.toast(MINT, self.$t('failed to connect device'));
                     }
                     sessionStorage.removeItem(childMac+ "_" + mac);
                 }
@@ -1451,11 +1444,7 @@ define(["vue", "MINT", "Util", "jsPlumb", "Hammer", "IScroll", "txt!../../pages/
                 if (self.$store.state.blueInfo) {
                     espmesh.startBleScan();
                 } else {
-                    MINT.Toast({
-                        message: self.$t('bleConDesc'),
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, self.$t('bleConDesc'));
                 }
             },
             stopBleScan: function() {

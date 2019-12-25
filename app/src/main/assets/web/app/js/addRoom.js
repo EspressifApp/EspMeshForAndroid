@@ -24,14 +24,14 @@ define(["vue","MINT", "Util", "txt!../../pages/addRoom.html" ],
                     newRoomKey: "",
                     active: "added",
                     deviceList: [],
-                    imageList: [{id: "room5",name: "办公室", url: "room_5.jpg"},
-                        {id: "room1",name: "客厅", url: "room_1.jpg"},
-                        {id: "room3",name: "厨房", url: "room_3.jpg"},
-                        {id: "room8",name: "洗手间", url: "room_8.jpg"},
-                        {id: "room7",name: "阳台", url: "room_7.jpg"},
-                        {id: "room4",name: "书房", url: "room_4.jpg"},
-                        {id: "room6",name: "地下室", url: "room_6.jpg"},
-                        {id: "room2",name: "卧室", url: "room_2.jpg"},],
+                    imageList: [{id: "room5",name: this.$t("office"), url: "room_5.jpg"},
+                        {id: "room1",name: this.$t("parlor"), url: "room_1.jpg"},
+                        {id: "room3",name: this.$t("kitchen"), url: "room_3.jpg"},
+                        {id: "room8",name: this.$t("toilet"), url: "room_8.jpg"},
+                        {id: "room7",name: this.$t("terrace"), url: "room_7.jpg"},
+                        {id: "room4",name: this.$t("study"), url: "room_4.jpg"},
+                        {id: "room6",name: this.$t("cellar"), url: "room_6.jpg"},
+                        {id: "room2",name: this.$t("bedroom"), url: "room_2.jpg"},],
                     imageShow: false,
                     currentImg: "room_5.jpg",
                     isShowDevice: false,
@@ -176,33 +176,21 @@ define(["vue","MINT", "Util", "txt!../../pages/addRoom.html" ],
                 saveRoom: function() {
                     var self = this;
                     if(Util._isEmpty(self.roomName)) {
-                        MINT.Toast({
-                            message: "请输入房间名称",
-                            position: 'bottom',
-                            duration: 2000
-                        });
+                        Util.toast(MINT, self.$t("enterRoomNameDesc"));
                         return false;
                     };
                     console.log(Util.toGbkBytes(self.roomName));
                     var key = Util.intsToHex(Util.toGbkBytes(self.roomName));
                     console.log(JSON.stringify(key));
                     if (key.length > 6) {
-                        MINT.Toast({
-                            message: "房间名称过长，请小于3个中文或6个字符和数字",
-                            position: 'bottom',
-                            duration: 2000
-                        });
+                        Util.toast(MINT, self.$t("nameTooLongDesc"));
                         return false;
                     }
                     MINT.Indicator.open();
                     key = key.join("").toLocaleLowerCase();
                     if (Util._isEmpty(self.roomKey)) {
                         if (self.roomExistKeys.indexOf(key) != -1) {
-                            MINT.Toast({
-                                message: "房间名称已存在",
-                                position: 'bottom',
-                                duration: 2000
-                            });
+                            Util.toast(MINT, self.$t("isExistRoomNameDesc"));
                             return false;
                         } else {
                             self.roomKey = key;
@@ -271,11 +259,7 @@ define(["vue","MINT", "Util", "txt!../../pages/addRoom.html" ],
                     if (res != "{}" && !Util._isEmpty(res)) {
                         self.removeRoom();
                     } else {
-                        MINT.Toast({
-                            message: "房间编辑失败",
-                            position: 'bottom',
-                            duration: 2000
-                        });
+                        Util.toast(MINT, self.$t('saveFailDesc'));
                         setTimeout(function() {
                              MINT.Indicator.close();
                         }, 100)

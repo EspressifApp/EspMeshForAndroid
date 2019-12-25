@@ -1,0 +1,48 @@
+<div id="picker-wrapper" style="height: 100%; width: 100%;" v-show="true">
+    {{computedWarmCold}}{{computedRgb}}
+    <div class="picker-wrapper flex flex-jcb">
+        <div v-show="currentStatus" class="range-wrapper">
+            <div v-show="pickerShow" class="range-info-wrap flex flex-jcc flex-v">
+                <div class="range-title"><span class="blod">亮度</span><span>({{currentLuminance}}%)</span></div>
+                <div class="range-info flex-1">
+                    <div :id="colorId + 'luminance'" data-type="luminance" class="range-slider"></div>
+                </div>
+            </div>
+            <div v-show="!pickerShow" class="range-info-wrap flex flex-jcc flex-v">
+                <div class="range-title"><span class="blod">亮度</span><span>({{currentBrightness}}%)</span></div>
+                <div class="range-info flex-1">
+                    <div :id="colorId + 'brightness'" data-type="brightness" class="range-slider"></div>
+                </div>
+            </div>
+        </div>
+        <div class="picker-info flex flex-jcc flex-ac" :class="{'height-100': !pickerShow || !currentStatus}">
+            <div v-show="pickerShow && currentStatus" :id="colorId" class="color-picker">
+            </div>
+            <div @click="editDeviceWhite" class="white-color flex flex-ac flex-jcc" :style="{'background': borderColor, 'box-shadow': boxShadow}">
+                <span class="icon-light"></span>
+            </div>
+        </div>
+        <div  v-show="currentStatus"  class="range-wrapper">
+            <div v-show="pickerShow" class="range-info-wrap flex flex-jcc flex-v">
+                <div class="range-title"><span class="blod">饱和度</span><span>({{currentSaturation}}%)</span></div>
+                <div class="range-info flex-1">
+                    <div :id="colorId + 'saturation'" data-type="saturation" class="range-slider"></div>
+                </div>
+            </div>
+            <div v-show="!pickerShow" class="range-info-wrap flex flex-jcc flex-v">
+                <div class="range-title"><span class="blod">冷暖</span><span>({{currentTemperature * 50 + 2000}}K)</span></div>
+                <div class="range-info flex-1">
+                    <div :id="colorId + 'temperature'" data-type="temperature" class="range-slider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="control flex flex-ac flex-jcc">
+        <div @click="showPicker" class="control-item" :class="{'active': pickerShow && currentStatus}">
+            <span>彩光</span>
+        </div>
+        <div @click="hidePicker" class="control-item" :class="{'active': !pickerShow && currentStatus}">
+            <span>白光</span>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,101 @@
+<div class="init-width bg-blue">
+    <div @click="hideUl" class="title-info">
+        <h4 class="app-title">{{$t('nav.device')}}</h4>
+        <div v-show="!isWifiConnect"  @click="showWifiFail" :class="!blueEnable ? 'right-110' : 'right-75'" class="right-top">
+            <span class="right-icon">
+                <i class="icon-wifi icon-position"><i class="icon-cancel-circled"></i></i>
+            </span>
+        </div>
+        <div v-show="!blueEnable"  @click="showBlueFail" class="right-top right-75">
+            <span class="right-icon">
+                <i class="icon-bluetooth icon-position"><i class="icon-cancel-circled"></i></i>
+            </span>
+        </div>
+        <div v-show="!blueEnable"  @click="showBlueFail" class="right-top right-75">
+            <span class="right-icon">
+                <i class="icon-bluetooth icon-position"><i class="icon-cancel-circled"></i></i>
+            </span>
+        </div>
+        <i v-show="!isSearch" @click.stop="showSearch" class="icon-search right-top right-40"></i>
+        <div class="search-wrap flex flex-ac" :class="{'active': isSearch}">
+            <input type="text" v-model="searchName" :placeholder="$t('search')" class="input-control flex-1">
+            <span @click.stop="hideSearch" class="search-cancel">{{$t('cancelBtn')}}</span>
+        </div>
+        <i @click.stop="showUl($event)" class="icon-plus right-top"></i>
+        <ul v-show="flag" class="add-ul">
+            <li @click.stop="addDevice($event)"><i class="icon-light"></i><span>{{$t('addDevice')}}</span></li>
+            <li @click.stop="addGroup($event)"><i class="icon-groups"></i><span>{{$t('addGroup')}}</span></li>
+        </ul>
+    </div>
+    <div @click="hideUl" id="content-swiper" class="content-info">
+        <mt-loadmore :top-method="loadTop" @top-status-change="handleTopChange" ref="loadmore">
+            <swiper :class="{'swiper-container-100': deviceList.length != 0}" :options="swiperOption">
+                <swiper-slide v-for="i in pages">
+                    <div class="overflow-touch flex flex-m">
+                        <div @click="operateItem(item)" v-if="showPages(index, i)"
+                             class="item flex-1" v-for="(item, index) in list">
+                            <div class="item-info flex flex-ac">
+                                <div class="item-icon flex flex-ac flex-jcc">
+                                    <i :class="getIcon(item.tid)"
+                                       :style="{'color': getColor(item.characteristics, item.tid)}"></i>
+                                </div>
+                                <div class="item-name flex-1 flex flex-v">
+                                    <span :class="{'cr-warning': getFlag(item.position)}">{{getPosition(item.position)}}</span>
+                                    <span v-show="!showDesc(item.name)">{{item.mac}}</span>
+                                    <span v-show="showDesc(item.name)"  :class="{'desc': showDesc(item.position)}">
+                                        {{item.name}}
+                                        <span v-show="showDesc(item.position)">({{item.version}})&nbsp;&nbsp;&nbsp;
+                                            <img v-show="item.rssi <= 0" class="item-img" :src="getRssiIcon(item.rssi)"/>
+                                        </span>
+                                    </span>
+                                    <span class="desc" v-show="!showDesc(item.position)">
+                                        {{item.version}}&nbsp;&nbsp;&nbsp;
+                                        <img v-show="item.rssi <= 0" class="item-img" :src="getRssiIcon(item.rssi)"/>
+                                    </span>
+                                </div>
+                                <div v-show="isLigth(item.tid)" @click.stop="close(item.mac, getStatus(item.characteristics), $event)"
+                                     class="item-power flex flex-jcc flex-ac"
+                                     :class="{'active': getStatus(item.characteristics)}">
+                                    <i class="icon-power"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </swiper-slide>
+                <div v-show="pages > 1" class="swiper-pagination"  slot="pagination"></div>
+            </swiper>
+            <div slot="top" class="mint-loadmore-top">
+                <span v-show="topStatus !== 'loading'" :class="{ 'rotate': topStatus === 'drop' }">↓</span>
+                <div v-show="topStatus === 'loading'" id="loader-wrapper-small">
+                    <div class="loader loader-small"></div>
+                    <div class="loader-section section-left"></div>
+                    <div class="loader-section section-right"></div>
+                </div>
+            </div>
+            <div v-show="showAdd && deviceList.length == 0" class="add-wrapper flex flex-ac">
+                <div class="add-content">
+                    <div class="add-icon-wrapper">
+                        <img class="add-image" src="images/no_light.png"/>
+                    </div>
+                    <div class="add-title">{{$t('noAddDeviceDesc')}}</div>
+                    <div class="add-desc">{{$t('listDesc')}}</div>
+                    <div class="add-plus" @click="addDevice($event)">
+                        {{$t('addDevice')}}
+                    </div>
+                    <div class="add-desc">{{$t('videoDesc')}}&nbsp;<span @click="showVideo" class="blue">{{$t('clickVideoDesc')}}</span></div>
+                </div>
+            </div>
+        </mt-loadmore>
+    </div>
+    <v-footer :current="device" ref="footer"></v-footer>
+
+    <v-info v-on:infoShow="onBackIndex" :colorId="colorId" :temperatureId="temperatureId" ref="info"></v-info>
+    <v-remind ref="remind"></v-remind>
+    <v-blueFail v-on:blueFailShow="onBackIndex" ref="blueFail"></v-blueFail>
+    <v-wifiFail v-on:wifiFailShow="onBackIndex" ref="wifiFail"></v-wifiFail>
+    <v-resetDevice v-on:resetShow="onBackIndex" :macs="macs" :isJoin="isJoin"
+                   :selectAllId="selectAllId" :importId="importId"
+                   :resetId="resetId" :sliderId="sliderId" ref="device"></v-resetDevice>
+    <v-scanDevice v-on:scanDeviceShow="onBackIndex" ref="scanDevice"></v-scanDevice>
+    <v-addGroup v-on:addGroupShow="onBackIndex" :name="groupName" :addGroupId="addGroupId" ref="groupAdd"></v-addGroup>
+</div>

@@ -1,0 +1,34 @@
+<transition name="moves">
+    <div v-show="addFlag" class="control-content flex flex-v">
+        <h4 class="app-title"><span @click="hide"><i class="icon-cross back"></i></span>iBeacon</h4>
+        <div class="ibeacon-content">
+            <!--<div class="info-desc">基本</div>-->
+            <div class="info-content">
+                <div class="info-item flex flex-ac flex-jcb">
+                    <span class="info-disc-span">UUID</span>
+                    <input v-model="ibeaconInfo.uuid" class="form-control">
+                </div>
+                <div class="info-item flex flex-ac flex-jcb">
+                    <span class="info-disc-span">Major</span>
+                    <input v-model="ibeaconInfo.major" class="form-control">
+                </div>
+                <div class="info-item flex flex-ac flex-jcb">
+                    <span class="info-disc-span">Minor</span>
+                    <input v-model="ibeaconInfo.minor" class="form-control">
+                </div>
+                <div class="info-item flex flex-ac flex-jcb">
+                    <span class="info-disc-span">发送功率</span>
+                    <input v-model="ibeaconInfo.power" class="form-control">
+                </div>
+                <div class="info-item flex flex-ac flex-jcb">
+                    <span class="info-disc-span">设备名称</span>
+                    <input v-model="ibeaconInfo.name" class="form-control">
+                </div>
+                <div class="text-center btn-wrapper">
+                    <button type="submit" class="btn margin-top-30 register-btn"
+                            @click="setIbeacon">{{$t('confirmBtn')}}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</transition>

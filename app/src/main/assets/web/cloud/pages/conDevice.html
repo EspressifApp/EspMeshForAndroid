@@ -3,7 +3,7 @@
     <transition name="moves">
         <div v-show="addFlag" class="add-info operate-way" :class="{'failure-bg': !success}">
             <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>{{title}}</h4>
-            <div v-show="success" class="register-wraaper reset-bg">
+            <div v-show="success" class="register-wrapper reset-bg">
                 <div class="content">
                     <div class="schedule">
                         <p><span>{{value}}</span><small>%</small></p>
@@ -18,7 +18,7 @@
                     <li v-for="item in textList">{{item}}</li>
                 </ul>
             </div>
-            <div v-show="!success" class="register-wraaper reset-bg">
+            <div v-show="!success" class="register-wrapper reset-bg">
                 <div class="content">
                     <div class="schedule failure">
                         <p><i class="icon-android-alert"></i></p>

@@ -58,6 +58,8 @@ define(["vue","MINT", "Util", "txt!../../pages/aboutDevice.html" ],
                                 return this.$t('local');
                             } else if (status == "cloud") {
                                 return this.$t('cloud');
+                            } else if (status == "aws") {
+                                return this.$t('aws');
                             }
                         } else if (len == 2) {
                             return "内网和外网";

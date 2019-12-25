@@ -6,19 +6,19 @@
                 <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>附近设备</h4>
                 <span @click="showMore" class="icon-more right-top"></span>
                 <ul v-show="moreFlag" class="add-ul scan-more">
-                    <li @click.stop="sortByTime">
+                    <li class="flex flex-ac" @click.stop="sortByTime">
                         <i class="icon-time"></i>&nbsp;
-                        <span>按时间排序</span>&nbsp;
+                        <span>{{$t('sortByTime')}}</span>&nbsp;
                         <span v-show="timeSort" class="icon-up" :class="{'sort-down': !isAsc}"></span>
                     </li>
-                    <li @click.stop="sortByRssi">
+                    <li class="flex flex-ac" @click.stop="sortByRssi">
                         <i class="icon-rss"></i>&nbsp;
-                        <span>按信号排序</span>&nbsp;
+                        <span>{{$t('sortBySignal')}}</span>&nbsp;
                         <span v-show="rssiSort" class="icon-up" :class="{'sort-down': !isAsc}"></span>
                     </li>
-                    <li @click.stop="clearDevice">
+                    <li class="flex flex-ac" @click.stop="clearDevice">
                         <i class="icon-clear"></i>&nbsp;
-                        <span>清除信息</span>
+                        <span>{{$t('clearInfo')}}</span>
                     </li>
                 </ul>
             </div>

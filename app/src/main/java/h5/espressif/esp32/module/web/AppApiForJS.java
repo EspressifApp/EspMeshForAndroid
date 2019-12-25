@@ -6,8 +6,6 @@ import android.webkit.JavascriptInterface;
 import h5.espressif.esp32.module.main.EspWebActivity;
 
 public class AppApiForJS {
-    public static final String NAME = "espmesh";
-
     private AppApiForJSImpl mImpl;
 
     public AppApiForJS(EspWebActivity activity) {
@@ -735,5 +733,30 @@ public class AppApiForJS {
     @JavascriptInterface
     public void setStatusBar(String request) {
         mImpl.setStatusBar(request);
+    }
+
+    @JavascriptInterface
+    public void openBrowser(String url) {
+        mImpl.openBrowser(url);
+    }
+
+    /**
+     *
+     * @param request
+    {
+        "url":"http://www.xxx.com", // Required
+        "method":"GET", // Required， uppercase
+        "headers":{ // Not required
+            "content-type":"json",
+            "connection":"keep-alive",
+            ...
+        },
+        "content":"content string", // Not required
+        "callback":"callback function name" // Not required
+    }
+     */
+    @JavascriptInterface
+    public void httpRequest(String request) {
+        mImpl.httpRequest(request);
     }
 }

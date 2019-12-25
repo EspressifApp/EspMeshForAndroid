@@ -30,10 +30,7 @@ define(["vue", "MINT", "txt!../../pages/userinfo.html"],
                 var self = this;
                 MINT.MessageBox.confirm(self.$t('logoutDesc'), "",{
                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
-                    espmesh.userLogout();
-                    self.$router.push({
-                        path: "/login"
-                    });
+                    aliyun.aliUserLogout();
                 });
 
             },

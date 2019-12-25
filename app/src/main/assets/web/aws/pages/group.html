@@ -1,0 +1,95 @@
+
+<div class="init-width">
+    <div @click="hideUl" class="content-wrapper">
+        <div class="title-info">
+            <h4 class="app-title">{{$t('nav.group')}}</h4>
+            <div v-show="!wifiEnable"  @click="showWifiFail" :class="!blueEnable ? 'right-75' : 'right-40'" class="right-top ">
+                <span class="right-icon">
+                    <i class="icon-wifi icon-position"><i class="icon-cancel-circled"></i></i>
+                </span>
+            </div>
+            <div v-show="!isBlueEnable"  @click="showBlueFail" class="right-top right-40">
+                <span class="right-icon"><i class="icon-bluetooth icon-position"><i class="icon-cancel-circled"></i></i></span>
+            </div>
+            <i @click.stop="showUl($event)" class="icon-plus right-top"></i>
+            <ul v-show="flag" class="add-ul">
+                <li @click.stop="addDevice($event)"><i class="icon-light"></i><span>{{$t('addDevice')}}</span></li>
+                <li @click.stop="addGroup($event)"><i class="icon-groups"></i><span>{{$t('addGroup')}}</span></li>
+            </ul>
+        </div>
+        <div class="input-info">
+            <i class="icon-search"></i>
+            <input v-model="searchName" type="search" class="form-control" :placeholder="$t('searchGroup')">
+        </div>
+        {{devices}}
+        <div class="content-info no-padding-bottom" id="content-info">
+            <div class="overflow-touch">
+                <div :key="item.name" v-for="item in list" @click.self="showColor(item)"
+                     v-longtap="{fn: showOperateCloud, obj: item}" class="item item-device">
+                    <div @click.stop="showColor(item)" class="item-icon-circle">
+                        <i class="icon-groups"></i>
+                        <span>{{item.iotIds.length}}</span>
+                    </div>
+                    <div @click.stop="showColor(item)" class="item-name">
+                        <span>{{item.name}}</span>
+                    </div>
+                    <div class="item-power">
+                        <div v-show="isShowSwitch(item.iotIds)" class="switch-wrapper">
+                            <span :class="{'active': !getStatusByGroup(item.iotIds)}"
+                              @click="close(item.iotIds, 0, $event)">OFF</span>
+                            <span :class="{'active': getStatusByGroup(item.iotIds)}"
+                                  @click="close(item.iotIds, 1, $event)">ON</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-show="groupList.length == 0" class="add-wrapper">
+                    <div class="add-icon-wrapper">
+                        <img class="add-image" src="images/no_group.png"/>
+                    </div>
+                    <div class="add-title">{{$t('noAddGroupDesc')}}</div>
+                    <div class="add-desc">{{$t('listDesc')}}</div>
+                    <div class="add-plus" @click="addGroup($event)">
+                        {{$t('addGroup')}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <v-footer :current="group"></v-footer>
+    </div>
+    <transition name="ups">
+        <div v-show="infoShow" class="operate-wrapper">
+            <div @click="hideOperate" class="mask"></div>
+            <div class="operate-info">
+                <ul v-if="currentGroup">
+                    <li class="name">
+                        <span class="title"><i class="icon-groups"></i>{{currentGroup.name}}</span>
+                        <div class="desc">
+                            <div v-show="isShowSwitch(currentGroup.iotIds)" class="switch-wrapper">
+                                <span :class="{'active': !getStatusByGroup(currentGroup.iotIds)}"
+                                      @click="close(currentGroup.iotIds, 0, $event)">OFF</span>
+                                <span :class="{'active': getStatusByGroup(currentGroup.iotIds)}"
+                                      @click="close(currentGroup.iotIds, 1, $event)">ON</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li @click="editName"><span>{{$t('editName')}}</span></li>
+                    <li @click="delGroup"><span class="icon-orange">删除群组</span></li>
+                    <li @click="unbindDevices"><span class="icon-orange">设备解绑</span></li>
+                    <li @click="showInfo"><span>{{$t('editGroup')}}</span></li>
+<!--                    <li @click="joinMesh"><span>{{$t('joinBtn')}}</span></li>-->
+                    <li @click="hideOperate" class="margin-top-15 no-border"><span>{{$t('cancelBtn')}}</span></li>
+                </ul>
+            </div>
+        </div>
+    </transition>
+    <v-resetDevice v-on:resetShow="onBackGroup" ref="device"></v-resetDevice>
+    <v-addGroup v-on:addGroupShow="onBackGroup" :deviceList="deviceList" :name="groupName" :addGroupId="addGroupId" ref="add"></v-addGroup>
+    <v-groupInfo v-on:groupInfoShow="onBackGroup" :editDeviceId="editGroupId" :group="currentGroup" v-if="currentGroup" ref="info"></v-groupInfo>
+    <v-groupColor v-on:groupColorShow="onBackGroup" :lightId="lightId" :colorId="colorId" :temperatureId="temperatureId"
+                  :group="currentGroup" v-if="currentGroup" ref="groupcolor"></v-groupColor>
+    <!--<v-joinMesh v-on:meshShow="onBackGroup" :joinMeshSlider="joinSliderGroup" :selectMeshAllId="selectMeshAllId"-->
+                <!--:joinMeshId="joinMeshGroup" :group="groupObj" v-if="groupObj" ref="mesh"></v-joinMesh>-->
+    <!--<v-command v-on:commandShow="onBackGroup" :commandMacs="commandMacs" ref="command"></v-command>-->
+    <!--<v-blueFail v-on:blueFailShow="onBackGroup" ref="blueFail"></v-blueFail>-->
+    <!--<v-wifiFail v-on:wifiFailShow="onBackGroup" ref="wifiFail"></v-wifiFail>-->
+</div>

@@ -1,0 +1,23 @@
+<transition>
+    <div v-show="flag" class="prompt-wrapper">
+        <div @click="hide" class="mask"></div>
+        <div class="prompt-info">
+            <div class="prompt-header">
+                <span><i class="icon-wifi icon-position"><i class="icon-android-alert"></i></i></span>
+            </div>
+            <div class="prompt-content">
+                <h4>{{$t('noFound')}}</h4>
+                <ul class="prompt-ul">
+                    <li>1. {{$t('noWifi')}}&emsp;<span @click="setWifi" class="green-color">{{$t('goConnect')}}</span></li>
+                    <li>2. {{$t('noConfig')}}</li>
+                </ul>
+                <p>{{$t('reboot')}}</p>
+                <div class="result-flex">
+                    <button @click="hide" class="btn register-btn">{{$t('gotIt')}}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</transition>
+
+

@@ -36,16 +36,12 @@ define(["vue", "MINT", "Util", "txt!../../pages/set.html", "../js/aboutUs", "../
             },
             showDelay: function() {
                 var self= this;
-                MINT.MessageBox.prompt("请输入新的延时时间", "延时设置",
+                MINT.MessageBox.prompt(self.$t("enterDelay"), self.$t("delaySet"),
                     {inputValue: this.time, inputType: 'number',
                     confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(obj)  {
                     var deviceList = self.$store.state.deviceList, rootMac = "";
                     if (deviceList.length == 0) {
-                        MINT.Toast({
-                            message: "延时设置失败",
-                            position: 'bottom',
-                            duration: 2000
-                        });
+                        Util.toast(MINT, self.$t('saveFailDesc'));
                         return false;
                     }
                     self.time = parseInt(obj.value);
@@ -89,18 +85,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/set.html", "../js/aboutUs", "../
                     console.log(this.time);
                     this.$store.commit("setDelayTime", this.time);
                     this.$store.commit("setTsfTime", new Date().getTime() * 1000 - parseInt(res.result.tsf_time));
-                    MINT.Toast({
-                        message: "延时设置成功",
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, this.$t('saveSuccessDesc'));
                 } else {
                     this.time = this.$store.state.delayTime;
-                    MINT.Toast({
-                        message: "延时设置失败",
-                        position: 'bottom',
-                        duration: 2000
-                    });
+                    Util.toast(MINT, this.$t('saveFailDesc'));
                 }
             },
             onCheckAppVersion: function(res) {

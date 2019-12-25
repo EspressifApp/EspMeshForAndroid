@@ -9,6 +9,9 @@ import android.text.TextUtils;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.OnLifecycleEvent;
 
 import org.json.JSONArray;
@@ -21,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import h5.espressif.esp32.module.Utils;
-import h5.espressif.esp32.module.web.JSCallbacks;
 import iot.espressif.esp32.model.device.ble.MeshBleDevice;
 import libs.espressif.ble.EspBleUtils;
 import libs.espressif.ble.ScanListener;
@@ -32,26 +34,33 @@ public class MainBleNotifyThread extends Thread implements LifecycleObserver {
 
     private final EspLog mLog = new EspLog(getClass());
 
-    private volatile EspWebActivity mActivity;
-
     private ScanListener mBleCallback = new BleCallback();
     private final Map<BluetoothDevice, BleInfo> mBleInfoMap = new HashMap<>();
     private volatile boolean mBleScanning;
     private volatile long mBleLastClearTime;
 
-    MainBleNotifyThread(EspWebActivity activity) {
-        mActivity = activity;
+    private volatile boolean mDestroyed;
+
+    private MutableLiveData<String> mBleJsonArray;
+
+    MainBleNotifyThread() {
+        mBleJsonArray = new MutableLiveData<>();
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     public void onCreate() {
+        mDestroyed = false;
         start();
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void onDestroy() {
+        mDestroyed = true;
         interrupt();
-        mActivity = null;
+    }
+
+    void observeBleInfo(LifecycleOwner owner, Observer<? super String> observer) {
+        mBleJsonArray.observe(owner, observer);
     }
 
     void clearBle() {
@@ -113,7 +122,7 @@ public class MainBleNotifyThread extends Thread implements LifecycleObserver {
 
     @Override
     public void run() {
-        while (!isInterrupted() && mActivity != null) {
+        while (!isInterrupted() && !mDestroyed) {
             synchronized (this) {
                 if (!mBleScanning) {
                     try {
@@ -174,8 +183,8 @@ public class MainBleNotifyThread extends Thread implements LifecycleObserver {
                     e.printStackTrace();
                 }
             }
-            if (array.length() > 0 && mActivity != null) {
-                mActivity.evaluateJavascript(JSCallbacks.onScanBLE(array.toString()));
+            if (array.length() > 0 && !mDestroyed) {
+                mBleJsonArray.postValue(array.toString());
             }
 
             // Keep cache ble 3 minutes

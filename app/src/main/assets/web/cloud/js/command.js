@@ -168,17 +168,11 @@ define(["vue", "MINT", "Util", "txt!../../pages/command.html"],
                             espmesh.requestDevicesMulticast(data);
                         }, 1000)
                     } else {
-                        INSTANCE_TOAST = MINT.Toast({
-                            message: self.$t('jsonDesc'),
-                            position: 'bottom',
-                        });
+                        INSTANCE_TOAST = Util.toast(MINT, self.$t('jsonDesc'));
                     }
 
                 } else {
-                    INSTANCE_TOAST = MINT.Toast({
-                        message: self.$t('jsonDesc'),
-                        position: 'bottom',
-                    });
+                    INSTANCE_TOAST = Util.toast(MINT, self.$t('jsonDesc'));
                 }
 
             },

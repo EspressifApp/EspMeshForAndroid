@@ -1,10 +1,7 @@
 require.config({
     paths : {
         jQuery : 'jquery/jquery.min',
-        IScroll: 'jquery/iscroll',
-        bootstrap : 'bootstrap/bootstrap.min',
         "FastClick": 'jquery/fastclick',
-        "bootstrapSlider": 'jquery/bootstrap-slider.min',
         'jquery.ui' : 'jquery/jquery-ui.min',
         "jsPlumb" : 'jquery/jsplumb.min',
         'jquery.ui.touch-punch' : 'jquery/jquery.ui.touch-punch.min',
@@ -13,10 +10,14 @@ require.config({
         "Hammer" : 'jquery/hammer.min',
         //"ELEMENT":"vue/ELEMENT",
         "MINT":"vue/mint-ui",
+        "ELEMENT":"vue/element",
         "Vuex":"vue/vuex.min",
         "touch":"vue/vue-touch",
+        "swiper":"vue/swiper.min",
+        "VueAwesomeSwiper":"vue/vue-awesome-swiper",
         "txt":"vue/text",
         "Util":"utils",
+        "Common":"common",
         "routers":"../ipad/js/router",
         'i18n':'vue/vue-i18n.min',
          "zh":"../lang/zh",
@@ -36,15 +37,16 @@ require.config({
         },
     }
 });
-require(["IScroll", "jQuery", "FastClick", "jsPlumb", "Hammer", "vue", "Util", "vueRouter", "MINT", "routers", "touch", "Vuex", "i18n", "zh", "en",
-    "bootstrap", "jquery.ui", "jquery.ui.touch-punch"],
-    function(IScroll, $, FastClick, jsPlumb, Hammer, Vue, Util, VueRouter, MINT, routers, touch, Vuex, VueI18n, zh, en) {
+require(["jQuery", "FastClick", "jsPlumb", "Hammer", "vue", "ELEMENT", "Util", "Common", "vueRouter", "MINT", "routers", "VueAwesomeSwiper", "touch", "Vuex", "i18n", "zh", "en",
+    "jquery.ui", "jquery.ui.touch-punch"],
+    function($, FastClick, jsPlumb, Hammer, Vue, ELEMENT, Util, Common, VueRouter, MINT, routers, VueAwesomeSwiper, touch, Vuex, VueI18n, zh, en) {
     Vue.use(VueRouter);
-    //Vue.use(ELEMENT);
     Vue.use(MINT);
     Vue.use(touch);
     Vue.use(Vuex);
     Vue.use(VueI18n);
+    Vue.use(VueAwesomeSwiper);
+    Vue.use(ELEMENT);
     document.oncontextmenu=new Function("event.returnValue=false");
     document.onselectstart=new Function("event.returnValue=false");
     FastClick.attach(document.body);
@@ -59,29 +61,38 @@ require(["IScroll", "jQuery", "FastClick", "jsPlumb", "Hammer", "vue", "Util", "
 //        }
         next();
     });
+
     var store = new Vuex.Store({
         state: {
             deviceList: [],
             groupList: [],
             mixList: [],
             deviceInfo: {},
+            groupInfo: {},
             userName: "",
             searchName:"",
             scanDeviceList: [],
             conScanDeviceList: [],
+            ibeaconList: [],
             wifiInfo: "",
             siteList: [],
             topColor: 0,
             leftColor: 0,
-            rssiInfo: -80,
+            rssiInfo: -100,
             showScanBle: true,
             showLoading: true,
             deviceIp: "",
-            systemInfo: "",
             blueInfo: false,
             eventsPositions: [],
-            delayTime: 5000,
+            delayTime: 3000,
             tsfTime: 0,
+            systemInfo: "",
+            appInfo: "",
+            newAppInfo: "",
+            isNewVersion: false,
+            pages: 1,
+            pageSize: 0,
+            winHeight: 0
         },
         mutations: {
             setList: function(state, list){
@@ -93,17 +104,26 @@ require(["IScroll", "jQuery", "FastClick", "jsPlumb", "Hammer", "vue", "Util", "
             setRecentList: function(state, list){
                 state.mixList = list;
             },
+            setIbeaconList: function(state, list){
+                state.ibeaconList = list;
+            },
             setUserName: function(state, name){
                 state.userName = name;
             },
             setDeviceInfo: function(state, info){
                 state.deviceInfo = info;
             },
+            setGroupInfo: function(state, info){
+                state.groupInfo = info;
+            },
             setSiteList: function(state, info){
                 state.siteList = info;
             },
             setWifiInfo: function(state, info){
                 state.wifiInfo = info;
+            },
+            setBlueInfo: function(state, info){
+                state.blueInfo = info;
             },
             setScanDeviceList: function(state, info){
                 state.scanDeviceList = info;
@@ -143,6 +163,24 @@ require(["IScroll", "jQuery", "FastClick", "jsPlumb", "Hammer", "vue", "Util", "
             },
             setTsfTime: function(state, info) {
                 state.tsfTime = info;
+            },
+            setAppInfo: function(state, info) {
+                state.appInfo = info;
+            },
+            setNewAppInfo: function(state, info) {
+                state.newAppInfo = info;
+            },
+            setIsNewVersion: function(state, info) {
+                state.isNewVersion = info;
+            },
+            setPages: function(state, info) {
+                state.pages = info;
+            },
+            setPageSize: function(state, info) {
+                state.pageSize = info;
+            },
+            setWinHeight: function(state, info) {
+                state.winHeight = info;
             }
         }
     });
@@ -159,9 +197,14 @@ require(["IScroll", "jQuery", "FastClick", "jsPlumb", "Hammer", "vue", "Util", "
         store: store,
         router: router,
         mounted: function() {
+            Common.registerMint(MINT, Util);
             window.onLocaleGot = this.onLocaleGot;
+            window.onGetAppInfo = this.onGetAppInfo;
+            var height = document.body.clientHeight - 130;
+            console.log(height);
+            this.$store.commit("setWinHeight", height);
             espmesh.getLocale();
-            espmesh.userGuestLogin();
+            espmesh.getAppInfo();
         },
         methods: {
             onLocaleGot: function(res) {
@@ -172,7 +215,11 @@ require(["IScroll", "jQuery", "FastClick", "jsPlumb", "Hammer", "vue", "Util", "
                     this.$i18n.locale = "en";
                 }
                 this.$store.commit("setSystemInfo", res.os);
-            }
+            },
+            onGetAppInfo: function(res) {
+                console.log(res);
+                this.$store.commit("setAppInfo", JSON.parse(res));
+            },
         }
     });
 });

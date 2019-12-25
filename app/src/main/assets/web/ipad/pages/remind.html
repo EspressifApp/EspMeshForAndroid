@@ -1,9 +1,6 @@
-
-<div class="init-width">
-    <transition name="moves">
-        <div v-show="addFlag" @click="addClick"
-             class="speaker-wrapper">
-            <p class="remind-text"><i class="icon-speaker"></i><span>{{$t('remindDesc')}}</span><i @click="hide" class='icon-cross'></i></p>
-        </div>
-    </transition>
-</div>
+<transition name="moves">
+    <div v-show="addFlag" @click="addClick"
+         class="speaker-wrapper">
+        <p class="remind-text flex flex-ac flex-jcc"><i class="icon-speaker"></i><span>{{$t('remindDesc')}}</span><i @click.stop="hide" class='icon-cross'></i></p>
+    </div>
+</transition>

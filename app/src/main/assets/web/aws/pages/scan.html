@@ -1,0 +1,38 @@
+
+<div class="init-width">
+    <transition name="moves">
+        <div v-show="addFlag" class="add-info operate-way">
+            <h4 class="app-title"><span @click="hide"><i class="icon-left back"></i></span>Statistical</h4>
+            <div class="ibeacon-content">
+                <div class="ibeacon-header" style="height: 130px;">
+                    <div class="ibeacon-device">
+                        <div class="ibeacon-device-icon">
+                            <i class="icon-radar icon-blue"></i>
+                        </div>
+                        <!--<span>ibeaconInfo.name</span>-->
+                        <!--<span>deviceInfo.mac</span>-->
+                    </div>
+                </div>
+                <!--<div class="ibeacon-line">-->
+                <!--<div >Rssi</div>-->
+                <!--<div class="show-line"></div>-->
+                <!--</div>-->
+                <div @click="showInfo" class="ibeacon-middle">
+                    <p><span>{{$t('status')}}:&emsp;</span>{{getType()}}</p>
+                    <p><span>通知值(%):&emsp;</span>{{getNotice()}}</p>
+                    <p><span>过滤ESP设备:&emsp;</span>{{getFilter()}}</p>
+                    <p><span>蓝牙扫描间隔:&emsp;</span>{{getInterval()}}</p>
+                    <p><span>蓝牙扫描时间:&emsp;</span>{{getWindow()}}</p>
+                </div>
+                <div class="ibeacon-footer">
+                    <p @click="showInfo"><span>参数配置</span><span><i class="icon-right font-lg"></i></span></p>
+                    <p @click="showReports"><span>统计报表</span><span><i class="icon-right font-lg"></i></span></p>
+                    <p @click="showDevice"><span>附近设备</span><span><i class="icon-right font-lg"></i></span></p>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <v-scanInfo v-on:scanInfoShow="onBackScan" :rootMac="rootMac" :scanInfo="scanInfo"  ref="info"></v-scanInfo>
+    <v-reports v-on:reportsInfoShow="onBackScan"  ref="reports"></v-reports>
+    <v-scanContent v-on:scanContentShow="onBackScan" ref="content"></v-scanContent>
+</div>

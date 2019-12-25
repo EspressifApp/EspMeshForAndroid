@@ -503,19 +503,13 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                     if (!self.isMuch) {
                         if (self.eventA.length == 0 && self.eventB.length == 0 && self.eventC.length == 0 &&
                             self.eventD.length == 0 && self.eventUp.length == 0 && self.eventDown.length == 0) {
-                            MINT.Toast({
-                                message: self.$t('selectEventDesc'),
-                                position: 'bottom',
-                            });
+                            Util.toast(MINT, self.$t('selectEventDesc'));
                             return false;
                         }
                     } else {
                         if (self.deviceA.length == 0 && self.deviceB.length == 0 && self.deviceC.length == 0 &&
                             self.deviceD.length == 0) {
-                            MINT.Toast({
-                                message: self.$t('selectDeviceDesc'),
-                                position: 'bottom',
-                            });
+                            Util.toast(MINT, self.$t('selectDeviceDesc'));
                             return false;
                         }
                     }
@@ -532,10 +526,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn.html"],
                              self.hideParent();
                          }, 500);
                     } else {
-                        MINT.Toast({
-                            message: self.$t('selectDeviceDesc'),
-                            position: 'bottom',
-                        });
+                        Util.toast(MINT, self.$t('selectDeviceDesc'));
                     }
                 },
                 assemblyEvent: function(parentMac) {

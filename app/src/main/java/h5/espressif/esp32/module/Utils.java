@@ -4,6 +4,10 @@ import android.util.Base64;
 
 public final class Utils {
     public static String base64(String string) {
-        return Base64.encodeToString(string.getBytes(), Base64.NO_WRAP);
+        return base64(string.getBytes());
+    }
+
+    public static String base64(byte[] data) {
+        return Base64.encodeToString(data, Base64.NO_WRAP);
     }
 }
