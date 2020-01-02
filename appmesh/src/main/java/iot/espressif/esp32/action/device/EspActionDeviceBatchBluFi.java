@@ -20,6 +20,8 @@ import libs.espressif.ble.EspBleUtils;
 import libs.espressif.log.EspLog;
 
 public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements IEspActionDeviceBatchBluFi {
+    private static final int CONNECT_COUNT_DEFAULT = 5;
+
     private final EspLog mLog = new EspLog(getClass());
 
     private final LinkedList<BluetoothDevice> mDeviceQueue;
@@ -27,9 +29,10 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
     private int mMeshVersion;
     private MeshBlufiCallback mUserCallback;
 
+    private int mConnectTryCount = CONNECT_COUNT_DEFAULT;
+
     private volatile boolean mClosed = false;
 
-    private final LinkedBlockingQueue<Boolean> mConnectQueue = new LinkedBlockingQueue<>();
     private Map<BluetoothDevice, MeshBlufiClient> mMeshBlufiClients;
     private Thread mThread;
 
@@ -51,6 +54,14 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
     }
 
     @Override
+    public void setTryConnectingCount(int count) {
+        mConnectTryCount = count;
+        if (mConnectTryCount < 0) {
+            mConnectTryCount = CONNECT_COUNT_DEFAULT;
+        }
+    }
+
+    @Override
     public void close() {
         mClosed = true;
 
@@ -69,33 +80,6 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
     public MeshBlufiClient doActionConnectMeshBLE(@NonNull BluetoothDevice device, int meshVersion,
                                                   @NonNull MeshBlufiCallback userCallback) {
         throw new IllegalStateException("Forbid this function, call execute()");
-    }
-
-    private BleCallback getBleCallback(MeshBlufiClient blufi, MeshBlufiCallback userCallback) {
-        return new BleCallback(blufi, userCallback) {
-            @Override
-            public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-                super.onConnectionStateChange(gatt, status, newState);
-
-                if (status != BluetoothGatt.GATT_SUCCESS) {
-                    mConnectQueue.add(false);
-                } else {
-                    if (newState == BluetoothGatt.STATE_CONNECTED) {
-                        mConnectQueue.add(true);
-                    } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                        mConnectQueue.add(false);
-                    }
-                }
-            }
-        };
-    }
-
-    private void connect(MeshBlufiClient blufi, BluetoothDevice device) {
-        blufi.setMeshVersion(mMeshVersion);
-        Context context = EspApplication.getEspApplication().getApplicationContext();
-        BleCallback bleCallback = getBleCallback(blufi, mUserCallback);
-        BluetoothGatt gatt = EspBleUtils.connectGatt(device, context, bleCallback);
-        blufi.setBluetoothGatt(gatt);
     }
 
     @Override
@@ -136,21 +120,45 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
                 BluetoothDevice device = mDeviceQueue.poll();
                 assert device != null;
                 MeshBlufiClient blufi = new MeshBlufiClient();
+                blufi.setMeshVersion(mMeshVersion);
                 mMeshBlufiClients.put(device, blufi);
                 if (mListener != null) {
                     mListener.onClientCreated(blufi);
                 }
+                Context context = EspApplication.getEspApplication().getApplicationContext();
                 boolean connected = false;
                 mDeviceCounter.incrementAndGet();
-                for (int i = 0; i < 5; ++i) {
+                for (int i = 0; i < mConnectTryCount; ++i) {
                     if (blufi.isClosed()) {
                         break;
                     }
-                    connect(blufi, device);
+
+                    LinkedBlockingQueue<Boolean> connectQueue = new LinkedBlockingQueue<>();
+                    BleCallback bleCallback = new BleCallback(blufi, mUserCallback) {
+                        @Override
+                        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+                            super.onConnectionStateChange(gatt, status, newState);
+
+                            if (status != BluetoothGatt.GATT_SUCCESS) {
+                                connectQueue.add(false);
+                            } else {
+                                if (newState == BluetoothGatt.STATE_CONNECTED) {
+                                    connectQueue.add(true);
+                                } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
+                                    connectQueue.add(false);
+                                }
+                            }
+                        }
+                    };
+                    BluetoothGatt gatt = EspBleUtils.connectGatt(device, context, bleCallback);
+                    blufi.setBluetoothGatt(gatt);
+
                     try {
-                        connected = mConnectQueue.take();
+                        connected = connectQueue.take();
                         if (connected) {
                             break;
+                        } else {
+                            blufi.getBluetoothGatt().close();
                         }
                     } catch (InterruptedException e) {
                         mLog.w("Take connect queue interrupted");
