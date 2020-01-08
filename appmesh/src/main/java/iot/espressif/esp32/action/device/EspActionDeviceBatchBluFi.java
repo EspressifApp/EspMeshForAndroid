@@ -14,6 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import iot.espressif.esp32.app.EspApplication;
+import iot.espressif.esp32.model.device.ble.MeshBatchBlufiCallback;
 import iot.espressif.esp32.model.device.ble.MeshBlufiCallback;
 import iot.espressif.esp32.model.device.ble.MeshBlufiClient;
 import libs.espressif.ble.EspBleUtils;
@@ -27,7 +28,7 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
     private final LinkedList<BluetoothDevice> mDeviceQueue;
     private final AtomicInteger mDeviceCounter;
     private int mMeshVersion;
-    private MeshBlufiCallback mUserCallback;
+    private MeshBatchBlufiCallback mUserCallback;
 
     private int mConnectTryCount = CONNECT_COUNT_DEFAULT;
 
@@ -36,10 +37,8 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
     private Map<BluetoothDevice, MeshBlufiClient> mMeshBlufiClients;
     private Thread mThread;
 
-    private MeshBlufiClientListener mListener;
-
     public EspActionDeviceBatchBluFi(@NonNull Collection<BluetoothDevice> devices, int meshVersion,
-                                     @NonNull MeshBlufiCallback userCallback) {
+                                     @NonNull MeshBatchBlufiCallback userCallback) {
         mDeviceQueue = new LinkedList<>(devices);
         mDeviceCounter = new AtomicInteger(0);
         mMeshVersion = meshVersion;
@@ -49,14 +48,9 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
     }
 
     @Override
-    public void setMeshBlufiClientListener(MeshBlufiClientListener listener) {
-        mListener = listener;
-    }
-
-    @Override
     public void setTryConnectingCount(int count) {
         mConnectTryCount = count;
-        if (mConnectTryCount < 0) {
+        if (mConnectTryCount <= 0) {
             mConnectTryCount = CONNECT_COUNT_DEFAULT;
         }
     }
@@ -79,7 +73,7 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
     @Override
     public MeshBlufiClient doActionConnectMeshBLE(@NonNull BluetoothDevice device, int meshVersion,
                                                   @NonNull MeshBlufiCallback userCallback) {
-        throw new IllegalStateException("Forbid this function, call execute()");
+        throw new UnsupportedOperationException("Forbid this function, please call execute()");
     }
 
     @Override
@@ -122,8 +116,8 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
                 MeshBlufiClient blufi = new MeshBlufiClient();
                 blufi.setMeshVersion(mMeshVersion);
                 mMeshBlufiClients.put(device, blufi);
-                if (mListener != null) {
-                    mListener.onClientCreated(blufi);
+                if (mUserCallback != null) {
+                    mUserCallback.onClientCreated(blufi);
                 }
                 Context context = EspApplication.getEspApplication().getApplicationContext();
                 boolean connected = false;
@@ -158,10 +152,11 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
                         if (connected) {
                             break;
                         } else {
-                            blufi.getBluetoothGatt().close();
+                            gatt.close();
                         }
                     } catch (InterruptedException e) {
                         mLog.w("Take connect queue interrupted");
+                        gatt.close();
                         break;
                     }
 
@@ -175,8 +170,8 @@ public class EspActionDeviceBatchBluFi extends EspActionDeviceBlufi implements I
                 if (!connected) {
                     mDeviceCounter.decrementAndGet();
                 }
-                if (mListener != null) {
-                    mListener.onConnectResult(device, connected);
+                if (mUserCallback != null) {
+                    mUserCallback.onConnectResult(device, connected);
                 }
             }
             mLog.d("Batch BluFi Over");

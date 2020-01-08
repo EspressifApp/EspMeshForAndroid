@@ -1,5 +1,6 @@
 package iot.espressif.esp32.model.device.ble;
 
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 
 import meshblufi.espressif.BlufiClient;
@@ -33,6 +34,10 @@ public class MeshBlufiClient {
 
     public BluetoothGatt getBluetoothGatt() {
         return mBluetoothGatt;
+    }
+
+    public BluetoothDevice getBluetoothDevice() {
+        return mBluetoothGatt != null ? mBluetoothGatt.getDevice() : null;
     }
 
     public boolean isClosed() {

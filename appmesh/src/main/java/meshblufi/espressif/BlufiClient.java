@@ -1,5 +1,6 @@
 package meshblufi.espressif;
 
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 
@@ -11,6 +12,10 @@ public class BlufiClient {
     public BlufiClient(BluetoothGatt gatt, BluetoothGattCharacteristic writeChar, BluetoothGattCharacteristic notifyChar,
                        BlufiCallback callback) {
         mImpl = new BlufiClientImpl(this, gatt, writeChar, notifyChar, callback);
+    }
+
+    public BluetoothDevice getDevice() {
+        return mImpl.getDevice();
     }
 
     public void setDeviceVersion(int version) {

@@ -1,5 +1,6 @@
 package meshblufi.espressif;
 
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Handler;
@@ -60,6 +61,7 @@ class BlufiClientImpl implements BlufiParameter {
     private BluetoothGattCharacteristic mWriteChar;
     private final Object mWriteLock;
     private BluetoothGattCharacteristic mNotifyChar;
+    private BluetoothDevice mDevice;
 
     private volatile BlufiCallback mUserCallback;
 
@@ -92,6 +94,7 @@ class BlufiClientImpl implements BlufiParameter {
                     BluetoothGattCharacteristic notiCharact, BlufiCallback callback) {
         mClient = client;
         mGatt = gatt;
+        mDevice = gatt.getDevice();
         mWriteChar = writeCharact;
         mNotifyChar = notiCharact;
         mUserCallback = callback;
@@ -108,6 +111,10 @@ class BlufiClientImpl implements BlufiParameter {
         mUIHandler = new Handler(Looper.getMainLooper());
 
         mWriteLock = new Object();
+    }
+
+    BluetoothDevice getDevice() {
+        return mDevice;
     }
 
     void setPostPackageLengthLimit(int lengthLimit) {
@@ -139,6 +146,9 @@ class BlufiClientImpl implements BlufiParameter {
             }
             mClient = null;
             mUserCallback = null;
+            synchronized (mWriteLock) {
+                mWriteLock.notifyAll();
+            }
         }
     }
 
@@ -285,6 +295,9 @@ class BlufiClientImpl implements BlufiParameter {
     }
 
     private synchronized void gattWrite(byte[] data) throws InterruptedException {
+        if (mGatt == null) {
+            return;
+        }
         synchronized (mWriteLock) {
             mWriteChar.setValue(data);
             mGatt.writeCharacteristic(mWriteChar);
@@ -335,7 +348,7 @@ class BlufiClientImpl implements BlufiParameter {
             postOS.write(b);
             int postDataLengthLimit = mPackageLengthLimit - PACKAGE_HEADER_LENGTH;
             if (checksum) {
-                postDataLengthLimit -= 1;
+                postDataLengthLimit -= 2;
             }
             if (postOS.size() >= postDataLengthLimit) {
                 boolean frag = dataIS.available() > 0;
