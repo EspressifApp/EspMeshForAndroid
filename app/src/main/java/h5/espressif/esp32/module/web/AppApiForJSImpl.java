@@ -2537,7 +2537,7 @@ class AppApiForJSImpl implements EspWebConstants {
             method = requestJSON.getString("method");
             JSONObject headersJSON = requestJSON.optJSONObject("headers");
             headers = json2Map(headersJSON);
-            content = requestJSON.has("content") ? requestJSON.get("content").toString() : "";
+            content = requestJSON.has("content") ? requestJSON.getString("content") : "";
             callback = requestJSON.getString(KEY_CALLBACK);
         } catch (JSONException e) {
             e.printStackTrace();

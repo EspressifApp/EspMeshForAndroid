@@ -422,7 +422,9 @@ public class AliHelper implements IAliHelper {
         PanelDevice panelDevice = getPanelDevice(iotId);
         JSONObject json = new JSONObject();
         json.put(KEY_IOT_ID, iotId);
-        json.put(KEY_ITEMS, items);
+        JSONObject itemsJSON = new JSONObject(items);
+        json.put(KEY_ITEMS, itemsJSON);
+        Log.i(TAG, json.toString());
         PanelDeviceTask task = () -> panelDevice.setProperties(json.toString(), (b, o) -> {
             if (callback != null) {
                 callback.onSetProperties(b, o);

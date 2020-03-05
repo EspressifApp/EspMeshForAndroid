@@ -35,7 +35,7 @@ import meshblufi.espressif.security.BlufiRSA;
 class BlufiClientImpl implements BlufiParameter {
     private static final String TAG = BlufiClientImpl.class.getSimpleName();
 
-    private static final int DEFAULT_PACKAGE_LENGTH = 20;
+    private static final int DEFAULT_PACKAGE_LENGTH = 80;
     private static final int PACKAGE_HEADER_LENGTH = 4;
     private static final int MIN_PACKAGE_LENGTH = 6;
 

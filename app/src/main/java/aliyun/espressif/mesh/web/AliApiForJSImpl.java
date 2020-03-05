@@ -27,6 +27,7 @@ import aliyun.espressif.mesh.AliHelper;
 import aliyun.espressif.mesh.IAliHelper;
 import aliyun.espressif.mesh.activity.TaobaoAuthActivity;
 import aliyun.espressif.mesh.constants.AliConstants;
+import h5.espressif.esp32.module.Utils;
 import h5.espressif.esp32.module.action.EspActionDeviceConfigure2;
 import h5.espressif.esp32.module.action.IEspActionDeviceConfigure2;
 import h5.espressif.esp32.module.model.other.JSEvaluate;
@@ -483,19 +484,13 @@ class AliApiForJSImpl implements AliConstants {
             JSONObject json = new JSONObject(request);
             JSONArray iotIdArray = json.getJSONArray(KEY_IOT_ID);
             JSONObject itemsJSON = json.getJSONObject(KEY_PROPERTIES);
-            Map<String, Object> itemsMap = new HashMap<>();
-            Iterator<String> keys = itemsJSON.keys();
-            while (keys.hasNext()) {
-                String key = keys.next();
-                itemsMap.put(key, itemsJSON.get(key));
-            }
+            Map<String, Object> itemsMap = Utils.toMap(itemsJSON);
             for (int i = 0; i < iotIdArray.length(); ++i) {
                 String iotId = iotIdArray.getString(i);
                 mAliHelper.propertiesSet(iotId, itemsMap, (suc, data) -> {
                     mLog.i("getAliDeviceProperties " + suc + " , " + data);
                     if (suc && data != null) {
                         try {
-//                            JSONObject resultJSON = new JSONObject(data.toString());
                             JSONObject dataJSON = new JSONObject();
                             dataJSON.put(KEY_IOT_ID, iotId);
                             synchronized (resultArray) {
