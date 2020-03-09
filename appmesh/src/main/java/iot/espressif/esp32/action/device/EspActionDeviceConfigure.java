@@ -45,21 +45,22 @@ public class EspActionDeviceConfigure extends EspActionDeviceBlufi implements IE
             protected void onBlufiClientSetComplete() {
                 mLog.d("Set BlufiClient complete");
                 if (!blufi.getBluetoothGatt().requestMtu(DEFAULT_MTU_LENGTH)) {
+                    mLog.w("requestMtu failed");
                     blufi.getBlufiClient().negotiateSecurity();
                 }
             }
 
             @Override
             public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
-                super.onMtuChanged(gatt, mtu, status);
+                mLog.d("onMtuChanged: " + mtu + " , status: " + status);
                 blufi.getBlufiClient().setPostPackageLengthLimit(18);
                 blufi.getBlufiClient().negotiateSecurity();
             }
 
             @Override
             protected void onNegotiateSecurityComplete() {
+                mLog.d("Negotiate security complete, Send configure data");
                 blufi.getBlufiClient().configure(params);
-                mLog.d("Send configure data");
             }
         };
         BluetoothGatt gatt = EspBleUtils.connectGatt(device, context, bleCallback);
