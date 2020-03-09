@@ -43,23 +43,13 @@ public class EspActionDeviceConfigure extends EspActionDeviceBlufi implements IE
         BleCallback bleCallback = new BleCallback(blufi, userCallback) {
             @Override
             protected void onBlufiClientSetComplete() {
-                mLog.d("Set BlufiClient complete");
-                if (!blufi.getBluetoothGatt().requestMtu(DEFAULT_MTU_LENGTH)) {
-                    mLog.w("requestMtu failed");
-                    blufi.getBlufiClient().negotiateSecurity();
-                }
-            }
-
-            @Override
-            public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
-                mLog.d("onMtuChanged: " + mtu + " , status: " + status);
-                blufi.getBlufiClient().setPostPackageLengthLimit(18);
+                mLog.d("onBlufiClientSetComplete");
                 blufi.getBlufiClient().negotiateSecurity();
             }
 
             @Override
             protected void onNegotiateSecurityComplete() {
-                mLog.d("Negotiate security complete, Send configure data");
+                mLog.d("onNegotiateSecurityComplete, Send configure data");
                 blufi.getBlufiClient().configure(params);
             }
         };

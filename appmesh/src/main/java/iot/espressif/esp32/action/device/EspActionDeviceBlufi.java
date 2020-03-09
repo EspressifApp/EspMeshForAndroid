@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 
@@ -36,7 +37,9 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
         return blufi;
     }
 
-    protected class BleCallback extends BluetoothGattCallback {
+    protected static class BleCallback extends BluetoothGattCallback {
+        private final EspLog mmLog = new EspLog(getClass());
+
         private MeshBlufiClient mMeshBlufi;
 
         private BlufiCallbackImpl mActionCallback;
@@ -59,8 +62,8 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            mLog.d(String.format(Locale.ENGLISH, "onConnectionStateChange status=%d, newState=%d, address=%s", status, newState,
-                    gatt.getDevice().getAddress()));
+            mmLog.d(String.format(Locale.ENGLISH, "onConnectionStateChange status=%d, newState=%d, address=%s",
+                    status, newState, gatt.getDevice().getAddress()));
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 switch (newState) {
                     case BluetoothProfile.STATE_CONNECTED:
@@ -82,11 +85,11 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            mLog.d(String.format(Locale.ENGLISH, "onServicesDiscovered status=%d", status));
+            mmLog.d(String.format(Locale.ENGLISH, "onServicesDiscovered status=%d", status));
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 BluetoothGattService service = gatt.getService(UUID_SERVICE);
                 if (service == null) {
-                    mLog.w("Discover service failed");
+                    mmLog.w("Discover service failed");
                     mUserCallback.onGattServiceDiscover(gatt, -1, UUID_SERVICE);
                     gatt.disconnect();
                     return;
@@ -95,7 +98,7 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
 
                 BluetoothGattCharacteristic writeChar = service.getCharacteristic(UUID_WRITE_CHARACTERISTIC);
                 if (writeChar == null) {
-                    mLog.w("Get wite characteristic failed");
+                    mmLog.w("Get wite characteristic failed");
                     mUserCallback.onGattCharacteristicDiscover(gatt, -1, UUID_WRITE_CHARACTERISTIC);
                     gatt.disconnect();
                     return;
@@ -104,7 +107,7 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
 
                 BluetoothGattCharacteristic notifyChar = service.getCharacteristic(UUID_NOTIFICATION_CHARACTERISTIC);
                 if (notifyChar == null) {
-                    mLog.w("Get notification characteristic failed");
+                    mmLog.w("Get notification characteristic failed");
                     mUserCallback.onGattCharacteristicDiscover(gatt, -1, UUID_NOTIFICATION_CHARACTERISTIC);
                     gatt.disconnect();
                     return;
@@ -118,9 +121,9 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
                 mMeshBlufi.setBlufiClient(blufiClient);
 
                 gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
-
-                onBlufiClientSetComplete();
-                mUserCallback.onBlufiClientSet(blufiClient);
+                if (!gatt.requestMtu(DEFAULT_MTU_LENGTH)) {
+                    onMtuChanged(gatt, DEFAULT_MTU_LENGTH, 7001);
+                }
             } else {
                 gatt.disconnect();
                 mUserCallback.onGattServiceDiscover(gatt, status, UUID_SERVICE);
@@ -129,22 +132,29 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
 
         @Override
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
-            mLog.d(String.format(Locale.ENGLISH, "onMtuChanged status=%d, mtu=%d", status, mtu));
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                mMeshBlufi.getBlufiClient().setPostPackageLengthLimit(mtu - 3);
+            mmLog.d(String.format(Locale.ENGLISH, "onMtuChanged status=%d, mtu=%d", status, mtu));
+            boolean isSamsungAndroid10 = Build.VERSION.SDK_INT == 29
+                    && Build.MANUFACTURER.toLowerCase().startsWith("samsung");
+            if (status != BluetoothGatt.GATT_SUCCESS || isSamsungAndroid10) {
+                mMeshBlufi.getBlufiClient().setPostPackageLengthLimit(18);
+            } else {
+                mMeshBlufi.getBlufiClient().setPostPackageLengthLimit(mtu - 5);
             }
+
             mUserCallback.onMtuChanged(gatt, mtu, status);
+            mUserCallback.onBlufiClientSet(mMeshBlufi.getBlufiClient());
+            onBlufiClientSetComplete();
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            mLog.d("onCharacteristicChanged");
+            mmLog.d("onCharacteristicChanged");
             mMeshBlufi.getBlufiClient().onCharacteristicChanged(gatt, characteristic);
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            mLog.d(String.format(Locale.ENGLISH, "onCharacteristicWrite status=%d", status));
+            mmLog.d(String.format(Locale.ENGLISH, "onCharacteristicWrite status=%d", status));
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 mMeshBlufi.getBlufiClient().onCharacteristicWrite(gatt, characteristic, status);
             } else {
@@ -155,19 +165,19 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
         private class BlufiCallbackImpl extends BlufiCallback {
             @Override
             public void onNotification(BlufiClient client, int pkgType, int subType, byte[] data) {
-                mLog.d(String.format(Locale.ENGLISH, "onNotification pkgType=%d, subType=%d", pkgType, subType));
+                mmLog.d(String.format(Locale.ENGLISH, "onNotification pkgType=%d, subType=%d", pkgType, subType));
                 mUserCallback.onNotification(client, pkgType, subType, data);
             }
 
             @Override
             public void onGattClose(BlufiClient client) {
-                mLog.d("onGattClose");
+                mmLog.d("onGattClose");
                 mUserCallback.onGattClose(client);
             }
 
             @Override
             public void onError(BlufiClient client, int errCode) {
-                mLog.w(String.format(Locale.ENGLISH, "onError errCode=%d", errCode));
+                mmLog.w(String.format(Locale.ENGLISH, "onError errCode=%d", errCode));
                 mMeshBlufi.getBluetoothGatt().disconnect();
 
                 mUserCallback.onError(client, errCode);
@@ -175,7 +185,7 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
 
             @Override
             public void onNegotiateSecurityResult(BlufiClient client, int status) {
-                mLog.d(String.format(Locale.ENGLISH, "onNegotiateSecurityResult status=%d", status));
+                mmLog.d(String.format(Locale.ENGLISH, "onNegotiateSecurityResult status=%d", status));
                 if (status == STATUS_SUCCESS) {
                     onNegotiateSecurityComplete();
                 } else {
@@ -187,7 +197,7 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
 
             @Override
             public void onConfigureResult(BlufiClient client, int status) {
-                mLog.d(String.format(Locale.ENGLISH, "onConfigureResult status=%d", status));
+                mmLog.d(String.format(Locale.ENGLISH, "onConfigureResult status=%d", status));
                 if (status != STATUS_SUCCESS) {
                     mMeshBlufi.getBluetoothGatt().disconnect();
                 }
@@ -197,7 +207,7 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
 
             @Override
             public void onWifiStateResponse(BlufiClient client, BlufiStatusResponse response) {
-                mLog.d(String.format(Locale.ENGLISH, "onWifiStateResponse %s", response.generateValidInfo()));
+                mmLog.d(String.format(Locale.ENGLISH, "onWifiStateResponse %s", response.generateValidInfo()));
                 onReceiveWifiState(response);
                 mUserCallback.onWifiStateResponse(client, response);
             }
