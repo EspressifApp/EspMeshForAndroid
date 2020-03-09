@@ -52,7 +52,7 @@ public class EspActionDeviceConfigure extends EspActionDeviceBlufi implements IE
             @Override
             public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
                 super.onMtuChanged(gatt, mtu, status);
-                blufi.getBlufiClient().setPostPackageLengthLimit(status - 6);
+                blufi.getBlufiClient().setPostPackageLengthLimit(18);
                 blufi.getBlufiClient().negotiateSecurity();
             }
 
