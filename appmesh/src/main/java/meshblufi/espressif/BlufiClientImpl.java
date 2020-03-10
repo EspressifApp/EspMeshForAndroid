@@ -100,7 +100,7 @@ class BlufiClientImpl implements BlufiParameter {
         mUserCallback = callback;
 
         mPackageLengthLimit = DEFAULT_PACKAGE_LENGTH;
-        mSendSequence = new AtomicInteger(0);
+        mSendSequence = new AtomicInteger(-1);
         mReadSequence = new AtomicInteger(-1);
         mAck = new LinkedBlockingQueue<>();
 
@@ -278,7 +278,7 @@ class BlufiClientImpl implements BlufiParameter {
     }
 
     private int generateSendSequence() {
-        return mSendSequence.getAndIncrement();
+        return mSendSequence.incrementAndGet() & 0xff;
     }
 
     private byte[] generateAESIV(int sequence) {
@@ -443,7 +443,8 @@ class BlufiClientImpl implements BlufiParameter {
         }
 
         int sequence = toInt(response[2]);
-        if (sequence != mReadSequence.incrementAndGet()) {
+        int expectSeq = mReadSequence.incrementAndGet() & 0xff;
+        if (sequence != expectSeq) {
             Log.w(TAG, "parseNotification read sequence wrong");
             return -3;
         }
