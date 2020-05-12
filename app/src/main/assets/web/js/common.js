@@ -1395,9 +1395,10 @@ define(function(){
                     self.setFail("Configure data error");
                 } else if (self.count < 3) {
                     self.count++;
-                    setTimeout(function() {
+                    var timeoutID = setTimeout(function() {
                         self.conWifi();
                     }, 2000);
+                    self.configTimeoutId = timeoutID;
                 } else {
                     self.setFail(config.message);
                 }

@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import io.reactivex.Observable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import iot.espressif.esp32.action.device.EspActionDeviceInfo;
 import iot.espressif.esp32.action.device.EspActionDeviceSniffer;
 import iot.espressif.esp32.action.device.EspActionDeviceTopology;

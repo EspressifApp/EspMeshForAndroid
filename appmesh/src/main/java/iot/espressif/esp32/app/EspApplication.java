@@ -6,14 +6,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Environment;
+import android.text.TextUtils;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import java.io.File;
 import java.util.HashMap;
-import java.util.Random;
+import java.util.UUID;
 
 import iot.espressif.esp32.db.box.MeshObjectBox;
-import libs.espressif.utils.RandomUtil;
 
 public class EspApplication extends Application {
     private static EspApplication instance;
@@ -74,12 +75,7 @@ public class EspApplication extends Application {
      */
     public String putCache(Object value) {
         synchronized (mCacheLock) {
-            String key;
-            do {
-                int keyLength = new Random().nextInt(20) + 20;
-                key = RandomUtil.randomString(keyLength);
-            } while (mCacheMap.containsKey(key));
-
+            String key = UUID.randomUUID().toString();
             mCacheMap.put(key, value);
             return key;
         }
@@ -119,7 +115,8 @@ public class EspApplication extends Application {
      * Get the application default phone storage dir path
      */
     public String getEspRootSDPath() {
-        return Environment.getExternalStorageDirectory().getPath() + "/Espressif/Esp32";
+        File dir = getExternalFilesDir(null);
+        return dir == null ? null : dir.getPath();
     }
 
     public void sendLocalBroadcast(Intent intent) {

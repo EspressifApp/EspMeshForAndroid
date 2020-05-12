@@ -29,6 +29,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                 count: 0,
                 success: true,
                 timerId: "",
+                configTimeoutId: null
             }
         },
         methods:{
@@ -50,6 +51,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                 this.addFlag = false;
                 espmesh.stopBleScan();
                 this.stopConfig();
+                if (this.configTimeoutId != null) {
+                    clearTimeout(this.configTimeoutId);
+                    this.configTimeoutId = null;
+                }
                 this.$emit("conShow");
             },
             conWifi: function () {
@@ -208,9 +213,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/conDevice.html"], function(v, MI
                         self.setFail("Configure data error");
                     } else if (self.count < 3) {
                         self.count++;
-                        setTimeout(function() {
+                        var timeoutID = setTimeout(function() {
                             self.conWifi();
                         }, 2000);
+                        self.configTimeoutId = timeoutID;
                     } else {
                         self.setFail(config.message);
                     }

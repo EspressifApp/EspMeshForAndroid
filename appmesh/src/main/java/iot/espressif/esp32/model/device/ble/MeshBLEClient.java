@@ -12,8 +12,8 @@ import android.content.Context;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import io.reactivex.Observable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import libs.espressif.ble.EspBleUtils;
 import libs.espressif.log.EspLog;
 

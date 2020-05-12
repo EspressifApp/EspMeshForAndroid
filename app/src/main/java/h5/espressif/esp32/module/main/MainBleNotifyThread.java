@@ -115,7 +115,7 @@ public class MainBleNotifyThread extends Thread implements LifecycleObserver {
         }
     }
 
-    private class BleInfo {
+    private static class BleInfo {
         int rssi;
         byte[] scanRecord;
     }

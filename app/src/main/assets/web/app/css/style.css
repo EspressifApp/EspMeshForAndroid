@@ -241,9 +241,6 @@ ul {
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
 }
-.overflow-touch .mint-loadmore {
-    overflow: auto !important;
-}
 .no-search {
 	height: calc(100% - 50px);
 }

@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Observable;
 import iot.espressif.esp32.model.other.EspRomQueryResult;
 import iot.espressif.esp32.model.other.EspRxObserver;
 import libs.espressif.log.EspLog;

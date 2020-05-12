@@ -38,10 +38,9 @@ define(["vue","MINT", "Util", "txt!../../pages/operateDevice.html", "./colorPick
                 console.log(JSON.stringify(self.$store.state.deviceCloudInfo));
                 self.deviceMacs = [self.device.iotId];
                 self.name = self.device.deviceName;
-                console.log();
                 setTimeout(function () {
-                    self.$refs.colorCloud.show()
-                    Util.setStatusBarBlack();
+                    self.$refs.colorCloud.show();
+                    Util.setStatusBarBLack();
                 })
                 self.addFlag = true;
             },

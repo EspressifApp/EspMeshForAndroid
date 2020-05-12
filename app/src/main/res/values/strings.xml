@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">ESP-Mesh</string>
+
+    <string name="esp_provision_start">Start provisioning</string>
+    <string name="esp_provision_ssid_empty">SSID is empty</string>
+    <string name="esp_provision_connect_ble">Connect device complete</string>
+    <string name="esp_provision_disconnect_ble">Disconnected with device</string>
+    <string name="esp_provision_discover_service_suc">Discover service complete</string>
+    <string name="esp_provision_discover_service_failed">Discover service failed</string>
+    <string name="esp_provision_discover_char_notify_suc">Discover notify char complete</string>
+    <string name="esp_provision_discover_char_notify_failed">Discover notify char failed</string>
+    <string name="esp_provision_discover_char_write_suc">Discover write char complete</string>
+    <string name="esp_provision_discover_char_write_failed">Discover write char complete</string>
+    <string name="esp_provision_set_mtu_suc">Set MTU complete</string>
+    <string name="esp_provision_set_mtu_failed">Set MTU failed</string>
+    <string name="esp_provision_error_wifi_password">Wi-Fi password error</string>
+    <string name="esp_provision_error_ap_not_found">AP not found</string>
+    <string name="esp_provision_error_ap_forbid">AP forbid</string>
+    <string name="esp_provision_error_data">Provisioning data error</string>
+    <string name="esp_provision_error_code">Receive error code</string>
+    <string name="esp_provision_security_suc">Negotiate security complete</string>
+    <string name="esp_provision_security_failed">Negotiate security failed</string>
+    <string name="esp_provision_post_configure_suc">Post provisioning data complete</string>
+    <string name="esp_provision_post_configure_failed">Post provisioning data failed</string>
+    <string name="esp_provision_device_connect_suc">Device has connected the AP</string>
+    <string name="esp_provision_device_connect_failed">Device connect the AP failed</string>
+    <string name="esp_provision_complete">Configure complete</string>
 </resources>

@@ -52,11 +52,11 @@ import h5.espressif.esp32.module.action.EspActionJSON;
 import h5.espressif.esp32.module.action.IEspActionDeviceConfigure2;
 import h5.espressif.esp32.module.main.EspWebActivity;
 import h5.espressif.esp32.module.model.event.SnifferDiscoveredEvent;
-import io.reactivex.Observable;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import iot.espressif.esp32.action.common.EspActionUpgradeAPK;
 import iot.espressif.esp32.action.common.IEspActionUpgradeApk;
 import iot.espressif.esp32.action.device.EspActionDeviceInfo;
@@ -99,6 +99,8 @@ import libs.espressif.net.EspHttpUtils;
 import libs.espressif.utils.DataUtil;
 
 class AppApiForJSImpl implements EspWebConstants {
+    private static final boolean PLAY_RELEASE = false;
+
     private final EspLog mLog = new EspLog(getClass());
 
     private final LinkedBlockingQueue<Runnable> mTaskQueue;
@@ -1621,6 +1623,10 @@ class AppApiForJSImpl implements EspWebConstants {
         Observable.just(new EspActionUpgradeAPK())
                 .subscribeOn(Schedulers.io())
                 .map(action -> {
+                    if (PLAY_RELEASE) {
+                        return new JSONObject().put(KEY_STATUS, -1);
+                    }
+
                     IEspActionUpgradeApk.ReleaseInfo releaseInfo = action.doActionGetLatestRelease();
                     if (releaseInfo != null) {
                         String notes = releaseInfo.getNotes();
@@ -1635,8 +1641,7 @@ class AppApiForJSImpl implements EspWebConstants {
                                 .put(KEY_URL, releaseInfo.getDownloadUrl())
                                 .put(KEY_NOTES, notes);
                     } else {
-                        return new JSONObject()
-                                .put(KEY_STATUS, -1);
+                        return new JSONObject().put(KEY_STATUS, -1);
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -1752,6 +1757,7 @@ class AppApiForJSImpl implements EspWebConstants {
         try {
             JSONObject json = new JSONObject()
                     .put(KEY_OS, "Android")
+                    .put(KEY_PLAY_RELEASE, PLAY_RELEASE)
                     .put(KEY_VERSION_NAME, versionName)
                     .put(KEY_VERSION_CODE, versionCode);
 

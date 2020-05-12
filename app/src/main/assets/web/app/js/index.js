@@ -300,17 +300,17 @@ define(["vue", "MINT", "Common", "Util", "txt!../../pages/index.html", "../js/fo
                 var self = this;
                 self.cancelOperate();
                 window.onOtaBack = self.onOtaBack;
-                MINT.MessageBox.confirm("当前版本：" + self.deviceInfo.version + "，确定要回退到上一个版本？", "版本回退",{
-                    confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')}).then(function(action) {
-                    MINT.Indicator.open();
-                    setTimeout(function() {
-                        var mac = self.deviceInfo.mac;
-                        var data = '{"' + MESH_MAC + '": "' + mac +
-                                '","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' + MESH_REQUEST + '": "' + OTA_FALLBACK + '","' +
-                                DEVICE_DELAY + '": ' + DELAY_TIME + ',"callback": "onOtaBack", "tag": { "mac": "'+
-                                        mac +'"}}';
-                        espmesh.requestDevice(data);
-                    }, 1000);
+                MINT.MessageBox.confirm(self.$t('currentVersion') + self.deviceInfo.version + self.$t('versionRollbackConfirm'),
+                    self.$t('versionRollback'), {confirmButtonText: self.$t('confirmBtn'), cancelButtonText: self.$t('cancelBtn')})
+                    .then(function(action) {
+                        MINT.Indicator.open();
+                        setTimeout(function() {
+                            var mac = self.deviceInfo.mac;
+                            var data = '{"' + MESH_MAC + '": "' + mac +'","'+DEVICE_IP+'": "'+self.$store.state.deviceIp+'","' +
+                                MESH_REQUEST + '": "' + OTA_FALLBACK + '","' + DEVICE_DELAY + '": ' + DELAY_TIME +
+                                ',"callback": "onOtaBack", "tag": { "mac": "'+ mac +'"}}';
+                            espmesh.requestDevice(data);
+                        }, 1000);
 
                 }).catch(function(err){
                     window.onBackPressed = self.hide;
@@ -323,14 +323,14 @@ define(["vue", "MINT", "Common", "Util", "txt!../../pages/index.html", "../js/fo
                     if (!Util._isEmpty(res.result)) {
                         if (!Util._isEmpty(res.result.status_code) && res.result.status_code == 0) {
                         } else {
-                            Util.toast(MINT, self.$t('版本回退失败'))
+                            Util.toast(MINT, self.$t('versionRollbackFailed'))
                         }
                     } else {
-                        Util.toast(MINT, self.$t('版本回退失败'))
+                        Util.toast(MINT, self.$t('versionRollbackFailed'))
                     }
 
                 } else {
-                    Util.toast(MINT, self.$t('版本回退失败'))
+                    Util.toast(MINT, self.$t('versionRollbackFailed'))
                 }
                 MINT.Indicator.close();
                 window.onBackPressed = self.hide;

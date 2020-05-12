@@ -403,7 +403,11 @@ define(function(){
             "group":"Group",
             "user":"User",
             "room":"Room"
-        }
+        },
+        "versionRollback": "Version rollback",
+        "currentVersion": "Current version: ",
+        "versionRollbackConfirm": ", rollback to previous version?",
+        "versionRollbackFailed": "Rollback version failed"
     }
     return {
         m: m

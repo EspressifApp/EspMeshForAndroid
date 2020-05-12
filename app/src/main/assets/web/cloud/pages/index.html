@@ -21,7 +21,7 @@
             <input v-model="searchName" type="search" class="form-control" :placeholder="$t('search')">
         </div>
         <div class="content-info flex-wrapper no-padding-bottom" id="device-list">
-            <div  class="overflow-touch">
+            <div class="overflow-touch">
                 <mt-loadmore :top-method="loadTop" @top-status-change="handleTopChange" ref="loadmore">
                     {{list}}{{isLoginFun}}
                     <div v-show="!showAdd" v-infinite-scroll="loadMoreList"

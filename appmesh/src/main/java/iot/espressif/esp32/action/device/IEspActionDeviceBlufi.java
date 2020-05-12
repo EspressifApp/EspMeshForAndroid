@@ -14,7 +14,8 @@ public interface IEspActionDeviceBlufi extends IEspActionDevice {
     UUID UUID_WRITE_CHARACTERISTIC = UUID.fromString("0000ff01-0000-1000-8000-00805f9b34fb");
     UUID UUID_NOTIFICATION_CHARACTERISTIC = UUID.fromString("0000ff02-0000-1000-8000-00805f9b34fb");
 
-    int DEFAULT_MTU_LENGTH = 128;
+    int DEFAULT_MTU_LENGTH = 23;
+    int DEFAULT_BLUFI_PACKET_LENGTH = 18;
 
     MeshBlufiClient doActionConnectMeshBLE(@NonNull BluetoothDevice device, int meshVersion,
                                            @NonNull MeshBlufiCallback userCallback);

@@ -141,7 +141,7 @@ define(["vue","MINT", "Util", "txt!../../pages/automation-btn-devices.html", "..
                             self.$refs.autoBtn.show();
                         }, 100)
                     } else {
-                        Util.toast(MINT, self.$t('selectDeviceDesc！'));
+                        Util.toast(MINT, self.$t('selectDeviceDesc'));
                     }
                 },
                 delEvent: function (parentMac) {

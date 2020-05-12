@@ -29,6 +29,7 @@ define(["vue", "MINT", "Common", "Util", "txt!../../pages/conDevice.html"], func
                 count: 0,
                 success: true,
                 timerId: "",
+                configTimeoutId: null
             }
         },
         methods:{
@@ -50,6 +51,10 @@ define(["vue", "MINT", "Common", "Util", "txt!../../pages/conDevice.html"], func
                 this.addFlag = false;
                 espmesh.stopBleScan();
                 espmesh.stopConfigureBlufi();
+                if (this.configTimeoutId != null) {
+                    clearTimeout(this.configTimeoutId);
+                    this.configTimeoutId = null;
+                }
                 this.$emit("conShow");
             },
             conWifi: function () {

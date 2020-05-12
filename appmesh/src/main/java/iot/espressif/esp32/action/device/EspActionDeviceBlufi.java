@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
 
@@ -23,7 +22,6 @@ import meshblufi.espressif.BlufiClient;
 import meshblufi.espressif.response.BlufiStatusResponse;
 
 public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
-    private final EspLog mLog = new EspLog(getClass());
 
     public MeshBlufiClient doActionConnectMeshBLE(@NonNull BluetoothDevice device, int meshVersion,
                                                   @NonNull MeshBlufiCallback userCallback) {
@@ -38,6 +36,10 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
     }
 
     protected static class BleCallback extends BluetoothGattCallback {
+        private static final int ERROR_DISCOVER_SERVICE = 20000;
+        private static final int ERROR_DISCOVER_CHAR    = 20001;
+        private static final int ERROR_REQUEST_MTU      = 20010;
+
         private final EspLog mmLog = new EspLog(getClass());
 
         private MeshBlufiClient mMeshBlufi;
@@ -90,7 +92,7 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
                 BluetoothGattService service = gatt.getService(UUID_SERVICE);
                 if (service == null) {
                     mmLog.w("Discover service failed");
-                    mUserCallback.onGattServiceDiscover(gatt, -1, UUID_SERVICE);
+                    mUserCallback.onGattServiceDiscover(gatt, ERROR_DISCOVER_SERVICE, UUID_SERVICE);
                     gatt.disconnect();
                     return;
                 }
@@ -99,7 +101,7 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
                 BluetoothGattCharacteristic writeChar = service.getCharacteristic(UUID_WRITE_CHARACTERISTIC);
                 if (writeChar == null) {
                     mmLog.w("Get wite characteristic failed");
-                    mUserCallback.onGattCharacteristicDiscover(gatt, -1, UUID_WRITE_CHARACTERISTIC);
+                    mUserCallback.onGattCharacteristicDiscover(gatt, ERROR_DISCOVER_CHAR, UUID_WRITE_CHARACTERISTIC);
                     gatt.disconnect();
                     return;
                 }
@@ -108,7 +110,7 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
                 BluetoothGattCharacteristic notifyChar = service.getCharacteristic(UUID_NOTIFICATION_CHARACTERISTIC);
                 if (notifyChar == null) {
                     mmLog.w("Get notification characteristic failed");
-                    mUserCallback.onGattCharacteristicDiscover(gatt, -1, UUID_NOTIFICATION_CHARACTERISTIC);
+                    mUserCallback.onGattCharacteristicDiscover(gatt, ERROR_DISCOVER_CHAR, UUID_NOTIFICATION_CHARACTERISTIC);
                     gatt.disconnect();
                     return;
                 }
@@ -122,7 +124,7 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
 
                 gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
                 if (!gatt.requestMtu(DEFAULT_MTU_LENGTH)) {
-                    onMtuChanged(gatt, DEFAULT_MTU_LENGTH, 7001);
+                    onMtuChanged(gatt, DEFAULT_MTU_LENGTH, ERROR_REQUEST_MTU);
                 }
             } else {
                 gatt.disconnect();
@@ -133,14 +135,14 @@ public class EspActionDeviceBlufi implements IEspActionDeviceBlufi {
         @Override
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
             mmLog.d(String.format(Locale.ENGLISH, "onMtuChanged status=%d, mtu=%d", status, mtu));
-            boolean isSamsungAndroid10 = Build.VERSION.SDK_INT == 29
-                    && Build.MANUFACTURER.toLowerCase().startsWith("samsung");
-            if (status != BluetoothGatt.GATT_SUCCESS || isSamsungAndroid10) {
-                mMeshBlufi.getBlufiClient().setPostPackageLengthLimit(18);
-            } else {
-                mMeshBlufi.getBlufiClient().setPostPackageLengthLimit(mtu - 5);
-            }
-
+//            boolean isSamsungAndroid10 = Build.VERSION.SDK_INT == 29
+//                    && Build.MANUFACTURER.toLowerCase().startsWith("samsung");
+//            if (status != BluetoothGatt.GATT_SUCCESS || isSamsungAndroid10) {
+//                mMeshBlufi.getBlufiClient().setPostPackageLengthLimit(18);
+//            } else {
+//                mMeshBlufi.getBlufiClient().setPostPackageLengthLimit(18);
+//            }
+            mMeshBlufi.getBlufiClient().setPostPackageLengthLimit(DEFAULT_BLUFI_PACKET_LENGTH);
             mUserCallback.onMtuChanged(gatt, mtu, status);
             mUserCallback.onBlufiClientSet(mMeshBlufi.getBlufiClient());
             onBlufiClientSetComplete();

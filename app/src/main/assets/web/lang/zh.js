@@ -404,7 +404,11 @@ define(function(){
             "group":"群组",
             "user":"我的",
             "room":"房间"
-        }
+        },
+        "versionRollback": "版本回退",
+        "currentVersion": "当前版本：",
+        "versionRollbackConfirm": "，确定要回退到上一个版本？",
+        "versionRollbackFailed": "版本回退失败"
     }
     return {
         m: m

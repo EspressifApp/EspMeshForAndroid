@@ -37,6 +37,7 @@ interface EspWebConstants {
     String KEY_OS = "os";
     String KEY_VERSION_NAME = "version_name";
     String KEY_VERSION_CODE = "version_code";
+    String KEY_PLAY_RELEASE = "play_release";
     String KEY_EVENTS = "events";
     String KEY_POSITION = "position";
     String KEY_COORDINATE = "coordinate";

@@ -98,6 +98,10 @@
     background: #fff !important;
     color: #333 !important;
 }
+.mint-loadmore,
+.mint-loadmore-content {
+    height: 100%;
+}
 /*内容容器样式*/
 .content-info {
     height: calc(100% - 44px);

@@ -29,7 +29,7 @@ import h5.espressif.esp32.module.model.customer.Customer;
 import h5.espressif.esp32.module.model.event.BluetoothChangedEvent;
 import h5.espressif.esp32.module.model.event.WifiChangedEvent;
 import h5.espressif.esp32.module.web.JSCallbacks;
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Observable;
 import iot.espressif.esp32.action.device.EspActionDeviceOTA;
 import iot.espressif.esp32.model.user.EspUser;
 import libs.espressif.log.EspLog;
@@ -55,10 +55,9 @@ public class MainHelper implements LifecycleObserver {
         mUser.setEmail("guest@guest.com");
         mUser.setName("Guest");
 
-        ActivityCompat.requestPermissions(mActivity, new String[]{
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_FINE_LOCATION
-        }, EspWebActivity.REQUEST_PERMISSION_DEFAULT);
+        mkdirs();
+        ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                EspWebActivity.REQUEST_PERMISSION_DEFAULT);
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -76,13 +75,15 @@ public class MainHelper implements LifecycleObserver {
 
     private void mkdirs() {
         String otaBinPath = EspActionDeviceOTA.getBinDirPath();
-        if (otaBinPath != null) {
-            File otaBinDir = new File(otaBinPath);
-            if (!otaBinDir.exists()) {
-                boolean result = otaBinDir.mkdirs();
-                mLog.d("mkdirs otaBinPath " + result);
-            }
+        if (otaBinPath == null) {
+            return;
         }
+
+        Observable.just(new File(otaBinPath))
+                .filter(dir -> !dir.exists())
+                .filter(File::mkdirs)
+                .doOnNext(dir -> mLog.d("mkdirs() otaBinPath"))
+                .subscribe();
     }
 
     private void scanQRCode() {
@@ -107,9 +108,6 @@ public class MainHelper implements LifecycleObserver {
                         .map(i -> permissions[i])
                         .doOnNext(permission -> {
                             switch (permission) {
-                                case Manifest.permission.WRITE_EXTERNAL_STORAGE:
-                                    mkdirs();
-                                    break;
                                 case Manifest.permission.ACCESS_FINE_LOCATION:
                                     EventBus.getDefault().post(new WifiChangedEvent());
                                     break;

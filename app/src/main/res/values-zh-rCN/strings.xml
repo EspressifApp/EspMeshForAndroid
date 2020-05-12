@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ESP-Mesh</string>
+
+    <string name="esp_provision_start">开始配网</string>
+    <string name="esp_provision_ssid_empty">SSID 为空</string>
+    <string name="esp_provision_connect_ble">连接设备完成</string>
+    <string name="esp_provision_disconnect_ble">与设备断开连接</string>
+    <string name="esp_provision_discover_service_suc">获取设备服务成功</string>
+    <string name="esp_provision_discover_service_failed">获取设备服务失败</string>
+    <string name="esp_provision_discover_char_notify_suc">获取通知特征成功</string>
+    <string name="esp_provision_discover_char_notify_failed">获取通知特征失败</string>
+    <string name="esp_provision_discover_char_write_suc">获取写入特征成功</string>
+    <string name="esp_provision_discover_char_write_failed">获取写入特征失败</string>
+    <string name="esp_provision_set_mtu_suc">设置 MTU 成功</string>
+    <string name="esp_provision_set_mtu_failed">设置 MTU 失败</string>
+    <string name="esp_provision_error_wifi_password">Wi-Fi 密码错误</string>
+    <string name="esp_provision_error_ap_not_found">设备没有找到路由器</string>
+    <string name="esp_provision_error_ap_forbid">路由器禁止接入</string>
+    <string name="esp_provision_error_data">配网信息错误</string>
+    <string name="esp_provision_error_code">收到错误码</string>
+    <string name="esp_provision_security_suc">协商加密成功</string>
+    <string name="esp_provision_security_failed">协商加密失败</string>
+    <string name="esp_provision_post_configure_suc">发送配网信息完成</string>
+    <string name="esp_provision_post_configure_failed">发送配网信息失败</string>
+    <string name="esp_provision_device_connect_suc">设备成功连上路由器</string>
+    <string name="esp_provision_device_connect_failed">设备连接路由器失败</string>
+    <string name="esp_provision_complete">配网完成</string>
 </resources>
