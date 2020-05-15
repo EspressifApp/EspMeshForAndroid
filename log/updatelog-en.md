@@ -3,6 +3,7 @@
 ## v1.2.2
 - Provisioning BLE MTU change to 23
 - Remove RECORD_AUDIO and EXTERNAL_STORAGE permissions
+- Fix bugs
 
 ## v1.2.0
 - Support Gateway device

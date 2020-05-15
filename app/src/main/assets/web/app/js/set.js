@@ -11,6 +11,7 @@ define(["vue", "MINT", "Util", "txt!../../pages/set.html", "../js/aboutUs", "../
                 isNewVersion: false,
                 time: 0,
                 rootMac: "",
+                playRelease: true
             }
         },
         computed: {
@@ -25,6 +26,10 @@ define(["vue", "MINT", "Util", "txt!../../pages/set.html", "../js/aboutUs", "../
         methods:{
             show: function () {
                 this.hideThis();
+                var appInfo = this.$store.state.appInfo;
+                if (appInfo.play_release) {
+                    this.playRelease = false;
+                }
                 window.onCheckAppVersion = this.onCheckAppVersion;
                 window.onGetTsfTime = this.onGetTsfTime;
                 this.flag = true;

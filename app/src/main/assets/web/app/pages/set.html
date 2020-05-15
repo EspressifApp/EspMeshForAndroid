@@ -8,7 +8,7 @@
                 </h4>
             </div>
             <div class="content-info user" id="content-info">
-                <div @click="newVersionShow()" class="item">
+                <div v-show="playRelease" @click="newVersionShow()" class="item">
                     <div class="item-name up-date flex flex-jcb flex-ac">
                         <span>{{$t('checkUpdates')}}</span>
                         <span class="new-title" v-if="newVersion">New</span>

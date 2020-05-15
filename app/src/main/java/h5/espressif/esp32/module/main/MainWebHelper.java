@@ -97,10 +97,7 @@ public class MainWebHelper implements LifecycleObserver {
         });
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webSettings.setAllowContentAccess(true);
-        webSettings.setAllowFileAccess(true);
         webSettings.setAllowFileAccessFromFileURLs(true);
-        webSettings.setAllowUniversalAccessFromFileURLs(true);
         webSettings.setTextZoom(100);
 
         if (AppUtil.isPad(mActivity)) {
