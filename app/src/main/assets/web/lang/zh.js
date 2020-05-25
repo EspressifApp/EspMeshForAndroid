@@ -355,6 +355,7 @@ define(function(){
         "trySteps": "，请尝试一下步骤复位设备",
         "tips": "温馨提示：复位后设备会处于待添加状态，需要重新入网才可以使用。",
         "buy": "前往购买",
+        "privacyPolicy": "隐私政策",
 
         "emptyEventTitle": "清除关联",
         "connetDeviceTitle": "连接设备",

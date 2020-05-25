@@ -354,6 +354,7 @@ define(function(){
         "trySteps": ", Please try the steps to reset the device",
         "tips": "Tips: After reset, the device will be in the state to be added, and you need to re-enter the network before you can use it.",
         "buy": "Go to buy",
+        "privacyPolicy": "Privacy Policy",
 
         "emptyEventTitle": "Clear the association",
         "connetDeviceTitle": "Connect the devices",

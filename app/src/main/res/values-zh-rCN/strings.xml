@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ESP-Mesh</string>
+    <string name="app_name">ESP 网络套件</string>
 
     <string name="esp_provision_start">开始配网</string>
     <string name="esp_provision_ssid_empty">SSID 为空</string>

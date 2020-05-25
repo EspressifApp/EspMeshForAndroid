@@ -76,6 +76,7 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Common",
             delayTime: 0,
             tsfTime: 0,
             isLogin: false,
+            systemLanguage: '',
         },
         mutations: {
             setList: function(state, list){
@@ -149,6 +150,9 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Common",
             },
             setIsLogin: function(state, info) {
                 state.isLogin = info;
+            },
+            setSystemLanguage: function(state, info) {
+                state.systemLanguage = info;
             }
         }
     });
@@ -180,6 +184,7 @@ require(["IScroll", "jQuery", "FastClick", "vue", "vueRouter", "MINT", "Common",
                     this.$i18n.locale = "en";
                 }
                 this.$store.commit("setSystemInfo", res.os);
+                this.$store.commit("setSystemLanguage", res.language);
             },
             onGetAppInfo: function(res) {
                 console.log(res);

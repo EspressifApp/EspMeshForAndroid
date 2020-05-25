@@ -425,6 +425,7 @@ ul {
 .item .item-name.up-date {
 	min-width: calc(100% - 60px);
 	padding-left: 0;
+	font-size: 14px;
 }
 .item .item-power-small.up-date {
 	flex: 0 0 60px;
@@ -2253,4 +2254,33 @@ operate-bg .group-wrapper .operate-way-info {
 	.picker-wrapper {
 		height: 41%;
 	}
+}
+.privacyPolicy-wrapper {
+    padding: 0 15px 15px;;
+    box-sizing: border-box;
+}
+.privacyPolicy-wrapper h1 {
+    font-size: 18px;
+    font-weight: bolder;
+    text-align: center;
+    margin: 15px 0;
+}
+.privacyPolicy-wrapper h2 {
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: bolder;
+}
+.privacyPolicy-wrapper p,
+.privacyPolicy-wrapper ul li{
+    font-size: 14px;
+    line-height: 1.8;
+}
+.privacyPolicy-wrapper p {
+    margin-bottom: 10px;
+}
+.privacyPolicy-wrapper ul li {
+    margin-bottom: 10px;
+}
+.privacy-btn {
+    padding: 10px 0;
 }

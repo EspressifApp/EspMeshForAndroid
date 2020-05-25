@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ESP-Mesh</string>
+    <string name="app_name">ESP MeshKit</string>
 
     <string name="esp_provision_start">Start provisioning</string>
     <string name="esp_provision_ssid_empty">SSID is empty</string>

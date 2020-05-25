@@ -43,9 +43,15 @@
                         <i class="icon-right font-lg"></i>
                     </div>
                 </div>
+                <div @click="showPrivacyPolicy" class="item margin-top-30">
+                    <div class="item-name up-date text-center">
+                        <span class="icon-orange">{{$t('privacyPolicy')}}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </transition>
     <v-aboutUs v-on:aboutUs="hideThis" ref="aboutUs"></v-aboutUs>
     <v-newVersion v-on:newVersionShow="hideThis" ref="newVersion"></v-newVersion>
+    <v-privacyPolicy v-on:privacyPolicyShow="hideThis" ref="privacyPolicy"></v-privacyPolicy>
 </div>

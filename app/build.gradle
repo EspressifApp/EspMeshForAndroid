@@ -11,8 +11,8 @@ android {
         applicationId "h5.espressif.esp32"
         minSdkVersion conf.min_sdk_version
         targetSdkVersion conf.target_sdk_version
-        versionCode 50
-        versionName "1.2.2"
+        versionCode 51
+        versionName "1.2.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         if (willCompileAliyun) {
             ndk {

@@ -101,6 +101,9 @@ public class MainHelper implements LifecycleObserver {
         if (mActivity == null) {
             return;
         }
+        if (permissions.length == 0 || grantResults.length == 0) {
+            return;
+        }
         switch (requestCode) {
             case EspWebActivity.REQUEST_PERMISSION_DEFAULT:
                 Observable.range(0, permissions.length)

@@ -1,5 +1,5 @@
-define(["vue", "MINT", "Util", "txt!../../pages/set.html", "../js/aboutUs", "../js/newVersion"],
-    function(v, MINT, Util, set, aboutUs, newVersion) {
+define(["vue", "MINT", "Util", "txt!../../pages/set.html", "../js/aboutUs", "../js/newVersion", "../js/privacyPolicy"],
+    function(v, MINT, Util, set, aboutUs, newVersion, privacyPolicy) {
 
     var Set = v.extend({
 
@@ -78,6 +78,9 @@ define(["vue", "MINT", "Util", "txt!../../pages/set.html", "../js/aboutUs", "../
             showAboutUs: function () {
                 this.$refs.aboutUs.show();
             },
+            showPrivacyPolicy: function() {
+                this.$refs.privacyPolicy.show();
+            },
             hideThis: function () {
                 window.onBackPressed = this.hide;
             },
@@ -117,7 +120,8 @@ define(["vue", "MINT", "Util", "txt!../../pages/set.html", "../js/aboutUs", "../
         },
         components: {
             "v-aboutUs": aboutUs,
-            "v-newVersion": newVersion
+            "v-newVersion": newVersion,
+            "v-privacyPolicy": privacyPolicy
         }
     });
     return Set;
