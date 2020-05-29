@@ -99,7 +99,7 @@ import libs.espressif.net.EspHttpUtils;
 import libs.espressif.utils.DataUtil;
 
 class AppApiForJSImpl implements EspWebConstants {
-    private static final boolean PLAY_RELEASE = true;
+    private static final boolean PLAY_RELEASE = false;
 
     private final EspLog mLog = new EspLog(getClass());
 

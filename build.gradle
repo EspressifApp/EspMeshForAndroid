@@ -32,7 +32,7 @@ ext {
             material : 'com.google.android.material:material:1.0.0',
 
             zxing_android_embedded : "com.journeyapps:zxing-android-embedded:3.6.0",
-            rxjava : "io.reactivex.rxjava3:rxjava:3.0.3",
+            rxjava : "io.reactivex.rxjava3:rxjava:3.0.4",
             rxandroid : "io.reactivex.rxjava3:rxandroid:3.0.0",
             jmdns : "org.jmdns:jmdns:3.5.5",
             eventbus : "org.greenrobot:eventbus:3.1.1"
