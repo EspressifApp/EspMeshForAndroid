@@ -1,6 +1,7 @@
 # Update Log
 
-## v1.2.2
+## v1.2.3
+- App renamed to Esp MeshKit
 - Provisioning BLE MTU change to 23
 - Remove RECORD_AUDIO and EXTERNAL_STORAGE permissions
 - Fix bugs
