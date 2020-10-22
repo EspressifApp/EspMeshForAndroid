@@ -13,6 +13,7 @@ import java.util.List;
 import iot.espressif.esp32.action.device.EspActionDeviceConfigure;
 import iot.espressif.esp32.action.device.EspActionDeviceInfo;
 import iot.espressif.esp32.action.device.EspActionDeviceReboot;
+import iot.espressif.esp32.action.device.EspActionDeviceReset;
 import iot.espressif.esp32.action.device.EspActionDeviceStation;
 import iot.espressif.esp32.model.callback.DeviceScanCallback;
 import iot.espressif.esp32.model.device.IEspDevice;
@@ -135,5 +136,15 @@ class EspMeshApisImpl extends EspMeshApis {
 
     public void reboot(@NonNull Collection<IEspDevice> devices) {
         new EspActionDeviceReboot().doActionRebootLocal(devices);
+    }
+
+    @Override
+    public boolean reset(@NonNull IEspDevice device) {
+        return new EspActionDeviceReset().doActionResetLocal(device);
+    }
+
+    @Override
+    public void reset(@NonNull Collection<IEspDevice> devices) {
+        new EspActionDeviceReset().doActionResetLocal(devices);
     }
 }

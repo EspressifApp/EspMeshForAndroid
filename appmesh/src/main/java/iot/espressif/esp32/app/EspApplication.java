@@ -1,14 +1,7 @@
 package iot.espressif.esp32.app;
 
 import android.app.Application;
-import android.content.BroadcastReceiver;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.os.Environment;
-import android.text.TextUtils;
-
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.io.File;
 import java.util.HashMap;
@@ -21,7 +14,6 @@ public class EspApplication extends Application {
     private final Object mCacheLock = new Object();
     private HashMap<String, Object> mCacheMap;
     private boolean mSupportBLE;
-    private LocalBroadcastManager mBroadcastManager;
 
     public static EspApplication getEspApplication() {
         if (instance == null) {
@@ -46,7 +38,6 @@ public class EspApplication extends Application {
     }
 
     private void init() {
-        mBroadcastManager = LocalBroadcastManager.getInstance(this);
         mCacheMap = new HashMap<>();
 
         mSupportBLE = getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
@@ -117,17 +108,5 @@ public class EspApplication extends Application {
     public String getEspRootSDPath() {
         File dir = getExternalFilesDir(null);
         return dir == null ? null : dir.getPath();
-    }
-
-    public void sendLocalBroadcast(Intent intent) {
-        mBroadcastManager.sendBroadcast(intent);
-    }
-
-    public void registerLocalReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-        mBroadcastManager.registerReceiver(receiver, filter);
-    }
-
-    public void unregisterLocalReceiver(BroadcastReceiver receiver) {
-        mBroadcastManager.unregisterReceiver(receiver);
     }
 }

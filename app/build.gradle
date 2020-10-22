@@ -6,11 +6,11 @@ if (willCompileAliyun) {
 }
 
 android {
-    compileSdkVersion conf.compile_sdk_version
+    compileSdkVersion 29
     defaultConfig {
         applicationId "h5.espressif.esp32"
-        minSdkVersion conf.min_sdk_version
-        targetSdkVersion conf.target_sdk_version
+        minSdkVersion 21
+        targetSdkVersion 29
         versionCode 51
         versionName "1.2.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -60,15 +60,16 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.multidex:multidex:2.0.1'
-    implementation lib.appcompat
-    implementation lib.material
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.google.android.material:material:1.2.1'
+
     // RxJAVA
-    implementation lib.rxjava
-    implementation lib.rxandroid
+    implementation "io.reactivex.rxjava3:rxjava:3.0.6"
+    implementation "io.reactivex.rxjava3:rxandroid:3.0.0"
     // QR Code
-    implementation lib.zxing_android_embedded
+    implementation "com.journeyapps:zxing-android-embedded:3.6.0"
     // EventBus
-    implementation lib.eventbus
+    implementation "org.greenrobot:eventbus:3.1.1"
 
     // Modules
     implementation project(':appmesh')

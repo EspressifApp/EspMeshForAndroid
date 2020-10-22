@@ -181,7 +181,7 @@ public abstract class EspMeshApis {
      * Post a request to reboot the device
      *
      * @param device MDF devices
-     * @return true if post the request succefully
+     * @return true if post the request successfully
      */
     abstract public boolean reboot(@NonNull IEspDevice device);
 
@@ -191,4 +191,19 @@ public abstract class EspMeshApis {
      * @param devices MDF devices
      */
     abstract public void reboot(@NonNull Collection<IEspDevice> devices);
+
+    /**
+     * Post a request to reset the device
+     *
+     * @param device MDF device
+     * @return true if post the request successfully
+     */
+    abstract public boolean reset(@NonNull IEspDevice device);
+
+    /**
+     * Post a request to reset the devices
+     *
+     * @param devices MDF devices
+     */
+    abstract public void reset(@NonNull Collection<IEspDevice> devices);
 }

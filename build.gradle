@@ -6,12 +6,11 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.3'
-        
+        classpath 'com.android.tools.build:gradle:4.1.0'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
-        classpath "io.objectbox:objectbox-gradle-plugin:2.5.1"
+        classpath "io.objectbox:objectbox-gradle-plugin:2.7.1"
     }
 }
 
@@ -24,22 +23,4 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
-}
-
-ext {
-    lib = [
-            appcompat : 'androidx.appcompat:appcompat:1.1.0',
-            material : 'com.google.android.material:material:1.0.0',
-
-            zxing_android_embedded : "com.journeyapps:zxing-android-embedded:3.6.0",
-            rxjava : "io.reactivex.rxjava3:rxjava:3.0.4",
-            rxandroid : "io.reactivex.rxjava3:rxandroid:3.0.0",
-            jmdns : "org.jmdns:jmdns:3.5.5",
-            eventbus : "org.greenrobot:eventbus:3.1.1"
-    ]
-    conf = [
-            min_sdk_version : 21,
-            target_sdk_version : 29,
-            compile_sdk_version : 29
-    ]
 }
